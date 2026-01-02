@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>Resource Scheduler</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -785,6 +789,70 @@
       <div class="modal-body" id="modal-body">
         <!-- Dynamic content -->
       </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Overlay (Mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+    <div class="nav-items">
+      <a href="#" class="nav-item active" data-view="dashboard">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+      </a>
+      <a href="#" class="nav-item" data-view="schedule">
+        <i class="fas fa-calendar-alt"></i>
+        <span>Schedule</span>
+      </a>
+      <a href="#" class="nav-item" data-view="people">
+        <i class="fas fa-users"></i>
+        <span>People</span>
+      </a>
+      <a href="#" class="nav-item" data-view="projects">
+        <i class="fas fa-folder"></i>
+        <span>Projects</span>
+      </a>
+      <a href="#" class="nav-item" data-view="more" id="mobile-more-btn">
+        <i class="fas fa-ellipsis-h"></i>
+        <span>More</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Mobile More Menu -->
+  <div class="mobile-more-menu hidden" id="mobile-more-menu">
+    <div class="more-menu-content">
+      <a href="#" class="more-menu-item" data-view="skills">
+        <i class="fas fa-star"></i>
+        <span>Skills</span>
+      </a>
+      <a href="#" class="more-menu-item" data-view="ai-scheduler">
+        <i class="fas fa-robot"></i>
+        <span>AI Scheduler</span>
+      </a>
+      <a href="#" class="more-menu-item" data-view="conflicts">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Conflicts</span>
+      </a>
+      <a href="#" class="more-menu-item" data-view="reports">
+        <i class="fas fa-chart-bar"></i>
+        <span>Reports</span>
+      </a>
+      <a href="#" class="more-menu-item" data-view="users" data-roles="admin">
+        <i class="fas fa-user-shield"></i>
+        <span>Users</span>
+      </a>
+      <a href="#" class="more-menu-item" data-view="settings" data-roles="admin">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+      <div class="more-menu-divider"></div>
+      <a href="#" class="more-menu-item" id="mobile-logout-btn">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
     </div>
   </div>
 

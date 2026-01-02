@@ -3562,6 +3562,107 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById(id)?.addEventListener('input', updateBrandingPreview);
   });
   
+  // ===== Mobile Navigation =====
+  const sidebar = document.querySelector('.sidebar');
+  const sidebarOverlay = document.getElementById('sidebar-overlay');
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileBottomNav = document.getElementById('mobile-bottom-nav');
+  const mobileMoreMenu = document.getElementById('mobile-more-menu');
+  const mobileMoreBtn = document.getElementById('mobile-more-btn');
+  
+  // Mobile menu button (hamburger)
+  mobileMenuBtn?.addEventListener('click', () => {
+    sidebar?.classList.toggle('open');
+    sidebarOverlay?.classList.toggle('active');
+  });
+  
+  // Close sidebar when clicking overlay
+  sidebarOverlay?.addEventListener('click', () => {
+    sidebar?.classList.remove('open');
+    sidebarOverlay?.classList.remove('active');
+    mobileMoreMenu?.classList.remove('active');
+  });
+  
+  // Mobile bottom navigation
+  mobileBottomNav?.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const view = item.dataset.view;
+      
+      if (view === 'more') {
+        // Toggle more menu
+        mobileMoreMenu?.classList.toggle('active');
+        return;
+      }
+      
+      // Close more menu if open
+      mobileMoreMenu?.classList.remove('active');
+      
+      // Update active state
+      mobileBottomNav.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      
+      if (view) switchView(view);
+    });
+  });
+  
+  // Mobile more menu items
+  mobileMoreMenu?.querySelectorAll('.more-menu-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const view = item.dataset.view;
+      
+      if (view) {
+        mobileMoreMenu.classList.remove('active');
+        
+        // Update bottom nav active state - set "more" as active
+        mobileBottomNav?.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        mobileMoreBtn?.classList.add('active');
+        
+        switchView(view);
+      }
+    });
+  });
+  
+  // Mobile logout
+  document.getElementById('mobile-logout-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    mobileMoreMenu?.classList.remove('active');
+    logout();
+  });
+  
+  // Close more menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (mobileMoreMenu?.classList.contains('active')) {
+      if (!e.target.closest('.mobile-more-menu') && !e.target.closest('#mobile-more-btn')) {
+        mobileMoreMenu.classList.remove('active');
+      }
+    }
+  });
+  
+  // Update mobile nav active state when switching views
+  const originalSwitchView = window.switchView || switchView;
+  window.switchView = function(viewName) {
+    // Call original function
+    if (typeof originalSwitchView === 'function') {
+      originalSwitchView.call(this, viewName);
+    }
+    
+    // Update mobile bottom nav
+    const mainViews = ['dashboard', 'schedule', 'people', 'projects'];
+    if (mobileBottomNav) {
+      mobileBottomNav.querySelectorAll('.nav-item').forEach(item => {
+        if (item.dataset.view === viewName) {
+          mobileBottomNav.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+        } else if (!mainViews.includes(viewName) && item.dataset.view === 'more') {
+          mobileBottomNav.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+        }
+      });
+    }
+  };
+  
   // Initialize
   checkAuth();
 });
