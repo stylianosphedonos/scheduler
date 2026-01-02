@@ -39,7 +39,7 @@ router.get('/', authenticateToken, async (req, res) => {
     res.json({
       data: skills.map(s => ({
         id: s.id, name: s.name, category: s.category, description: s.description,
-        color: s.color, isActive: s.is_active === 1, personCount: s.person_count,
+        color: s.color, isActive: !!s.is_active, personCount: s.person_count,
         projectCount: s.project_count, createdAt: s.created_at
       })),
       pagination: { page: parseInt(page), limit: parseInt(limit), total, totalPages: Math.ceil(total / limit) }
@@ -71,14 +71,14 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
     res.json({
       id: skill.id, name: skill.name, category: skill.category, description: skill.description,
-      color: skill.color, isActive: skill.is_active === 1, createdAt: skill.created_at, updatedAt: skill.updated_at,
+      color: skill.color, isActive: !!skill.is_active, createdAt: skill.created_at, updatedAt: skill.updated_at,
       people: people.map(p => ({
         id: p.id, firstName: p.first_name, lastName: p.last_name, department: p.department,
-        proficiencyLevel: p.proficiency_level, yearsExperience: p.years_experience, certified: p.certified === 1
+        proficiencyLevel: p.proficiency_level, yearsExperience: p.years_experience, certified: !!p.certified
       })),
       projects: projects.map(pr => ({
         id: pr.id, name: pr.name, code: pr.code, status: pr.status,
-        requiredProficiency: pr.required_proficiency, isMandatory: pr.is_mandatory === 1
+        requiredProficiency: pr.required_proficiency, isMandatory: !!pr.is_mandatory
       }))
     });
   } catch (error) {

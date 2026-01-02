@@ -100,7 +100,7 @@ router.get('/person/:personId/projects', authenticateToken, async (req, res) => 
       if (project.skills_data) {
         project.skills_data.split(',').forEach(s => {
           const [skillId, level, mandatory] = s.split(':').map(Number);
-          requiredSkills.push({ skillId, level, mandatory: mandatory === 1 });
+          requiredSkills.push({ skillId, level, mandatory: !!mandatory });
         });
       }
 
@@ -148,7 +148,7 @@ router.get('/skill-gaps', authenticateToken, async (req, res) => {
         if (qualified.count < 3) {
           gaps.push({
             projectId: project.id, projectName: project.name, skillId: skill.skill_id, skillName: skill.skill_name,
-            skillCategory: skill.category, requiredProficiency: skill.required_proficiency, isMandatory: skill.is_mandatory === 1,
+            skillCategory: skill.category, requiredProficiency: skill.required_proficiency, isMandatory: !!skill.is_mandatory,
             qualifiedCount: qualified.count, partiallyQualifiedCount: partiallyQualified.count,
             severity: qualified.count === 0 ? 'critical' : qualified.count < 2 ? 'high' : 'medium'
           });

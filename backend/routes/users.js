@@ -38,7 +38,7 @@ router.get('/', authenticateToken, requireRole('admin'), async (req, res) => {
       data: users.map(u => ({
         id: u.id, username: u.username, email: u.email, role: u.role,
         firstName: u.first_name, lastName: u.last_name, avatarUrl: u.avatar_url,
-        isActive: u.is_active === 1, lastLogin: u.last_login, createdAt: u.created_at,
+        isActive: !!u.is_active, lastLogin: u.last_login, createdAt: u.created_at,
         roleDescription: ROLE_PERMISSIONS[u.role]?.description || 'Unknown role'
       })),
       pagination: { page: parseInt(page), limit: parseInt(limit), total, totalPages: Math.ceil(total / limit) }
@@ -74,7 +74,7 @@ router.get('/:id', authenticateToken, requireRole('admin'), async (req, res) => 
     res.json({
       id: user.id, username: user.username, email: user.email, role: user.role,
       firstName: user.first_name, lastName: user.last_name, avatarUrl: user.avatar_url,
-      isActive: user.is_active === 1, lastLogin: user.last_login, createdAt: user.created_at,
+      isActive: !!user.is_active, lastLogin: user.last_login, createdAt: user.created_at,
       permissions: ROLE_PERMISSIONS[user.role]?.permissions || [],
       roleDescription: ROLE_PERMISSIONS[user.role]?.description || 'Unknown role'
     });

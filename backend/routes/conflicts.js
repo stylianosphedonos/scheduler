@@ -46,7 +46,7 @@ router.get('/', authenticateToken, async (req, res) => {
         personId: c.person_id, personName: c.person_name,
         projectId: c.project_id, projectName: c.project_name,
         assignmentId: c.assignment_id, description: c.description,
-        suggestedResolution: c.suggested_resolution, isResolved: c.is_resolved === 1,
+        suggestedResolution: c.suggested_resolution, isResolved: !!c.is_resolved,
         resolvedByName: c.resolved_by_name, resolvedAt: c.resolved_at,
         resolutionNotes: c.resolution_notes, createdAt: c.created_at
       })),

@@ -45,7 +45,7 @@ router.get('/', authenticateToken, async (req, res) => {
         id: p.id, name: p.name, code: p.code, client: p.client, description: p.description,
         status: p.status, priority: p.priority, color: p.color, startDate: p.start_date,
         endDate: p.end_date, budgetHours: p.budget_hours, managerId: p.manager_id,
-        managerName: p.manager_name, isBillable: p.is_billable === 1,
+        managerName: p.manager_name, isBillable: !!p.is_billable,
         assignmentCount: p.assignment_count, assignedPeople: p.assigned_people, createdAt: p.created_at
       })),
       pagination: { page: parseInt(page), limit: parseInt(limit), total, totalPages: Math.ceil(total / limit) }
@@ -84,11 +84,11 @@ router.get('/:id', authenticateToken, async (req, res) => {
       description: project.description, status: project.status, priority: project.priority,
       color: project.color, startDate: project.start_date, endDate: project.end_date,
       budgetHours: project.budget_hours, managerId: project.manager_id,
-      managerName: project.manager_name, isBillable: project.is_billable === 1,
+      managerName: project.manager_name, isBillable: !!project.is_billable,
       notes: project.notes, createdAt: project.created_at, updatedAt: project.updated_at,
       skills: skills.map(s => ({
         id: s.id, name: s.name, category: s.category, color: s.color,
-        requiredProficiency: s.required_proficiency, isMandatory: s.is_mandatory === 1, 
+        requiredProficiency: s.required_proficiency, isMandatory: !!s.is_mandatory, 
         peopleNeeded: s.people_needed || 1, hoursNeeded: s.hours_needed
       })),
       statistics: { totalAssignments: stats.total_assignments, uniquePeople: stats.unique_people, totalHours: stats.total_hours || 0, completedCount: stats.completed_count }

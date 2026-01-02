@@ -502,7 +502,7 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
           endHour: slot.end,
           duration: slot.end - slot.start,
           matchScore: match.score,
-          isMandatory: skillReq.is_mandatory === 1,
+          isMandatory: !!skillReq.is_mandatory,
           reason: generateReason(match, skillReq, project)
         });
 

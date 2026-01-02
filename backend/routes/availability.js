@@ -24,7 +24,7 @@ router.get('/', authenticateToken, async (req, res) => {
     res.json({ data: windows.map(w => ({
       id: w.id, personId: w.person_id, personName: w.person_name, personDepartment: w.person_department,
       type: w.type, startDate: w.start_date, endDate: w.end_date, startHour: w.start_hour, endHour: w.end_hour,
-      isRecurring: w.is_recurring === 1, status: w.status, reason: w.reason, createdAt: w.created_at
+      isRecurring: !!w.is_recurring, status: w.status, reason: w.reason, createdAt: w.created_at
     }))});
   } catch (error) {
     console.error('Get availability error:', error);

@@ -41,7 +41,7 @@ router.get('/', authenticateToken, async (req, res) => {
         email: p.email, phone: p.phone, department: p.department, jobTitle: p.job_title,
         avatarUrl: p.avatar_url, maxHoursPerDay: p.max_hours_per_day, maxProjectsPerDay: p.max_projects_per_day,
         hourlyRate: p.hourly_rate, employmentType: p.employment_type, startDate: p.start_date,
-        isActive: p.is_active === 1, skills: p.skills_list ? p.skills_list.split(', ') : [], createdAt: p.created_at
+        isActive: !!p.is_active, skills: p.skills_list ? p.skills_list.split(', ') : [], createdAt: p.created_at
       })),
       pagination: { page: parseInt(page), limit: parseInt(limit), total, totalPages: Math.ceil(total / limit) }
     });
@@ -78,8 +78,8 @@ router.get('/:id', authenticateToken, async (req, res) => {
       email: person.email, phone: person.phone, department: person.department, jobTitle: person.job_title,
       avatarUrl: person.avatar_url, maxHoursPerDay: person.max_hours_per_day, maxProjectsPerDay: person.max_projects_per_day,
       hourlyRate: person.hourly_rate, employmentType: person.employment_type, startDate: person.start_date,
-      isActive: person.is_active === 1, notes: person.notes, createdAt: person.created_at, updatedAt: person.updated_at,
-      skills: skills.map(s => ({ id: s.id, name: s.name, category: s.category, color: s.color, proficiencyLevel: s.proficiency_level, yearsExperience: s.years_experience, certified: s.certified === 1 })),
+      isActive: !!person.is_active, notes: person.notes, createdAt: person.created_at, updatedAt: person.updated_at,
+      skills: skills.map(s => ({ id: s.id, name: s.name, category: s.category, color: s.color, proficiencyLevel: s.proficiency_level, yearsExperience: s.years_experience, certified: !!s.certified })),
       recentAssignments: assignments, availability
     });
   } catch (error) {

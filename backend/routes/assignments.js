@@ -41,7 +41,7 @@ router.get('/', authenticateToken, async (req, res) => {
         projectColor: a.project_color, projectClient: a.project_client, date: a.date,
         startHour: a.start_hour, endHour: a.end_hour, duration: a.end_hour - a.start_hour,
         status: a.status, taskDescription: a.task_description, location: a.location,
-        isRemote: a.is_remote === 1, notes: a.notes, createdAt: a.created_at
+        isRemote: !!a.is_remote, notes: a.notes, createdAt: a.created_at
       })),
       pagination: { page: parseInt(page), limit: parseInt(limit), total, totalPages: Math.ceil(total / limit) }
     });
@@ -85,7 +85,7 @@ router.get('/daily/:date', authenticateToken, async (req, res) => {
       person.assignments.push({
         id: a.id, projectId: a.project_id, projectName: a.project_name, projectCode: a.project_code,
         projectColor: a.project_color, startHour: a.start_hour, endHour: a.end_hour, status: a.status,
-        taskDescription: a.task_description, isRemote: a.is_remote === 1
+        taskDescription: a.task_description, isRemote: !!a.is_remote
       });
       person.totalHours += (a.end_hour - a.start_hour);
       person.projectCount.add(a.project_id);
