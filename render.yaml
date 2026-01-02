@@ -1,0 +1,27 @@
+# Render Blueprint for Resource Scheduler
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: resource-scheduler
+    runtime: node
+    plan: free  # or starter, standard, etc.
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true  # Render auto-generates a secure 32-char secret
+      - key: ALLOWED_ORIGINS
+        sync: false  # Set manually in dashboard
+      - key: DATABASE_PATH
+        value: /var/data/scheduler.db
+    disk:
+      name: scheduler-data
+      mountPath: /var/data
+      sizeGB: 1  # 1GB persistent storage for SQLite
+
