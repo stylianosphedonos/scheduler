@@ -18,6 +18,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "pdfkit": "^0.15.0",
+    "pg": "^8.16.3",
     "sql.js": "^1.10.0",
     "uuid": "^9.0.1"
   },
@@ -33,5 +34,3 @@
   "author": "Playtech OPS",
   "license": "MIT"
 }
-
-
