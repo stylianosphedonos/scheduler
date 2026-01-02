@@ -391,6 +391,21 @@ function getSQLiteSchema() {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
     );
+
+    CREATE TABLE IF NOT EXISTS export_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      type TEXT NOT NULL,
+      filename TEXT NOT NULL,
+      parameters TEXT,
+      date_range_start TEXT,
+      date_range_end TEXT,
+      record_count INTEGER DEFAULT 0,
+      file_size INTEGER,
+      status TEXT DEFAULT 'completed',
+      exported_by INTEGER,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (exported_by) REFERENCES users(id) ON DELETE SET NULL
+    );
   `;
 }
 
@@ -576,6 +591,21 @@ function getPostgresSchema() {
       new_values JSONB,
       ip_address VARCHAR(45),
       user_agent TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Export Logs table
+    CREATE TABLE IF NOT EXISTS export_logs (
+      id SERIAL PRIMARY KEY,
+      type VARCHAR(20) NOT NULL,
+      filename VARCHAR(255) NOT NULL,
+      parameters JSONB,
+      date_range_start DATE,
+      date_range_end DATE,
+      record_count INTEGER DEFAULT 0,
+      file_size INTEGER,
+      status VARCHAR(20) DEFAULT 'completed',
+      exported_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
