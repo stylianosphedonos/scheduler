@@ -229,11 +229,17 @@ async function initializeDatabase() {
     )
   `);
 
-  // Add people_needed column if it doesn't exist (migration for existing DBs)
+  // Migration: Add people_needed column if it doesn't exist (for existing DBs)
+  // Check if column exists first to avoid error
   try {
-    db.exec(`ALTER TABLE project_skills ADD COLUMN people_needed INTEGER DEFAULT 1`);
+    const columns = db.prepare("PRAGMA table_info(project_skills)").all();
+    const hasColumn = columns.some(col => col.name === 'people_needed');
+    if (!hasColumn) {
+      db.exec(`ALTER TABLE project_skills ADD COLUMN people_needed INTEGER DEFAULT 1`);
+      console.log('Migration: Added people_needed column to project_skills');
+    }
   } catch (e) {
-    // Column already exists
+    // Ignore migration errors
   }
 
   // Assignments table (Core scheduling unit - hourly slots)
