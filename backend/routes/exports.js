@@ -136,7 +136,8 @@ router.get('/logs', authenticateToken, requireRole('admin'), async (req, res) =>
     const { page = 1, limit = 50 } = req.query;
     const offset = (page - 1) * limit;
 
-    const total = await db.prepare('SELECT COUNT(*) as count FROM export_logs').get().count;
+    const totalResult = await db.prepare('SELECT COUNT(*) as count FROM export_logs').get();
+    const total = totalResult?.count || 0;
     const logs = await db.prepare(`SELECT e.*, u.username as exported_by_name FROM export_logs e LEFT JOIN users u ON e.exported_by = u.id ORDER BY e.created_at DESC LIMIT ? OFFSET ?`).all(parseInt(limit), offset);
 
     res.json({

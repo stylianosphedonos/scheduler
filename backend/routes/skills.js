@@ -27,7 +27,8 @@ router.get('/', authenticateToken, async (req, res) => {
       params.push(searchPattern, searchPattern, searchPattern);
     }
 
-    const total = await db.prepare(`SELECT COUNT(*) as count FROM skills WHERE ${whereClause}`).get(...params).count;
+    const totalResult = await db.prepare(`SELECT COUNT(*) as count FROM skills WHERE ${whereClause}`).get(...params);
+    const total = totalResult?.count || 0;
     const skills = await db.prepare(`
       SELECT s.*, 
         (SELECT COUNT(*) FROM person_skills WHERE skill_id = s.id) as person_count,

@@ -91,8 +91,10 @@ router.get('/efficiency', authenticateToken, async (req, res) => {
     const { startDate, endDate } = req.query;
     if (!startDate || !endDate) return res.status(400).json({ error: 'Start and end dates are required' });
 
-    const totalAssignments = await db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date >= ? AND date <= ?').get(startDate, endDate).count;
-    const totalConflicts = await db.prepare('SELECT COUNT(*) as count FROM schedule_conflicts WHERE date >= ? AND date <= ?').get(startDate, endDate).count;
+    const totalAssignmentsResult = await db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date >= ? AND date <= ?').get(startDate, endDate);
+    const totalAssignments = totalAssignmentsResult?.count || 0;
+    const totalConflictsResult = await db.prepare('SELECT COUNT(*) as count FROM schedule_conflicts WHERE date >= ? AND date <= ?').get(startDate, endDate);
+    const totalConflicts = totalConflictsResult?.count || 0;
 
     res.json({
       period: { startDate, endDate },

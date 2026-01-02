@@ -25,7 +25,8 @@ router.get('/', authenticateToken, async (req, res) => {
     if (projectId) { whereClause += ' AND a.project_id = ?'; params.push(projectId); }
     if (status) { whereClause += ' AND a.status = ?'; params.push(status); }
 
-    const total = await db.prepare(`SELECT COUNT(*) as count FROM assignments a WHERE ${whereClause}`).get(...params).count;
+    const totalResult = await db.prepare(`SELECT COUNT(*) as count FROM assignments a WHERE ${whereClause}`).get(...params);
+    const total = totalResult?.count || 0;
     const assignments = await db.prepare(`
       SELECT a.*, pe.first_name || ' ' || pe.last_name as person_name, pe.department as person_department,
         pr.name as project_name, pr.code as project_code, pr.color as project_color, pr.client as project_client

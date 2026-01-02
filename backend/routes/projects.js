@@ -28,7 +28,8 @@ router.get('/', authenticateToken, async (req, res) => {
       params.push(searchPattern, searchPattern, searchPattern);
     }
 
-    const total = await db.prepare(`SELECT COUNT(*) as count FROM projects WHERE ${whereClause}`).get(...params).count;
+    const totalResult = await db.prepare(`SELECT COUNT(*) as count FROM projects WHERE ${whereClause}`).get(...params);
+    const total = totalResult?.count || 0;
     const projects = await db.prepare(`
       SELECT p.*, m.first_name || ' ' || m.last_name as manager_name,
         (SELECT COUNT(*) FROM assignments WHERE project_id = p.id) as assignment_count,

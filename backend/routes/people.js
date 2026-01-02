@@ -28,9 +28,10 @@ router.get('/', authenticateToken, async (req, res) => {
     }
     if (hasSkill) { whereClause += ' AND id IN (SELECT person_id FROM person_skills WHERE skill_id = ?)'; params.push(hasSkill); }
 
-    const total = await db.prepare(`SELECT COUNT(*) as count FROM people WHERE ${whereClause}`).get(...params).count;
+    const totalResult = await db.prepare(`SELECT COUNT(*) as count FROM people WHERE ${whereClause}`).get(...params);
+    const total = totalResult?.count || 0;
     const people = await db.prepare(`
-      SELECT p.*, (SELECT GROUP_CONCAT(s.name, ', ') FROM skills s JOIN person_skills ps ON s.id = ps.skill_id WHERE ps.person_id = p.id) as skills_list
+      SELECT p.*, (SELECT STRING_AGG(s.name, ', ') FROM skills s JOIN person_skills ps ON s.id = ps.skill_id WHERE ps.person_id = p.id) as skills_list
       FROM people p WHERE ${whereClause} ORDER BY p.last_name, p.first_name LIMIT ? OFFSET ?
     `).all(...params, parseInt(limit), offset);
 

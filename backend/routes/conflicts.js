@@ -26,7 +26,8 @@ router.get('/', authenticateToken, async (req, res) => {
     if (endDate) { whereClause += ' AND date <= ?'; params.push(endDate); }
     if (personId) { whereClause += ' AND person_id = ?'; params.push(personId); }
 
-    const total = await db.prepare(`SELECT COUNT(*) as count FROM schedule_conflicts WHERE ${whereClause}`).get(...params).count;
+    const totalResult = await db.prepare(`SELECT COUNT(*) as count FROM schedule_conflicts WHERE ${whereClause}`).get(...params);
+    const total = totalResult?.count || 0;
     const conflicts = await db.prepare(`
       SELECT c.*, p.first_name || ' ' || p.last_name as person_name, pr.name as project_name,
         u.username as resolved_by_name

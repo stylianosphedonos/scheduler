@@ -27,7 +27,8 @@ router.get('/', authenticateToken, requireRole('admin'), async (req, res) => {
       params.push(searchPattern, searchPattern, searchPattern, searchPattern);
     }
 
-    const total = await db.prepare(`SELECT COUNT(*) as count FROM users WHERE ${whereClause}`).get(...params).count;
+    const totalResult = await db.prepare(`SELECT COUNT(*) as count FROM users WHERE ${whereClause}`).get(...params);
+    const total = totalResult?.count || 0;
     const users = await db.prepare(`
       SELECT id, username, email, role, first_name, last_name, avatar_url, is_active, last_login, created_at
       FROM users WHERE ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?
