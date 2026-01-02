@@ -90,7 +90,7 @@ function authenticateToken(req, res, next) {
     return res.status(401).json({ error: 'Token has been invalidated. Please log in again.' });
   }
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+  jwt.verify(token, JWT_SECRET, async (err, user) => {
     if (err) {
       if (err.name === 'TokenExpiredError') {
         return res.status(401).json({ error: 'Token has expired. Please log in again.' });
@@ -98,21 +98,26 @@ function authenticateToken(req, res, next) {
       return res.status(403).json({ error: 'Invalid token' });
     }
 
-    const db = req.app.locals.db;
-    const dbUser = db.prepare('SELECT id, username, email, role, is_active FROM users WHERE id = ?').get(user.id);
-    
-    if (!dbUser) {
-      return res.status(403).json({ error: 'User not found' });
-    }
-    
-    if (!dbUser.is_active) {
-      return res.status(403).json({ error: 'User account is inactive' });
-    }
+    try {
+      const db = req.app.locals.db;
+      const dbUser = await db.prepare('SELECT id, username, email, role, is_active FROM users WHERE id = ?').get(user.id);
+      
+      if (!dbUser) {
+        return res.status(403).json({ error: 'User not found' });
+      }
+      
+      if (!dbUser.is_active) {
+        return res.status(403).json({ error: 'User account is inactive' });
+      }
 
-    // Attach user and permissions
-    req.user = dbUser;
-    req.userPermissions = ROLE_PERMISSIONS[dbUser.role]?.permissions || [];
-    next();
+      // Attach user and permissions
+      req.user = dbUser;
+      req.userPermissions = ROLE_PERMISSIONS[dbUser.role]?.permissions || [];
+      next();
+    } catch (error) {
+      console.error('Auth middleware error:', error);
+      return res.status(500).json({ error: 'Authentication error' });
+    }
   });
 }
 
@@ -179,13 +184,17 @@ function optionalAuth(req, res, next) {
     return next();
   }
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+  jwt.verify(token, JWT_SECRET, async (err, user) => {
     if (!err) {
-      const db = req.app.locals.db;
-      const dbUser = db.prepare('SELECT id, username, email, role, is_active FROM users WHERE id = ?').get(user.id);
-      if (dbUser && dbUser.is_active) {
-        req.user = dbUser;
-        req.userPermissions = ROLE_PERMISSIONS[dbUser.role]?.permissions || [];
+      try {
+        const db = req.app.locals.db;
+        const dbUser = await db.prepare('SELECT id, username, email, role, is_active FROM users WHERE id = ?').get(user.id);
+        if (dbUser && dbUser.is_active) {
+          req.user = dbUser;
+          req.userPermissions = ROLE_PERMISSIONS[dbUser.role]?.permissions || [];
+        }
+      } catch (error) {
+        console.error('Optional auth error:', error);
       }
     }
     next();

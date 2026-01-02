@@ -198,10 +198,10 @@ async function startServer() {
     const { authenticateToken, requireRole } = require('./backend/middleware/auth');
     
     // Public branding settings - no auth required (for login page)
-    app.get('/api/settings/public', (req, res) => {
+    app.get('/api/settings/public', async (req, res) => {
       try {
         const brandingKeys = ['company_name', 'logo_url', 'logo_icon', 'primary_color', 'footer_text'];
-        const settings = db.prepare(
+        const settings = await db.prepare(
           `SELECT key, value FROM settings WHERE key IN (${brandingKeys.map(() => '?').join(',')})`
         ).all(...brandingKeys);
         const settingsObj = {};
@@ -216,9 +216,9 @@ async function startServer() {
     });
     
     // Protected settings - requires authentication
-    app.get('/api/settings', authenticateToken, (req, res) => {
+    app.get('/api/settings', authenticateToken, async (req, res) => {
       try {
-        const settings = db.prepare('SELECT key, value, type FROM settings').all();
+        const settings = await db.prepare('SELECT key, value, type FROM settings').all();
         const settingsObj = {};
         for (const s of settings) {
           if (s.type === 'number') {
@@ -237,7 +237,7 @@ async function startServer() {
     });
 
     // Only admin can update settings
-    app.put('/api/settings', authenticateToken, requireRole('admin'), (req, res) => {
+    app.put('/api/settings', authenticateToken, requireRole('admin'), async (req, res) => {
       try {
         const { key, value } = req.body;
         
@@ -252,7 +252,7 @@ async function startServer() {
           return res.status(400).json({ error: 'Invalid setting key' });
         }
         
-        db.prepare('UPDATE settings SET value = ?, updated_at = CURRENT_TIMESTAMP WHERE key = ?').run(String(value), key);
+        await db.prepare('UPDATE settings SET value = ?, updated_at = CURRENT_TIMESTAMP WHERE key = ?').run(String(value), key);
         res.json({ message: 'Setting updated' });
       } catch (error) {
         console.error('Update setting error:', error);
@@ -261,9 +261,9 @@ async function startServer() {
     });
 
     // Health check
-    app.get('/api/health', (req, res) => {
+    app.get('/api/health', async (req, res) => {
       try {
-        db.prepare('SELECT 1').get();
+        await db.prepare('SELECT 1').get();
         res.json({ 
           status: 'healthy',
           timestamp: new Date().toISOString(),

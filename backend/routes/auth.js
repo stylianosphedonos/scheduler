@@ -28,7 +28,7 @@ const router = express.Router();
  */
 
 // Login with account lockout protection
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const db = req.app.locals.db;
     let { username, password } = req.body;
@@ -58,7 +58,7 @@ router.post('/login', (req, res) => {
       });
     }
 
-    const user = db.prepare('SELECT * FROM users WHERE username = ? OR email = ?').get(username, username);
+    const user = await db.prepare('SELECT * FROM users WHERE username = ? OR email = ?').get(username, username);
 
     // Use constant-time comparison to prevent timing attacks
     if (!user) {
@@ -117,7 +117,7 @@ router.post('/login', (req, res) => {
     clearLoginAttempts(username);
 
     // Update last login
-    db.prepare('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?').run(user.id);
+    await db.prepare('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?').run(user.id);
 
     const token = generateToken(user);
     const roleInfo = ROLE_PERMISSIONS[user.role];
@@ -182,7 +182,7 @@ router.post('/logout', authenticateToken, (req, res) => {
 });
 
 // Register (creates viewer by default)
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     const db = req.app.locals.db;
     let { username, email, password, firstName, lastName } = req.body;
@@ -213,7 +213,7 @@ router.post('/register', (req, res) => {
       return res.status(400).json({ error: passwordCheck.message });
     }
 
-    const existing = db.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(username, email);
+    const existing = await db.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(username, email);
     if (existing) {
       return res.status(400).json({ error: 'Username or email already exists' });
     }
@@ -222,7 +222,7 @@ router.post('/register', (req, res) => {
     const passwordHash = bcrypt.hashSync(password, 12);
     const role = 'viewer'; // New registrations are viewers by default
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO users (username, email, password_hash, role, first_name, last_name)
       VALUES (?, ?, ?, ?, ?, ?)
     `).run(username, email, passwordHash, role, firstName || null, lastName || null);
@@ -260,10 +260,10 @@ router.post('/register', (req, res) => {
 });
 
 // Get current user profile
-router.get('/me', authenticateToken, (req, res) => {
+router.get('/me', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const user = db.prepare(`
+    const user = await db.prepare(`
       SELECT id, username, email, role, first_name, last_name, avatar_url, last_login, created_at
       FROM users WHERE id = ?
     `).get(req.user.id);
@@ -295,7 +295,7 @@ router.get('/me', authenticateToken, (req, res) => {
 });
 
 // Update own profile
-router.put('/me', authenticateToken, (req, res) => {
+router.put('/me', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     let { email, firstName, lastName, avatarUrl } = req.body;
@@ -326,7 +326,7 @@ router.put('/me', authenticateToken, (req, res) => {
     updates.push('updated_at = CURRENT_TIMESTAMP');
     values.push(req.user.id);
 
-    db.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    await db.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`).run(...values);
 
     createAuditLog(db, {
       userId: req.user.id,
@@ -346,7 +346,7 @@ router.put('/me', authenticateToken, (req, res) => {
 });
 
 // Change own password
-router.post('/change-password', authenticateToken, (req, res) => {
+router.post('/change-password', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { currentPassword, newPassword } = req.body;
@@ -361,7 +361,7 @@ router.post('/change-password', authenticateToken, (req, res) => {
       return res.status(400).json({ error: passwordCheck.message });
     }
 
-    const user = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
+    const user = await db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
 
     if (!bcrypt.compareSync(currentPassword, user.password_hash)) {
       return res.status(400).json({ error: 'Current password is incorrect' });
@@ -373,7 +373,7 @@ router.post('/change-password', authenticateToken, (req, res) => {
     }
 
     const newHash = bcrypt.hashSync(newPassword, 12);
-    db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+    await db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
       .run(newHash, req.user.id);
 
     // Invalidate current token to force re-login
@@ -403,7 +403,7 @@ router.post('/change-password', authenticateToken, (req, res) => {
 });
 
 // Request password reset
-router.post('/forgot-password', (req, res) => {
+router.post('/forgot-password', async (req, res) => {
   try {
     const db = req.app.locals.db;
     let { email } = req.body;
@@ -417,7 +417,7 @@ router.post('/forgot-password', (req, res) => {
     // Always return success to prevent email enumeration
     const successMessage = 'If an account exists with this email, a password reset link has been sent.';
 
-    const user = db.prepare('SELECT id, email FROM users WHERE email = ? AND is_active = 1').get(email);
+    const user = await db.prepare('SELECT id, email FROM users WHERE email = ? AND is_active = 1').get(email);
 
     if (!user) {
       // Return same message to prevent enumeration
@@ -451,7 +451,7 @@ router.post('/forgot-password', (req, res) => {
 });
 
 // Reset password with token
-router.post('/reset-password', (req, res) => {
+router.post('/reset-password', async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { token, newPassword } = req.body;
@@ -473,7 +473,7 @@ router.post('/reset-password', (req, res) => {
     }
 
     const newHash = bcrypt.hashSync(newPassword, 12);
-    db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+    await db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
       .run(newHash, tokenValidation.userId);
 
     // Invalidate the reset token
