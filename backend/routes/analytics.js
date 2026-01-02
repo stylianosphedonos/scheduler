@@ -9,14 +9,23 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
     const today = new Date().toISOString().split('T')[0];
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
+    // Fetch counts separately to handle async properly
+    const totalPeopleResult = await db.prepare('SELECT COUNT(*) as count FROM people WHERE is_active = 1').get();
+    const totalProjectsResult = await db.prepare("SELECT COUNT(*) as count FROM projects WHERE status = 'active'").get();
+    const totalSkillsResult = await db.prepare('SELECT COUNT(*) as count FROM skills WHERE is_active = 1').get();
+    const todayAssignmentsResult = await db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date = ?').get(today);
+    const weekAssignmentsResult = await db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date >= ?').get(weekAgo);
+    const unresolvedConflictsResult = await db.prepare('SELECT COUNT(*) as count FROM schedule_conflicts WHERE is_resolved = 0').get();
+    const pendingAvailabilityResult = await db.prepare("SELECT COUNT(*) as count FROM availability_windows WHERE status = 'pending'").get();
+
     const metrics = {
-      totalPeople: await db.prepare('SELECT COUNT(*) as count FROM people WHERE is_active = 1').get().count,
-      totalProjects: await db.prepare("SELECT COUNT(*) as count FROM projects WHERE status = 'active'").get().count,
-      totalSkills: await db.prepare('SELECT COUNT(*) as count FROM skills WHERE is_active = 1').get().count,
-      todayAssignments: await db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date = ?').get(today).count,
-      weekAssignments: await db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date >= ?').get(weekAgo).count,
-      unresolvedConflicts: await db.prepare('SELECT COUNT(*) as count FROM schedule_conflicts WHERE is_resolved = 0').get().count,
-      pendingAvailability: await db.prepare("SELECT COUNT(*) as count FROM availability_windows WHERE status = 'pending'").get().count
+      totalPeople: totalPeopleResult?.count || 0,
+      totalProjects: totalProjectsResult?.count || 0,
+      totalSkills: totalSkillsResult?.count || 0,
+      todayAssignments: todayAssignmentsResult?.count || 0,
+      weekAssignments: weekAssignmentsResult?.count || 0,
+      unresolvedConflicts: unresolvedConflictsResult?.count || 0,
+      pendingAvailability: pendingAvailabilityResult?.count || 0
     };
 
     const todayStats = await db.prepare(`SELECT COUNT(DISTINCT person_id) as people_scheduled, SUM(end_hour - start_hour) as total_hours, COUNT(DISTINCT project_id) as projects_active FROM assignments WHERE date = ? AND status NOT IN ('cancelled')`).get(today);
@@ -28,7 +37,12 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
 
     res.json({
       metrics,
-      today: { ...todayStats, utilizationRate: metrics.totalPeople > 0 ? Math.round((todayStats.people_scheduled / metrics.totalPeople) * 100) : 0 },
+      today: { 
+        people_scheduled: todayStats?.people_scheduled || 0,
+        total_hours: todayStats?.total_hours || 0,
+        projects_active: todayStats?.projects_active || 0,
+        utilizationRate: metrics.totalPeople > 0 ? Math.round(((todayStats?.people_scheduled || 0) / metrics.totalPeople) * 100) : 0 
+      },
       conflictsByType,
       weeklyHours,
       topUtilized: topUtilized.map(p => ({ id: p.id, name: `${p.first_name} ${p.last_name}`, department: p.department, totalHours: p.total_hours, assignmentCount: p.assignment_count })),
