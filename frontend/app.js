@@ -749,11 +749,16 @@ async function checkAuth() {
 function showLogin() {
   document.getElementById('login-screen').classList.remove('hidden');
   document.getElementById('app').classList.add('hidden');
+  // Hide mobile navigation on login screen
+  document.getElementById('mobile-bottom-nav')?.classList.add('hidden');
+  document.getElementById('mobile-more-menu')?.classList.remove('active');
 }
 
 function showApp() {
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
+  // Show mobile navigation after login
+  document.getElementById('mobile-bottom-nav')?.classList.remove('hidden');
   
   // Update user info
   if (state.user) {
