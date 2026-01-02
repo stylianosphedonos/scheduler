@@ -84,7 +84,7 @@ router.post('/people', authenticateToken, requireRole('admin', 'scheduler'), upl
         
         if (existing) {
           // Update existing
-          db.prepare(`
+          await db.prepare(`
             UPDATE people SET 
               employee_id = COALESCE(?, employee_id),
               first_name = ?,
@@ -114,7 +114,7 @@ router.post('/people', authenticateToken, requireRole('admin', 'scheduler'), upl
           results.updated++;
         } else {
           // Create new
-          db.prepare(`
+          await db.prepare(`
             INSERT INTO people (employee_id, first_name, last_name, email, phone, department, job_title, max_hours_per_day, employment_type, start_date, notes)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `).run(
@@ -184,7 +184,7 @@ router.post('/projects', authenticateToken, requireRole('admin', 'scheduler'), u
         const priority = validPriorities.includes(row.priority) ? row.priority : 'medium';
         
         if (existing) {
-          db.prepare(`
+          await db.prepare(`
             UPDATE projects SET 
               name = ?,
               client = COALESCE(?, client),
@@ -213,7 +213,7 @@ router.post('/projects', authenticateToken, requireRole('admin', 'scheduler'), u
           );
           results.updated++;
         } else {
-          db.prepare(`
+          await db.prepare(`
             INSERT INTO projects (name, code, client, description, status, priority, start_date, end_date, budget_hours, is_billable, notes)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `).run(
@@ -276,7 +276,7 @@ router.post('/skills', authenticateToken, requireRole('admin', 'scheduler'), upl
         }
         
         if (existing) {
-          db.prepare(`
+          await db.prepare(`
             UPDATE skills SET 
               category = COALESCE(?, category),
               description = COALESCE(?, description),
@@ -290,7 +290,7 @@ router.post('/skills', authenticateToken, requireRole('admin', 'scheduler'), upl
           );
           results.updated++;
         } else {
-          db.prepare(`
+          await db.prepare(`
             INSERT INTO skills (name, category, description, color)
             VALUES (?, ?, ?, ?)
           `).run(

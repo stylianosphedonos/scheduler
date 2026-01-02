@@ -43,7 +43,7 @@ router.post('/', authenticateToken, requireRole('admin', 'manager', 'scheduler')
 
     const autoApprove = ['admin', 'manager'].includes(req.user.role);
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO availability_windows (person_id, type, start_date, end_date, start_hour, end_hour, is_recurring, recurrence_pattern, status, reason, approved_by)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(personId, type || 'time-off', startDate, endDate, startHour || 0, endHour || 24, isRecurring ? 1 : 0, recurrencePattern || null, autoApprove ? 'approved' : 'pending', reason || null, autoApprove ? req.user.id : null);
@@ -75,8 +75,8 @@ router.get('/person/:personId/check', authenticateToken, async (req, res) => {
     const { personId } = req.params;
     if (!startDate || !endDate) return res.status(400).json({ error: 'Start and end dates are required' });
 
-    const unavailable = db.prepare(`SELECT * FROM availability_windows WHERE person_id = ? AND end_date >= ? AND start_date <= ? AND status = 'approved' AND type NOT IN ('preferred')`).all(personId, startDate, endDate);
-    const assignments = db.prepare(`SELECT date, SUM(end_hour - start_hour) as hours FROM assignments WHERE person_id = ? AND date >= ? AND date <= ? AND status NOT IN ('cancelled') GROUP BY date`).all(personId, startDate, endDate);
+    const unavailable = await db.prepare(`SELECT * FROM availability_windows WHERE person_id = ? AND end_date >= ? AND start_date <= ? AND status = 'approved' AND type NOT IN ('preferred')`).all(personId, startDate, endDate);
+    const assignments = await db.prepare(`SELECT date, SUM(end_hour - start_hour) as hours FROM assignments WHERE person_id = ? AND date >= ? AND date <= ? AND status NOT IN ('cancelled') GROUP BY date`).all(personId, startDate, endDate);
     const person = await db.prepare('SELECT max_hours_per_day FROM people WHERE id = ?').get(personId);
 
     const availability = {};

@@ -48,7 +48,7 @@ router.get('/excel', authenticateToken, requireRole('admin', 'scheduler'), async
       { header: 'Total Hours', key: 'hours', width: 12 }, { header: 'Assignments', key: 'assignments', width: 12 }
     ];
 
-    const personSummary = db.prepare(`SELECT p.first_name || ' ' || p.last_name as person_name, p.department, SUM(a.end_hour - a.start_hour) as total_hours, COUNT(*) as assignment_count FROM people p JOIN assignments a ON p.id = a.person_id WHERE a.date >= ? AND a.date <= ? AND a.status != 'cancelled' GROUP BY p.id ORDER BY total_hours DESC`).all(startDate, endDate);
+    const personSummary = await db.prepare(`SELECT p.first_name || ' ' || p.last_name as person_name, p.department, SUM(a.end_hour - a.start_hour) as total_hours, COUNT(*) as assignment_count FROM people p JOIN assignments a ON p.id = a.person_id WHERE a.date >= ? AND a.date <= ? AND a.status != 'cancelled' GROUP BY p.id ORDER BY total_hours DESC`).all(startDate, endDate);
 
     for (const p of personSummary) {
       personSheet.addRow({ person: p.person_name, department: p.department, hours: p.total_hours, assignments: p.assignment_count });
@@ -72,7 +72,7 @@ router.get('/excel', authenticateToken, requireRole('admin', 'scheduler'), async
 
     // Log export
     const filename = `schedule_${startDate}_${endDate}.xlsx`;
-    db.prepare(`INSERT INTO export_logs (type, filename, parameters, date_range_start, date_range_end, record_count, exported_by) VALUES (?, ?, ?, ?, ?, ?, ?)`).run('excel', filename, JSON.stringify(req.query), startDate, endDate, assignments.length, req.user.id);
+    await db.prepare(`INSERT INTO export_logs (type, filename, parameters, date_range_start, date_range_end, record_count, exported_by) VALUES (?, ?, ?, ?, ?, ?, ?)`).run('excel', filename, JSON.stringify(req.query), startDate, endDate, assignments.length, req.user.id);
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -110,7 +110,7 @@ router.get('/pdf', authenticateToken, requireRole('admin', 'scheduler'), async (
 
     doc.addPage();
 
-    const summary = db.prepare(`SELECT COUNT(*) as total_assignments, COUNT(DISTINCT person_id) as people_scheduled, COUNT(DISTINCT project_id) as projects_active, SUM(end_hour - start_hour) as total_hours FROM assignments WHERE date >= ? AND date <= ? AND status != 'cancelled'`).get(startDate, endDate);
+    const summary = await db.prepare(`SELECT COUNT(*) as total_assignments, COUNT(DISTINCT person_id) as people_scheduled, COUNT(DISTINCT project_id) as projects_active, SUM(end_hour - start_hour) as total_hours FROM assignments WHERE date >= ? AND date <= ? AND status != 'cancelled'`).get(startDate, endDate);
 
     doc.fontSize(18).fillColor('#1f2937').text('Executive Summary', { underline: true });
     doc.moveDown();
@@ -120,7 +120,7 @@ router.get('/pdf', authenticateToken, requireRole('admin', 'scheduler'), async (
     doc.text(`Active Projects: ${summary.projects_active}`);
     doc.text(`Total Hours: ${summary.total_hours || 0}`);
 
-    db.prepare(`INSERT INTO export_logs (type, filename, parameters, date_range_start, date_range_end, record_count, exported_by) VALUES (?, ?, ?, ?, ?, ?, ?)`).run('pdf', filename, JSON.stringify(req.query), startDate, endDate, summary.total_assignments, req.user.id);
+    await db.prepare(`INSERT INTO export_logs (type, filename, parameters, date_range_start, date_range_end, record_count, exported_by) VALUES (?, ?, ?, ?, ?, ?, ?)`).run('pdf', filename, JSON.stringify(req.query), startDate, endDate, summary.total_assignments, req.user.id);
 
     doc.end();
   } catch (error) {
@@ -136,7 +136,7 @@ router.get('/logs', authenticateToken, requireRole('admin'), async (req, res) =>
     const { page = 1, limit = 50 } = req.query;
     const offset = (page - 1) * limit;
 
-    const total = db.prepare('SELECT COUNT(*) as count FROM export_logs').get().count;
+    const total = await db.prepare('SELECT COUNT(*) as count FROM export_logs').get().count;
     const logs = await db.prepare(`SELECT e.*, u.username as exported_by_name FROM export_logs e LEFT JOIN users u ON e.exported_by = u.id ORDER BY e.created_at DESC LIMIT ? OFFSET ?`).all(parseInt(limit), offset);
 
     res.json({

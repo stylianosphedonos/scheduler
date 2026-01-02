@@ -25,7 +25,7 @@ router.get('/', authenticateToken, async (req, res) => {
     if (projectId) { whereClause += ' AND a.project_id = ?'; params.push(projectId); }
     if (status) { whereClause += ' AND a.status = ?'; params.push(status); }
 
-    const total = db.prepare(`SELECT COUNT(*) as count FROM assignments a WHERE ${whereClause}`).get(...params).count;
+    const total = await db.prepare(`SELECT COUNT(*) as count FROM assignments a WHERE ${whereClause}`).get(...params).count;
     const assignments = await db.prepare(`
       SELECT a.*, pe.first_name || ' ' || pe.last_name as person_name, pe.department as person_department,
         pr.name as project_name, pr.code as project_code, pr.color as project_color, pr.client as project_client
@@ -173,7 +173,7 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
     // Check for overlapping assignments
-    const overlaps = db.prepare(`
+    const overlaps = await db.prepare(`
       SELECT * FROM assignments WHERE person_id = ? AND date = ?
       AND ((start_hour < ? AND end_hour > ?) OR (start_hour < ? AND end_hour > ?) OR (start_hour >= ? AND end_hour <= ?))
       AND status != 'cancelled'
@@ -183,7 +183,7 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
       return res.status(400).json({ error: 'Time slot overlaps with existing assignment', conflictingAssignments: overlaps });
     }
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO assignments (person_id, project_id, date, start_hour, end_hour, status, task_description, location, is_remote, notes, created_by)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(personId, projectId, date, startHour, endHour, status || 'scheduled', taskDescription || null, location || null, isRemote ? 1 : 0, notes || null, req.user.id);
@@ -223,7 +223,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     updates.push('updated_at = CURRENT_TIMESTAMP');
     values.push(req.params.id);
 
-    db.prepare(`UPDATE assignments SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    await db.prepare(`UPDATE assignments SET ${updates.join(', ')} WHERE id = ?`).run(...values);
     res.json({ message: 'Assignment updated successfully' });
   } catch (error) {
     console.error('Update assignment error:', error);
@@ -266,7 +266,7 @@ router.post('/bulk', authenticateToken, requireRole('admin', 'scheduler'), async
           continue;
         }
 
-        db.prepare(`
+        await db.prepare(`
           INSERT INTO assignments (person_id, project_id, date, start_hour, end_hour, status, task_description, created_by)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `).run(a.personId, a.projectId, a.date, a.startHour, a.endHour, a.status || 'scheduled', a.taskDescription || null, req.user.id);

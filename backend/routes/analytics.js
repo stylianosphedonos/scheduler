@@ -10,21 +10,21 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
     const metrics = {
-      totalPeople: db.prepare('SELECT COUNT(*) as count FROM people WHERE is_active = 1').get().count,
-      totalProjects: db.prepare("SELECT COUNT(*) as count FROM projects WHERE status = 'active'").get().count,
-      totalSkills: db.prepare('SELECT COUNT(*) as count FROM skills WHERE is_active = 1').get().count,
-      todayAssignments: db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date = ?').get(today).count,
-      weekAssignments: db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date >= ?').get(weekAgo).count,
-      unresolvedConflicts: db.prepare('SELECT COUNT(*) as count FROM schedule_conflicts WHERE is_resolved = 0').get().count,
-      pendingAvailability: db.prepare("SELECT COUNT(*) as count FROM availability_windows WHERE status = 'pending'").get().count
+      totalPeople: await db.prepare('SELECT COUNT(*) as count FROM people WHERE is_active = 1').get().count,
+      totalProjects: await db.prepare("SELECT COUNT(*) as count FROM projects WHERE status = 'active'").get().count,
+      totalSkills: await db.prepare('SELECT COUNT(*) as count FROM skills WHERE is_active = 1').get().count,
+      todayAssignments: await db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date = ?').get(today).count,
+      weekAssignments: await db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date >= ?').get(weekAgo).count,
+      unresolvedConflicts: await db.prepare('SELECT COUNT(*) as count FROM schedule_conflicts WHERE is_resolved = 0').get().count,
+      pendingAvailability: await db.prepare("SELECT COUNT(*) as count FROM availability_windows WHERE status = 'pending'").get().count
     };
 
-    const todayStats = db.prepare(`SELECT COUNT(DISTINCT person_id) as people_scheduled, SUM(end_hour - start_hour) as total_hours, COUNT(DISTINCT project_id) as projects_active FROM assignments WHERE date = ? AND status NOT IN ('cancelled')`).get(today);
-    const conflictsByType = db.prepare('SELECT type, COUNT(*) as count FROM schedule_conflicts WHERE is_resolved = 0 GROUP BY type').all();
-    const weeklyHours = db.prepare(`SELECT date, SUM(end_hour - start_hour) as hours, COUNT(*) as assignments FROM assignments WHERE date >= ? AND date <= ? GROUP BY date ORDER BY date`).all(weekAgo, today);
-    const topUtilized = db.prepare(`SELECT p.id, p.first_name, p.last_name, p.department, SUM(a.end_hour - a.start_hour) as total_hours, COUNT(*) as assignment_count FROM people p JOIN assignments a ON p.id = a.person_id WHERE a.date >= ? AND a.status NOT IN ('cancelled') GROUP BY p.id ORDER BY total_hours DESC LIMIT 10`).all(weekAgo);
-    const projectWorkload = db.prepare(`SELECT pr.id, pr.name, pr.color, SUM(a.end_hour - a.start_hour) as total_hours, COUNT(DISTINCT a.person_id) as people_assigned FROM projects pr JOIN assignments a ON pr.id = a.project_id WHERE a.date >= ? AND a.status NOT IN ('cancelled') GROUP BY pr.id ORDER BY total_hours DESC LIMIT 10`).all(weekAgo);
-    const skillDemand = db.prepare(`SELECT s.id, s.name, s.color, COUNT(ps.project_id) as projects_requiring, (SELECT COUNT(*) FROM person_skills WHERE skill_id = s.id) as people_with_skill FROM skills s JOIN project_skills ps ON s.id = ps.skill_id JOIN projects pr ON ps.project_id = pr.id WHERE pr.status = 'active' GROUP BY s.id ORDER BY projects_requiring DESC LIMIT 10`).all();
+    const todayStats = await db.prepare(`SELECT COUNT(DISTINCT person_id) as people_scheduled, SUM(end_hour - start_hour) as total_hours, COUNT(DISTINCT project_id) as projects_active FROM assignments WHERE date = ? AND status NOT IN ('cancelled')`).get(today);
+    const conflictsByType = await db.prepare('SELECT type, COUNT(*) as count FROM schedule_conflicts WHERE is_resolved = 0 GROUP BY type').all();
+    const weeklyHours = await db.prepare(`SELECT date, SUM(end_hour - start_hour) as hours, COUNT(*) as assignments FROM assignments WHERE date >= ? AND date <= ? GROUP BY date ORDER BY date`).all(weekAgo, today);
+    const topUtilized = await db.prepare(`SELECT p.id, p.first_name, p.last_name, p.department, SUM(a.end_hour - a.start_hour) as total_hours, COUNT(*) as assignment_count FROM people p JOIN assignments a ON p.id = a.person_id WHERE a.date >= ? AND a.status NOT IN ('cancelled') GROUP BY p.id ORDER BY total_hours DESC LIMIT 10`).all(weekAgo);
+    const projectWorkload = await db.prepare(`SELECT pr.id, pr.name, pr.color, SUM(a.end_hour - a.start_hour) as total_hours, COUNT(DISTINCT a.person_id) as people_assigned FROM projects pr JOIN assignments a ON pr.id = a.project_id WHERE a.date >= ? AND a.status NOT IN ('cancelled') GROUP BY pr.id ORDER BY total_hours DESC LIMIT 10`).all(weekAgo);
+    const skillDemand = await db.prepare(`SELECT s.id, s.name, s.color, COUNT(ps.project_id) as projects_requiring, (SELECT COUNT(*) FROM person_skills WHERE skill_id = s.id) as people_with_skill FROM skills s JOIN project_skills ps ON s.id = ps.skill_id JOIN projects pr ON ps.project_id = pr.id WHERE pr.status = 'active' GROUP BY s.id ORDER BY projects_requiring DESC LIMIT 10`).all();
 
     res.json({
       metrics,
@@ -56,10 +56,10 @@ router.get('/utilization', authenticateToken, async (req, res) => {
     if (department) { whereClause += ' AND p.department = ?'; params.push(department); }
 
     if (groupBy === 'person') {
-      const data = db.prepare(`SELECT p.id, p.first_name, p.last_name, p.department, p.max_hours_per_day, SUM(a.end_hour - a.start_hour) as actual_hours, COUNT(DISTINCT a.date) as days_worked, COUNT(DISTINCT a.project_id) as projects_worked FROM people p LEFT JOIN assignments a ON p.id = a.person_id AND ${whereClause} WHERE p.is_active = 1 ${department ? 'AND p.department = ?' : ''} GROUP BY p.id ORDER BY actual_hours DESC`).all(...params, ...(department ? [department] : []));
+      const data = await db.prepare(`SELECT p.id, p.first_name, p.last_name, p.department, p.max_hours_per_day, SUM(a.end_hour - a.start_hour) as actual_hours, COUNT(DISTINCT a.date) as days_worked, COUNT(DISTINCT a.project_id) as projects_worked FROM people p LEFT JOIN assignments a ON p.id = a.person_id AND ${whereClause} WHERE p.is_active = 1 ${department ? 'AND p.department = ?' : ''} GROUP BY p.id ORDER BY actual_hours DESC`).all(...params, ...(department ? [department] : []));
       res.json({ startDate, endDate, workingDays, groupBy, data: data.map(p => ({ id: p.id, name: `${p.first_name} ${p.last_name}`, department: p.department, maxHours: p.max_hours_per_day * workingDays, actualHours: p.actual_hours || 0, utilizationRate: (p.max_hours_per_day * workingDays) > 0 ? Math.round(((p.actual_hours || 0) / (p.max_hours_per_day * workingDays)) * 100) : 0, daysWorked: p.days_worked || 0, projectsWorked: p.projects_worked || 0 })) });
     } else if (groupBy === 'project') {
-      const data = db.prepare(`SELECT pr.id, pr.name, pr.code, pr.client, pr.budget_hours, SUM(a.end_hour - a.start_hour) as actual_hours, COUNT(DISTINCT a.person_id) as people_assigned, COUNT(DISTINCT a.date) as active_days FROM projects pr LEFT JOIN assignments a ON pr.id = a.project_id AND ${whereClause} GROUP BY pr.id ORDER BY actual_hours DESC`).all(...params);
+      const data = await db.prepare(`SELECT pr.id, pr.name, pr.code, pr.client, pr.budget_hours, SUM(a.end_hour - a.start_hour) as actual_hours, COUNT(DISTINCT a.person_id) as people_assigned, COUNT(DISTINCT a.date) as active_days FROM projects pr LEFT JOIN assignments a ON pr.id = a.project_id AND ${whereClause} GROUP BY pr.id ORDER BY actual_hours DESC`).all(...params);
       res.json({ startDate, endDate, workingDays, groupBy, data: data.map(p => ({ id: p.id, name: p.name, code: p.code, client: p.client, budgetHours: p.budget_hours, actualHours: p.actual_hours || 0, budgetUsed: p.budget_hours ? Math.round(((p.actual_hours || 0) / p.budget_hours) * 100) : null, peopleAssigned: p.people_assigned || 0, activeDays: p.active_days || 0 })) });
     } else {
       res.status(400).json({ error: 'Invalid groupBy parameter' });
@@ -76,8 +76,8 @@ router.get('/efficiency', authenticateToken, async (req, res) => {
     const { startDate, endDate } = req.query;
     if (!startDate || !endDate) return res.status(400).json({ error: 'Start and end dates are required' });
 
-    const totalAssignments = db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date >= ? AND date <= ?').get(startDate, endDate).count;
-    const totalConflicts = db.prepare('SELECT COUNT(*) as count FROM schedule_conflicts WHERE date >= ? AND date <= ?').get(startDate, endDate).count;
+    const totalAssignments = await db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date >= ? AND date <= ?').get(startDate, endDate).count;
+    const totalConflicts = await db.prepare('SELECT COUNT(*) as count FROM schedule_conflicts WHERE date >= ? AND date <= ?').get(startDate, endDate).count;
 
     res.json({
       period: { startDate, endDate },
@@ -101,7 +101,7 @@ router.get('/project-summary', authenticateToken, async (req, res) => {
     const db = req.app.locals.db;
 
     // Get all active projects with their statistics
-    const projects = db.prepare(`
+    const projects = await db.prepare(`
       SELECT p.id, p.name, p.code, p.client, p.status, p.priority, p.color,
         p.budget_hours, p.start_date, p.end_date,
         COALESCE(SUM(a.end_hour - a.start_hour), 0) as total_hours,
@@ -114,8 +114,8 @@ router.get('/project-summary', authenticateToken, async (req, res) => {
     `).all();
 
     // For each project, get assigned people with their hours
-    const projectsWithPeople = projects.map(project => {
-      const people = db.prepare(`
+    const projectsWithPeople = await Promise.all(projects.map(async project => {
+      const people = await db.prepare(`
         SELECT 
           pe.id, pe.first_name, pe.last_name, pe.department, pe.job_title,
           SUM(a.end_hour - a.start_hour) as hours_worked,
@@ -171,7 +171,7 @@ router.get('/project-summary', authenticateToken, async (req, res) => {
         })),
         peopleCount: people.length
       };
-    });
+    }));
 
     // Calculate summary statistics
     const totalProjects = projectsWithPeople.length;

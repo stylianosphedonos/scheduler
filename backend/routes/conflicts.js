@@ -26,7 +26,7 @@ router.get('/', authenticateToken, async (req, res) => {
     if (endDate) { whereClause += ' AND date <= ?'; params.push(endDate); }
     if (personId) { whereClause += ' AND person_id = ?'; params.push(personId); }
 
-    const total = db.prepare(`SELECT COUNT(*) as count FROM schedule_conflicts WHERE ${whereClause}`).get(...params).count;
+    const total = await db.prepare(`SELECT COUNT(*) as count FROM schedule_conflicts WHERE ${whereClause}`).get(...params).count;
     const conflicts = await db.prepare(`
       SELECT c.*, p.first_name || ' ' || p.last_name as person_name, pr.name as project_name,
         u.username as resolved_by_name
@@ -70,7 +70,7 @@ router.post('/detect', authenticateToken, requireRole('admin', 'scheduler'), asy
     const newConflicts = [];
 
     // Get all assignments in the date range
-    const assignments = db.prepare(`
+    const assignments = await db.prepare(`
       SELECT a.*, p.first_name || ' ' || p.last_name as person_name,
         p.max_hours_per_day, p.max_projects_per_day, pr.name as project_name
       FROM assignments a
@@ -150,7 +150,7 @@ router.post('/detect', authenticateToken, requireRole('admin', 'scheduler'), asy
     }
 
     // Check availability conflicts
-    const availabilityConflicts = db.prepare(`
+    const availabilityConflicts = await db.prepare(`
       SELECT a.*, p.first_name || ' ' || p.last_name as person_name, pr.name as project_name,
         aw.type as unavailable_type, aw.reason as unavailable_reason
       FROM assignments a
@@ -179,14 +179,14 @@ router.post('/detect', authenticateToken, requireRole('admin', 'scheduler'), asy
     let insertedCount = 0;
     for (const conflict of newConflicts) {
       // Check for existing similar conflict
-      const existing = db.prepare(`
+      const existing = await db.prepare(`
         SELECT id FROM schedule_conflicts 
         WHERE type = ? AND date = ? AND person_id = ? AND is_resolved = 0
         AND (assignment_id = ? OR (assignment_id IS NULL AND ? IS NULL))
       `).get(conflict.type, conflict.date, conflict.personId, conflict.assignmentId || null, conflict.assignmentId || null);
 
       if (!existing) {
-        db.prepare(`
+        await db.prepare(`
           INSERT INTO schedule_conflicts (type, severity, date, person_id, assignment_id, project_id, description, suggested_resolution)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `).run(
@@ -275,7 +275,7 @@ router.get('/stats/summary', authenticateToken, async (req, res) => {
     if (startDate) { dateFilter += ' AND date >= ?'; params.push(startDate); }
     if (endDate) { dateFilter += ' AND date <= ?'; params.push(endDate); }
 
-    const stats = db.prepare(`
+    const stats = await db.prepare(`
       SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN is_resolved = 0 THEN 1 ELSE 0 END) as unresolved,
@@ -286,7 +286,7 @@ router.get('/stats/summary', authenticateToken, async (req, res) => {
       FROM schedule_conflicts WHERE 1=1 ${dateFilter}
     `).get(...params);
 
-    const byType = db.prepare(`
+    const byType = await db.prepare(`
       SELECT type, COUNT(*) as count
       FROM schedule_conflicts WHERE is_resolved = 0 ${dateFilter}
       GROUP BY type ORDER BY count DESC

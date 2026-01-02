@@ -93,7 +93,7 @@ router.post('/apply', authenticateToken, requireRole('admin', 'scheduler'), asyn
     for (const suggestion of suggestions) {
       try {
         // Check for conflicts
-        const conflicts = db.prepare(`
+        const conflicts = await db.prepare(`
           SELECT id FROM assignments 
           WHERE person_id = ? AND date = ? 
           AND ((start_hour < ? AND end_hour > ?) OR (start_hour < ? AND end_hour > ?) OR (start_hour >= ? AND end_hour <= ?))
@@ -115,7 +115,7 @@ router.post('/apply', authenticateToken, requireRole('admin', 'scheduler'), asyn
         }
 
         // Create the assignment
-        db.prepare(`
+        await db.prepare(`
           INSERT INTO assignments (person_id, project_id, date, start_hour, end_hour, status, task_description, created_by)
           VALUES (?, ?, ?, ?, ?, 'scheduled', ?, ?)
         `).run(
@@ -249,7 +249,7 @@ router.post('/reschedule', authenticateToken, requireRole('admin', 'scheduler'),
     }
 
     // Check new person is available
-    const conflicts = db.prepare(`
+    const conflicts = await db.prepare(`
       SELECT id FROM assignments 
       WHERE person_id = ? AND date = ? 
       AND ((start_hour < ? AND end_hour > ?) OR (start_hour < ? AND end_hour > ?) OR (start_hour >= ? AND end_hour <= ?))
@@ -303,7 +303,7 @@ router.get('/analytics', authenticateToken, async (req, res) => {
     const end = endDate || start;
 
     // Skill coverage analysis
-    const skillCoverage = db.prepare(`
+    const skillCoverage = await db.prepare(`
       SELECT s.id, s.name, s.color,
         ps.people_needed as needed,
         (SELECT COUNT(DISTINCT per.id) 
@@ -323,7 +323,7 @@ router.get('/analytics', authenticateToken, async (req, res) => {
     `).all(start, end);
 
     // Utilization by person
-    const utilization = db.prepare(`
+    const utilization = await db.prepare(`
       SELECT p.id, p.first_name || ' ' || p.last_name as name, p.department,
         p.max_hours_per_day,
         COALESCE(SUM(a.end_hour - a.start_hour), 0) as hours_scheduled,
@@ -337,7 +337,7 @@ router.get('/analytics', authenticateToken, async (req, res) => {
     `).all(start, end);
 
     // Unmet skill requirements
-    const unmetRequirements = db.prepare(`
+    const unmetRequirements = await db.prepare(`
       SELECT p.id as project_id, p.name as project_name, p.priority,
         s.id as skill_id, s.name as skill_name, s.color,
         ps.people_needed,
@@ -389,7 +389,7 @@ function generateDailySuggestions(db, date, projects, prioritizeBy) {
   const coverage = {};
 
   // Get all available people for this date
-  const availablePeople = db.prepare(`
+  const availablePeople = await db.prepare(`
     SELECT p.id, p.first_name, p.last_name, p.department, p.max_hours_per_day, p.max_projects_per_day,
       (SELECT SUM(end_hour - start_hour) FROM assignments 
        WHERE person_id = p.id AND date = ? AND status != 'cancelled') as hours_scheduled,

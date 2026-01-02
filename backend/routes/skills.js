@@ -27,8 +27,8 @@ router.get('/', authenticateToken, async (req, res) => {
       params.push(searchPattern, searchPattern, searchPattern);
     }
 
-    const total = db.prepare(`SELECT COUNT(*) as count FROM skills WHERE ${whereClause}`).get(...params).count;
-    const skills = db.prepare(`
+    const total = await db.prepare(`SELECT COUNT(*) as count FROM skills WHERE ${whereClause}`).get(...params).count;
+    const skills = await db.prepare(`
       SELECT s.*, 
         (SELECT COUNT(*) FROM person_skills WHERE skill_id = s.id) as person_count,
         (SELECT COUNT(*) FROM project_skills WHERE skill_id = s.id) as project_count
@@ -97,7 +97,7 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
     const existing = await db.prepare('SELECT id FROM skills WHERE name = ?').get(name);
     if (existing) return res.status(400).json({ error: 'Skill name already exists' });
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO skills (name, category, description, color)
       VALUES (?, ?, ?, ?)
     `).run(name, category || null, description || null, color || '#6366f1');
@@ -132,7 +132,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     updates.push('updated_at = CURRENT_TIMESTAMP');
     values.push(req.params.id);
 
-    db.prepare(`UPDATE skills SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    await db.prepare(`UPDATE skills SET ${updates.join(', ')} WHERE id = ?`).run(...values);
     res.json({ message: 'Skill updated successfully' });
   } catch (error) {
     console.error('Update skill error:', error);
@@ -147,8 +147,8 @@ router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) 
     const skill = await db.prepare('SELECT * FROM skills WHERE id = ?').get(req.params.id);
     if (!skill) return res.status(404).json({ error: 'Skill not found' });
 
-    const usedByPeople = db.prepare('SELECT COUNT(*) as count FROM person_skills WHERE skill_id = ?').get(req.params.id);
-    const usedByProjects = db.prepare('SELECT COUNT(*) as count FROM project_skills WHERE skill_id = ?').get(req.params.id);
+    const usedByPeople = await db.prepare('SELECT COUNT(*) as count FROM person_skills WHERE skill_id = ?').get(req.params.id);
+    const usedByProjects = await db.prepare('SELECT COUNT(*) as count FROM project_skills WHERE skill_id = ?').get(req.params.id);
 
     if (usedByPeople.count > 0 || usedByProjects.count > 0) {
       return res.status(400).json({

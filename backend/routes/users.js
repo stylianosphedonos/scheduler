@@ -27,7 +27,7 @@ router.get('/', authenticateToken, requireRole('admin'), async (req, res) => {
       params.push(searchPattern, searchPattern, searchPattern, searchPattern);
     }
 
-    const total = db.prepare(`SELECT COUNT(*) as count FROM users WHERE ${whereClause}`).get(...params).count;
+    const total = await db.prepare(`SELECT COUNT(*) as count FROM users WHERE ${whereClause}`).get(...params).count;
     const users = await db.prepare(`
       SELECT id, username, email, role, first_name, last_name, avatar_url, is_active, last_login, created_at
       FROM users WHERE ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?
@@ -115,13 +115,13 @@ router.post('/', authenticateToken, requireRole('admin'), async (req, res) => {
     const passwordHash = bcrypt.hashSync(password, 10);
     const userRole = validRoles.includes(role) ? role : 'viewer';
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO users (username, email, password_hash, role, first_name, last_name)
       VALUES (?, ?, ?, ?, ?, ?)
     `).run(username, email, passwordHash, userRole, firstName || null, lastName || null);
 
     // Audit log
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO audit_log (user_id, action, entity_type, entity_id, new_values)
       VALUES (?, ?, ?, ?, ?)
     `).run(req.user.id, 'CREATE_USER', 'user', result.lastInsertRowid, JSON.stringify({ username, email, role: userRole }));
@@ -179,10 +179,10 @@ router.put('/:id', authenticateToken, requireRole('admin'), async (req, res) => 
     updates.push('updated_at = CURRENT_TIMESTAMP');
     values.push(req.params.id);
 
-    db.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    await db.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`).run(...values);
 
     // Audit log
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO audit_log (user_id, action, entity_type, entity_id, old_values, new_values)
       VALUES (?, ?, ?, ?, ?, ?)
     `).run(req.user.id, 'UPDATE_USER', 'user', req.params.id, JSON.stringify({ role: user.role, is_active: user.is_active }), JSON.stringify(req.body));
@@ -209,7 +209,7 @@ router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) 
     await db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
 
     // Audit log
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO audit_log (user_id, action, entity_type, entity_id, old_values)
       VALUES (?, ?, ?, ?, ?)
     `).run(req.user.id, 'DELETE_USER', 'user', req.params.id, JSON.stringify({ username: user.username, email: user.email, role: user.role }));
@@ -235,11 +235,11 @@ router.post('/:id/reset-password', authenticateToken, requireRole('admin'), asyn
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const passwordHash = bcrypt.hashSync(newPassword, 10);
-    db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+    await db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
       .run(passwordHash, req.params.id);
 
     // Audit log
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO audit_log (user_id, action, entity_type, entity_id, new_values)
       VALUES (?, ?, ?, ?, ?)
     `).run(req.user.id, 'RESET_PASSWORD', 'user', req.params.id, JSON.stringify({ username: user.username }));

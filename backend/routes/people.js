@@ -28,8 +28,8 @@ router.get('/', authenticateToken, async (req, res) => {
     }
     if (hasSkill) { whereClause += ' AND id IN (SELECT person_id FROM person_skills WHERE skill_id = ?)'; params.push(hasSkill); }
 
-    const total = db.prepare(`SELECT COUNT(*) as count FROM people WHERE ${whereClause}`).get(...params).count;
-    const people = db.prepare(`
+    const total = await db.prepare(`SELECT COUNT(*) as count FROM people WHERE ${whereClause}`).get(...params).count;
+    const people = await db.prepare(`
       SELECT p.*, (SELECT GROUP_CONCAT(s.name, ', ') FROM skills s JOIN person_skills ps ON s.id = ps.skill_id WHERE ps.person_id = p.id) as skills_list
       FROM people p WHERE ${whereClause} ORDER BY p.last_name, p.first_name LIMIT ? OFFSET ?
     `).all(...params, parseInt(limit), offset);
@@ -63,14 +63,14 @@ router.get('/:id', authenticateToken, async (req, res) => {
       ORDER BY ps.proficiency_level DESC, s.name
     `).all(req.params.id);
 
-    const assignments = db.prepare(`
+    const assignments = await db.prepare(`
       SELECT a.*, p.name as project_name, p.color as project_color
       FROM assignments a JOIN projects p ON a.project_id = p.id
       WHERE a.person_id = ? AND a.date >= date('now', '-7 days')
       ORDER BY a.date DESC, a.start_hour LIMIT 20
     `).all(req.params.id);
 
-    const availability = db.prepare(`SELECT * FROM availability_windows WHERE person_id = ? AND end_date >= date('now') ORDER BY start_date`).all(req.params.id);
+    const availability = await db.prepare(`SELECT * FROM availability_windows WHERE person_id = ? AND end_date >= date('now') ORDER BY start_date`).all(req.params.id);
 
     res.json({
       id: person.id, employeeId: person.employee_id, firstName: person.first_name, lastName: person.last_name,
@@ -100,7 +100,7 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
     const existing = await db.prepare('SELECT id FROM people WHERE email = ?').get(email);
     if (existing) return res.status(400).json({ error: 'Email already exists' });
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO people (employee_id, first_name, last_name, email, phone, department, job_title, max_hours_per_day, max_projects_per_day, hourly_rate, employment_type, start_date, notes)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(employeeId || null, firstName, lastName, email, phone || null, department || null, jobTitle || null, maxHoursPerDay || 8, maxProjectsPerDay || 3, hourlyRate || null, employmentType || 'full-time', startDate || null, notes || null);
@@ -110,7 +110,7 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
     if (skills && Array.isArray(skills)) {
       for (const skill of skills) {
         if (skill.skillId) {
-          db.prepare(`INSERT INTO person_skills (person_id, skill_id, proficiency_level, years_experience, certified) VALUES (?, ?, ?, ?, ?)`)
+          await db.prepare(`INSERT INTO person_skills (person_id, skill_id, proficiency_level, years_experience, certified) VALUES (?, ?, ?, ?, ?)`)
             .run(personId, skill.skillId, skill.proficiencyLevel || 3, skill.yearsExperience || null, skill.certified ? 1 : 0);
         }
       }
@@ -155,7 +155,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     updates.push('updated_at = CURRENT_TIMESTAMP');
     values.push(req.params.id);
 
-    db.prepare(`UPDATE people SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    await db.prepare(`UPDATE people SET ${updates.join(', ')} WHERE id = ?`).run(...values);
     res.json({ message: 'Person updated successfully' });
   } catch (error) {
     console.error('Update person error:', error);
@@ -170,7 +170,7 @@ router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) 
     const person = await db.prepare('SELECT * FROM people WHERE id = ?').get(req.params.id);
     if (!person) return res.status(404).json({ error: 'Person not found' });
 
-    const activeAssignments = db.prepare(`SELECT COUNT(*) as count FROM assignments WHERE person_id = ? AND date >= date('now') AND status NOT IN ('completed', 'cancelled')`).get(req.params.id);
+    const activeAssignments = await db.prepare(`SELECT COUNT(*) as count FROM assignments WHERE person_id = ? AND date >= date('now') AND status NOT IN ('completed', 'cancelled')`).get(req.params.id);
     if (activeAssignments.count > 0) {
       return res.status(400).json({ error: 'Cannot delete person with active future assignments', assignmentCount: activeAssignments.count });
     }
@@ -197,7 +197,7 @@ router.put('/:id/skills', authenticateToken, requireRole('admin', 'scheduler'), 
     if (skills && Array.isArray(skills)) {
       for (const skill of skills) {
         if (skill.skillId) {
-          db.prepare(`INSERT INTO person_skills (person_id, skill_id, proficiency_level, years_experience, certified) VALUES (?, ?, ?, ?, ?)`)
+          await db.prepare(`INSERT INTO person_skills (person_id, skill_id, proficiency_level, years_experience, certified) VALUES (?, ?, ?, ?, ?)`)
             .run(req.params.id, skill.skillId, skill.proficiencyLevel || 3, skill.yearsExperience || null, skill.certified ? 1 : 0);
         }
       }
@@ -249,7 +249,7 @@ router.post('/bulk-import', authenticateToken, requireRole('admin'), async (req,
           continue;
         }
 
-        db.prepare(`INSERT INTO people (employee_id, first_name, last_name, email, phone, department, job_title, employment_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+        await db.prepare(`INSERT INTO people (employee_id, first_name, last_name, email, phone, department, job_title, employment_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
           .run(person.employeeId || null, person.firstName, person.lastName, person.email, person.phone || null, person.department || null, person.jobTitle || null, person.employmentType || 'full-time');
         results.created++;
       } catch (err) {

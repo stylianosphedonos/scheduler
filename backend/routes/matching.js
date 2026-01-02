@@ -13,7 +13,7 @@ router.get('/project/:projectId/candidates', authenticateToken, async (req, res)
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
     const requiredSkills = await db.prepare('SELECT skill_id, required_proficiency, is_mandatory FROM project_skills WHERE project_id = ?').all(projectId);
-    const people = db.prepare(`SELECT p.*, GROUP_CONCAT(ps.skill_id || ':' || ps.proficiency_level, ',') as skills_data FROM people p LEFT JOIN person_skills ps ON p.id = ps.person_id WHERE p.is_active = 1 GROUP BY p.id`).all();
+    const people = await db.prepare(`SELECT p.*, GROUP_CONCAT(ps.skill_id || ':' || ps.proficiency_level, ',') as skills_data FROM people p LEFT JOIN person_skills ps ON p.id = ps.person_id WHERE p.is_active = 1 GROUP BY p.id`).all();
 
     const candidates = [];
 
@@ -51,8 +51,8 @@ router.get('/project/:projectId/candidates', authenticateToken, async (req, res)
 
       let availability = null;
       if (date) {
-        const bookedHours = db.prepare('SELECT COALESCE(SUM(end_hour - start_hour), 0) as hours FROM assignments WHERE person_id = ? AND date = ? AND status NOT IN ("cancelled")').get(person.id, date).hours;
-        const unavailable = db.prepare(`SELECT COUNT(*) as count FROM availability_windows WHERE person_id = ? AND start_date <= ? AND end_date >= ? AND status = 'approved' AND type NOT IN ('preferred')`).get(person.id, date, date).count > 0;
+        const bookedHours = await db.prepare('SELECT COALESCE(SUM(end_hour - start_hour), 0) as hours FROM assignments WHERE person_id = ? AND date = ? AND status NOT IN ("cancelled")').get(person.id, date).hours;
+        const unavailable = await db.prepare(`SELECT COUNT(*) as count FROM availability_windows WHERE person_id = ? AND start_date <= ? AND end_date >= ? AND status = 'approved' AND type NOT IN ('preferred')`).get(person.id, date, date).count > 0;
         availability = { date, bookedHours, remainingHours: person.max_hours_per_day - bookedHours, isAvailable: !unavailable && (person.max_hours_per_day - bookedHours) >= minHours };
       }
 
@@ -140,8 +140,8 @@ router.get('/skill-gaps', authenticateToken, async (req, res) => {
       const requiredSkills = await db.prepare('SELECT ps.*, s.name as skill_name, s.category FROM project_skills ps JOIN skills s ON ps.skill_id = s.id WHERE ps.project_id = ?').all(project.id);
 
       for (const skill of requiredSkills) {
-        const qualified = db.prepare('SELECT COUNT(*) as count FROM person_skills WHERE skill_id = ? AND proficiency_level >= ? AND person_id IN (SELECT id FROM people WHERE is_active = 1)').get(skill.skill_id, skill.required_proficiency);
-        const partiallyQualified = db.prepare('SELECT COUNT(*) as count FROM person_skills WHERE skill_id = ? AND proficiency_level < ? AND proficiency_level > 0 AND person_id IN (SELECT id FROM people WHERE is_active = 1)').get(skill.skill_id, skill.required_proficiency);
+        const qualified = await db.prepare('SELECT COUNT(*) as count FROM person_skills WHERE skill_id = ? AND proficiency_level >= ? AND person_id IN (SELECT id FROM people WHERE is_active = 1)').get(skill.skill_id, skill.required_proficiency);
+        const partiallyQualified = await db.prepare('SELECT COUNT(*) as count FROM person_skills WHERE skill_id = ? AND proficiency_level < ? AND proficiency_level > 0 AND person_id IN (SELECT id FROM people WHERE is_active = 1)').get(skill.skill_id, skill.required_proficiency);
 
         if (qualified.count < 3) {
           gaps.push({

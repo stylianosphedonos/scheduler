@@ -28,8 +28,8 @@ router.get('/', authenticateToken, async (req, res) => {
       params.push(searchPattern, searchPattern, searchPattern);
     }
 
-    const total = db.prepare(`SELECT COUNT(*) as count FROM projects WHERE ${whereClause}`).get(...params).count;
-    const projects = db.prepare(`
+    const total = await db.prepare(`SELECT COUNT(*) as count FROM projects WHERE ${whereClause}`).get(...params).count;
+    const projects = await db.prepare(`
       SELECT p.*, m.first_name || ' ' || m.last_name as manager_name,
         (SELECT COUNT(*) FROM assignments WHERE project_id = p.id) as assignment_count,
         (SELECT COUNT(DISTINCT person_id) FROM assignments WHERE project_id = p.id) as assigned_people
@@ -72,7 +72,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
       ORDER BY ps.is_mandatory DESC, s.name
     `).all(req.params.id);
 
-    const stats = db.prepare(`
+    const stats = await db.prepare(`
       SELECT COUNT(*) as total_assignments, COUNT(DISTINCT person_id) as unique_people,
         SUM(end_hour - start_hour) as total_hours, COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count
       FROM assignments WHERE project_id = ?
@@ -111,7 +111,7 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
       if (existing) return res.status(400).json({ error: 'Project code already exists' });
     }
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO projects (name, code, client, description, status, priority, color, start_date, end_date, budget_hours, manager_id, is_billable, notes)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(name, code || null, client || null, description || null, status || 'planning', priority || 'medium', color || '#8b5cf6', startDate || null, endDate || null, budgetHours || null, managerId || null, isBillable !== false ? 1 : 0, notes || null);
@@ -121,7 +121,7 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
     if (skills && Array.isArray(skills)) {
       for (const skill of skills) {
         if (skill.skillId) {
-          db.prepare(`INSERT INTO project_skills (project_id, skill_id, required_proficiency, is_mandatory, people_needed, hours_needed) VALUES (?, ?, ?, ?, ?, ?)`)
+          await db.prepare(`INSERT INTO project_skills (project_id, skill_id, required_proficiency, is_mandatory, people_needed, hours_needed) VALUES (?, ?, ?, ?, ?, ?)`)
             .run(projectId, skill.skillId, skill.requiredProficiency || 3, skill.isMandatory !== false ? 1 : 0, skill.peopleNeeded || 1, skill.hoursNeeded || null);
         }
       }
@@ -165,7 +165,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     updates.push('updated_at = CURRENT_TIMESTAMP');
     values.push(req.params.id);
 
-    db.prepare(`UPDATE projects SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    await db.prepare(`UPDATE projects SET ${updates.join(', ')} WHERE id = ?`).run(...values);
     res.json({ message: 'Project updated successfully' });
   } catch (error) {
     console.error('Update project error:', error);
@@ -180,7 +180,7 @@ router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) 
     const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
-    const activeAssignments = db.prepare(`
+    const activeAssignments = await db.prepare(`
       SELECT COUNT(*) as count FROM assignments WHERE project_id = ? AND date >= date('now') AND status NOT IN ('completed', 'cancelled')
     `).get(req.params.id);
 
@@ -210,7 +210,7 @@ router.put('/:id/skills', authenticateToken, requireRole('admin', 'scheduler'), 
     if (skills && Array.isArray(skills)) {
       for (const skill of skills) {
         if (skill.skillId) {
-          db.prepare(`INSERT INTO project_skills (project_id, skill_id, required_proficiency, is_mandatory, people_needed, hours_needed) VALUES (?, ?, ?, ?, ?, ?)`)
+          await db.prepare(`INSERT INTO project_skills (project_id, skill_id, required_proficiency, is_mandatory, people_needed, hours_needed) VALUES (?, ?, ?, ?, ?, ?)`)
             .run(req.params.id, skill.skillId, skill.requiredProficiency || 3, skill.isMandatory !== false ? 1 : 0, skill.peopleNeeded || 1, skill.hoursNeeded || null);
         }
       }
