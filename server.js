@@ -177,6 +177,7 @@ async function startServer() {
     const analyticsRoutes = require('./backend/routes/analytics');
     const exportsRoutes = require('./backend/routes/exports');
     const aiSchedulerRoutes = require('./backend/routes/ai-scheduler');
+    const importRoutes = require('./backend/routes/import');
 
     // API Routes
     app.use('/api/auth', authRoutes);
@@ -191,6 +192,7 @@ async function startServer() {
     app.use('/api/analytics', analyticsRoutes);
     app.use('/api/exports', exportsRoutes);
     app.use('/api/ai-scheduler', aiSchedulerRoutes);
+    app.use('/api/import', importRoutes);
 
     // Settings endpoints - with authentication
     const { authenticateToken, requireRole } = require('./backend/middleware/auth');
