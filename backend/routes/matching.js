@@ -87,7 +87,11 @@ router.get('/person/:personId/projects', authenticateToken, async (req, res) => 
     const personSkills = await db.prepare('SELECT skill_id, proficiency_level FROM person_skills WHERE person_id = ?').all(personId);
     const personSkillMap = new Map(personSkills.map(s => [s.skill_id, s.proficiency_level]));
 
-    const projects = db.prepare(`SELECT p.*, GROUP_CONCAT(ps.skill_id || ':' || ps.required_proficiency || ':' || ps.is_mandatory, ',') as skills_data FROM projects p LEFT JOIN project_skills ps ON p.id = ps.project_id WHERE status = ? GROUP BY p.id`).all(status);
+    const projects = await db.prepare(`SELECT p.*, GROUP_CONCAT(ps.skill_id || ':' || ps.required_proficiency || ':' || ps.is_mandatory, ',') as skills_data FROM projects p LEFT JOIN project_skills ps ON p.id = ps.project_id WHERE status = ? GROUP BY p.id`).all(status);
+
+    // Pre-fetch all skills for efficiency
+    const allSkills = await db.prepare('SELECT id, name FROM skills').all();
+    const skillNameMap = new Map(allSkills.map(s => [s.id, s.name]));
 
     const matches = projects.map(project => {
       const requiredSkills = [];
@@ -103,9 +107,9 @@ router.get('/person/:personId/projects', authenticateToken, async (req, res) => 
 
       for (const req of requiredSkills) {
         const personLevel = personSkillMap.get(req.skillId) || 0;
-        const skill = await db.prepare('SELECT name FROM skills WHERE id = ?').get(req.skillId);
-        if (personLevel >= req.level) { matchScore++; matchedSkills.push(skill?.name); }
-        else { missingSkills.push({ name: skill?.name, required: req.level, current: personLevel }); if (req.mandatory) mandatoryMet = false; }
+        const skillName = skillNameMap.get(req.skillId);
+        if (personLevel >= req.level) { matchScore++; matchedSkills.push(skillName); }
+        else { missingSkills.push({ name: skillName, required: req.level, current: personLevel }); if (req.mandatory) mandatoryMet = false; }
       }
 
       const normalizedScore = requiredSkills.length > 0 ? (matchScore / requiredSkills.length) * 100 : 100;
