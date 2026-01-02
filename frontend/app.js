@@ -323,9 +323,18 @@ const defaultBranding = {
 
 let branding = { ...defaultBranding };
 
-async function loadBranding() {
+async function loadBranding(usePublic = false) {
   try {
-    const settings = await api('/settings');
+    let settings;
+    if (usePublic) {
+      // Use public endpoint (no auth required) - for login page
+      const response = await fetch(`${API_BASE}/settings/public`);
+      if (!response.ok) throw new Error('Failed to load public settings');
+      settings = await response.json();
+    } else {
+      // Use authenticated endpoint
+      settings = await api('/settings');
+    }
     branding = {
       companyName: settings.company_name || defaultBranding.companyName,
       logoUrl: settings.logo_url || '',
@@ -3395,6 +3404,9 @@ async function showAddAssignmentModal() {
 
 // ===== Event Listeners =====
 document.addEventListener('DOMContentLoaded', () => {
+  // Load public branding immediately (for login page)
+  loadBranding(true);
+  
   // Login form
   document.getElementById('login-form').onsubmit = async (e) => {
     e.preventDefault();

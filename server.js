@@ -194,9 +194,28 @@ async function startServer() {
     app.use('/api/ai-scheduler', aiSchedulerRoutes);
     app.use('/api/import', importRoutes);
 
-    // Settings endpoints - with authentication
+    // Settings endpoints
     const { authenticateToken, requireRole } = require('./backend/middleware/auth');
     
+    // Public branding settings - no auth required (for login page)
+    app.get('/api/settings/public', (req, res) => {
+      try {
+        const brandingKeys = ['company_name', 'logo_url', 'logo_icon', 'primary_color', 'footer_text'];
+        const settings = db.prepare(
+          `SELECT key, value FROM settings WHERE key IN (${brandingKeys.map(() => '?').join(',')})`
+        ).all(...brandingKeys);
+        const settingsObj = {};
+        for (const s of settings) {
+          settingsObj[s.key] = s.value;
+        }
+        res.json(settingsObj);
+      } catch (error) {
+        console.error('Get public settings error:', error);
+        res.status(500).json({ error: 'Failed to get settings' });
+      }
+    });
+    
+    // Protected settings - requires authentication
     app.get('/api/settings', authenticateToken, (req, res) => {
       try {
         const settings = db.prepare('SELECT key, value, type FROM settings').all();
