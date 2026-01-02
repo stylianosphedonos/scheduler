@@ -7,7 +7,13 @@
     "start": "node server.js",
     "dev": "node server.js",
     "init-db": "node scripts/init-database.js",
-    "seed": "node scripts/seed-data.js"
+    "seed": "node scripts/seed-data.js",
+    "test": "jest --config tests/jest.config.js",
+    "test:watch": "jest --config tests/jest.config.js --watch",
+    "test:coverage": "jest --config tests/jest.config.js --coverage",
+    "test:auth": "jest --config tests/jest.config.js --testNamePattern='Authentication'",
+    "test:users": "jest --config tests/jest.config.js --testNamePattern='User Management'",
+    "test:security": "jest --config tests/jest.config.js --testNamePattern='Security'"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -21,6 +27,10 @@
     "pg": "^8.16.3",
     "sql.js": "^1.10.0",
     "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-html-reporter": "^3.10.2"
   },
   "engines": {
     "node": ">=18.0.0"
