@@ -10,7 +10,7 @@ const router = express.Router();
  */
 
 // Get all users - ADMIN ONLY
-router.get('/', authenticateToken, requireRole('admin'), (req, res) => {
+router.get('/', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { page = 1, limit = 50, role, search, active } = req.query;
@@ -28,7 +28,7 @@ router.get('/', authenticateToken, requireRole('admin'), (req, res) => {
     }
 
     const total = db.prepare(`SELECT COUNT(*) as count FROM users WHERE ${whereClause}`).get(...params).count;
-    const users = db.prepare(`
+    const users = await db.prepare(`
       SELECT id, username, email, role, first_name, last_name, avatar_url, is_active, last_login, created_at
       FROM users WHERE ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?
     `).all(...params, parseInt(limit), offset);
@@ -49,7 +49,7 @@ router.get('/', authenticateToken, requireRole('admin'), (req, res) => {
 });
 
 // Get available roles - ADMIN ONLY
-router.get('/roles', authenticateToken, requireRole('admin'), (req, res) => {
+router.get('/roles', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const roles = getAllRoles();
     res.json({ roles });
@@ -60,10 +60,10 @@ router.get('/roles', authenticateToken, requireRole('admin'), (req, res) => {
 });
 
 // Get user by ID - ADMIN ONLY
-router.get('/:id', authenticateToken, requireRole('admin'), (req, res) => {
+router.get('/:id', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const user = db.prepare(`
+    const user = await db.prepare(`
       SELECT id, username, email, role, first_name, last_name, avatar_url, is_active, last_login, created_at
       FROM users WHERE id = ?
     `).get(req.params.id);
@@ -84,7 +84,7 @@ router.get('/:id', authenticateToken, requireRole('admin'), (req, res) => {
 });
 
 // Create user - ADMIN ONLY
-router.post('/', authenticateToken, requireRole('admin'), (req, res) => {
+router.post('/', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { username, email, password, role, firstName, lastName } = req.body;
@@ -103,7 +103,7 @@ router.post('/', authenticateToken, requireRole('admin'), (req, res) => {
       });
     }
 
-    const existingUser = db.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(username, email);
+    const existingUser = await db.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(username, email);
     if (existingUser) {
       return res.status(400).json({ error: 'Username or email already exists' });
     }
@@ -139,12 +139,12 @@ router.post('/', authenticateToken, requireRole('admin'), (req, res) => {
 });
 
 // Update user - ADMIN ONLY
-router.put('/:id', authenticateToken, requireRole('admin'), (req, res) => {
+router.put('/:id', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { email, role, firstName, lastName, isActive } = req.body;
 
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+    const user = await db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     // Prevent admin from deactivating themselves
@@ -195,7 +195,7 @@ router.put('/:id', authenticateToken, requireRole('admin'), (req, res) => {
 });
 
 // Delete user - ADMIN ONLY
-router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
+router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     
@@ -203,10 +203,10 @@ router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+    const user = await db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
 
     // Audit log
     db.prepare(`
@@ -222,7 +222,7 @@ router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
 });
 
 // Reset user password - ADMIN ONLY
-router.post('/:id/reset-password', authenticateToken, requireRole('admin'), (req, res) => {
+router.post('/:id/reset-password', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { newPassword } = req.body;
@@ -231,7 +231,7 @@ router.post('/:id/reset-password', authenticateToken, requireRole('admin'), (req
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
-    const user = db.prepare('SELECT id, username FROM users WHERE id = ?').get(req.params.id);
+    const user = await db.prepare('SELECT id, username FROM users WHERE id = ?').get(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const passwordHash = bcrypt.hashSync(newPassword, 10);

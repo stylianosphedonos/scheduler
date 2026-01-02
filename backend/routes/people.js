@@ -10,7 +10,7 @@ const router = express.Router();
  */
 
 // Get all people - ALL ROLES
-router.get('/', authenticateToken, (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { page = 1, limit = 50, department, search, active, hasSkill } = req.query;
@@ -51,13 +51,13 @@ router.get('/', authenticateToken, (req, res) => {
 });
 
 // Get person by ID - ALL ROLES
-router.get('/:id', authenticateToken, (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const person = db.prepare('SELECT * FROM people WHERE id = ?').get(req.params.id);
+    const person = await db.prepare('SELECT * FROM people WHERE id = ?').get(req.params.id);
     if (!person) return res.status(404).json({ error: 'Person not found' });
 
-    const skills = db.prepare(`
+    const skills = await db.prepare(`
       SELECT s.id, s.name, s.category, s.color, ps.proficiency_level, ps.years_experience, ps.certified
       FROM skills s JOIN person_skills ps ON s.id = ps.skill_id WHERE ps.person_id = ?
       ORDER BY ps.proficiency_level DESC, s.name
@@ -88,7 +88,7 @@ router.get('/:id', authenticateToken, (req, res) => {
 });
 
 // Create person - ADMIN & SCHEDULER ONLY
-router.post('/', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { employeeId, firstName, lastName, email, phone, department, jobTitle, maxHoursPerDay, maxProjectsPerDay, hourlyRate, employmentType, startDate, notes, skills } = req.body;
@@ -97,7 +97,7 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), (req, res
       return res.status(400).json({ error: 'First name, last name, and email are required' });
     }
 
-    const existing = db.prepare('SELECT id FROM people WHERE email = ?').get(email);
+    const existing = await db.prepare('SELECT id FROM people WHERE email = ?').get(email);
     if (existing) return res.status(400).json({ error: 'Email already exists' });
 
     const result = db.prepare(`
@@ -124,10 +124,10 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), (req, res
 });
 
 // Update person - ADMIN & SCHEDULER ONLY
-router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const person = db.prepare('SELECT * FROM people WHERE id = ?').get(req.params.id);
+    const person = await db.prepare('SELECT * FROM people WHERE id = ?').get(req.params.id);
     if (!person) return res.status(404).json({ error: 'Person not found' });
 
     const { employeeId, firstName, lastName, email, phone, department, jobTitle, maxHoursPerDay, maxProjectsPerDay, hourlyRate, employmentType, startDate, isActive, notes } = req.body;
@@ -164,10 +164,10 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), (req, r
 });
 
 // Delete person - ADMIN ONLY
-router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
+router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const person = db.prepare('SELECT * FROM people WHERE id = ?').get(req.params.id);
+    const person = await db.prepare('SELECT * FROM people WHERE id = ?').get(req.params.id);
     if (!person) return res.status(404).json({ error: 'Person not found' });
 
     const activeAssignments = db.prepare(`SELECT COUNT(*) as count FROM assignments WHERE person_id = ? AND date >= date('now') AND status NOT IN ('completed', 'cancelled')`).get(req.params.id);
@@ -175,7 +175,7 @@ router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
       return res.status(400).json({ error: 'Cannot delete person with active future assignments', assignmentCount: activeAssignments.count });
     }
 
-    db.prepare('DELETE FROM people WHERE id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM people WHERE id = ?').run(req.params.id);
     res.json({ message: 'Person deleted successfully' });
   } catch (error) {
     console.error('Delete person error:', error);
@@ -184,15 +184,15 @@ router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
 });
 
 // Update person skills - ADMIN & SCHEDULER ONLY
-router.put('/:id/skills', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.put('/:id/skills', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { skills } = req.body;
 
-    const person = db.prepare('SELECT id FROM people WHERE id = ?').get(req.params.id);
+    const person = await db.prepare('SELECT id FROM people WHERE id = ?').get(req.params.id);
     if (!person) return res.status(404).json({ error: 'Person not found' });
 
-    db.prepare('DELETE FROM person_skills WHERE person_id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM person_skills WHERE person_id = ?').run(req.params.id);
 
     if (skills && Array.isArray(skills)) {
       for (const skill of skills) {
@@ -211,10 +211,10 @@ router.put('/:id/skills', authenticateToken, requireRole('admin', 'scheduler'), 
 });
 
 // Get departments list - ALL ROLES
-router.get('/meta/departments', authenticateToken, (req, res) => {
+router.get('/meta/departments', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const departments = db.prepare('SELECT DISTINCT department FROM people WHERE department IS NOT NULL ORDER BY department').all();
+    const departments = await db.prepare('SELECT DISTINCT department FROM people WHERE department IS NOT NULL ORDER BY department').all();
     res.json(departments.map(d => d.department));
   } catch (error) {
     console.error('Get departments error:', error);
@@ -223,7 +223,7 @@ router.get('/meta/departments', authenticateToken, (req, res) => {
 });
 
 // Bulk import - ADMIN ONLY
-router.post('/bulk-import', authenticateToken, requireRole('admin'), (req, res) => {
+router.post('/bulk-import', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { people } = req.body;
@@ -242,7 +242,7 @@ router.post('/bulk-import', authenticateToken, requireRole('admin'), (req, res) 
           continue;
         }
 
-        const existing = db.prepare('SELECT id FROM people WHERE email = ?').get(person.email);
+        const existing = await db.prepare('SELECT id FROM people WHERE email = ?').get(person.email);
         if (existing) {
           results.errors.push({ email: person.email, error: 'Email already exists' });
           results.skipped++;

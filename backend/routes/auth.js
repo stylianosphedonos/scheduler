@@ -155,7 +155,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Logout - invalidate token
-router.post('/logout', authenticateToken, (req, res) => {
+router.post('/logout', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const authHeader = req.headers['authorization'];
@@ -496,7 +496,7 @@ router.post('/reset-password', async (req, res) => {
 });
 
 // Get roles info (public)
-router.get('/roles', (req, res) => {
+router.get('/roles', async (req, res) => {
   try {
     const roles = getAllRoles();
     

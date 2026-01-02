@@ -80,7 +80,7 @@ router.post('/people', authenticateToken, requireRole('admin', 'scheduler'), upl
         }
         
         // Check if person exists
-        const existing = db.prepare('SELECT id FROM people WHERE email = ?').get(row.email);
+        const existing = await db.prepare('SELECT id FROM people WHERE email = ?').get(row.email);
         
         if (existing) {
           // Update existing
@@ -171,7 +171,7 @@ router.post('/projects', authenticateToken, requireRole('admin', 'scheduler'), u
         // Check if project exists by code
         let existing = null;
         if (row.code) {
-          existing = db.prepare('SELECT id FROM projects WHERE code = ?').get(row.code);
+          existing = await db.prepare('SELECT id FROM projects WHERE code = ?').get(row.code);
         }
         
         // Parse boolean
@@ -267,7 +267,7 @@ router.post('/skills', authenticateToken, requireRole('admin', 'scheduler'), upl
           continue;
         }
         
-        const existing = db.prepare('SELECT id FROM skills WHERE name = ?').get(row.name);
+        const existing = await db.prepare('SELECT id FROM skills WHERE name = ?').get(row.name);
         
         // Validate color format
         let color = row.color || '#6366f1';
@@ -318,7 +318,7 @@ router.post('/skills', authenticateToken, requireRole('admin', 'scheduler'), upl
 });
 
 // Download templates
-router.get('/templates/:type', (req, res) => {
+router.get('/templates/:type', async (req, res) => {
   const { type } = req.params;
   const validTypes = ['people', 'projects', 'skills'];
   

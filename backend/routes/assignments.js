@@ -10,7 +10,7 @@ const router = express.Router();
  */
 
 // Get assignments - ALL ROLES
-router.get('/', authenticateToken, (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { startDate, endDate, personId, projectId, status, page = 1, limit = 100 } = req.query;
@@ -26,7 +26,7 @@ router.get('/', authenticateToken, (req, res) => {
     if (status) { whereClause += ' AND a.status = ?'; params.push(status); }
 
     const total = db.prepare(`SELECT COUNT(*) as count FROM assignments a WHERE ${whereClause}`).get(...params).count;
-    const assignments = db.prepare(`
+    const assignments = await db.prepare(`
       SELECT a.*, pe.first_name || ' ' || pe.last_name as person_name, pe.department as person_department,
         pr.name as project_name, pr.code as project_code, pr.color as project_color, pr.client as project_client
       FROM assignments a JOIN people pe ON a.person_id = pe.id JOIN projects pr ON a.project_id = pr.id
@@ -51,7 +51,7 @@ router.get('/', authenticateToken, (req, res) => {
 });
 
 // Get daily schedule - ALL ROLES
-router.get('/daily/:date', authenticateToken, (req, res) => {
+router.get('/daily/:date', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { date } = req.params;
@@ -63,7 +63,7 @@ router.get('/daily/:date', authenticateToken, (req, res) => {
     if (department) { whereClause += ' AND pe.department = ?'; params.push(department); }
     if (projectId) { whereClause += ' AND a.project_id = ?'; params.push(projectId); }
 
-    const assignments = db.prepare(`
+    const assignments = await db.prepare(`
       SELECT a.*, pe.first_name, pe.last_name, pe.department, pe.avatar_url,
         pe.max_hours_per_day, pe.max_projects_per_day, pr.name as project_name, pr.code as project_code, pr.color as project_color
       FROM assignments a JOIN people pe ON a.person_id = pe.id JOIN projects pr ON a.project_id = pr.id
@@ -95,7 +95,7 @@ router.get('/daily/:date', authenticateToken, (req, res) => {
       warnings: { overHours: p.totalHours > p.maxHoursPerDay, overProjects: p.projectCount.size > p.maxProjectsPerDay }
     }));
 
-    const conflicts = db.prepare('SELECT * FROM schedule_conflicts WHERE date = ? AND is_resolved = 0').all(date);
+    const conflicts = await db.prepare('SELECT * FROM schedule_conflicts WHERE date = ? AND is_resolved = 0').all(date);
 
     res.json({
       date, schedule,
@@ -109,7 +109,7 @@ router.get('/daily/:date', authenticateToken, (req, res) => {
 });
 
 // Get weekly schedule - ALL ROLES
-router.get('/weekly/:startDate', authenticateToken, (req, res) => {
+router.get('/weekly/:startDate', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { startDate } = req.params;
@@ -126,7 +126,7 @@ router.get('/weekly/:startDate', authenticateToken, (req, res) => {
     if (department) { whereClause += ' AND pe.department = ?'; params.push(department); }
     if (personId) { whereClause += ' AND a.person_id = ?'; params.push(personId); }
 
-    const assignments = db.prepare(`
+    const assignments = await db.prepare(`
       SELECT a.*, pe.first_name, pe.last_name, pe.department, pr.name as project_name, pr.color as project_color
       FROM assignments a JOIN people pe ON a.person_id = pe.id JOIN projects pr ON a.project_id = pr.id
       WHERE ${whereClause} ORDER BY a.date, pe.last_name, a.start_hour
@@ -156,7 +156,7 @@ router.get('/weekly/:startDate', authenticateToken, (req, res) => {
 });
 
 // Create assignment - ADMIN & SCHEDULER ONLY
-router.post('/', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { personId, projectId, date, startHour, endHour, status, taskDescription, location, isRemote, notes } = req.body;
@@ -166,10 +166,10 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), (req, res
     }
     if (startHour >= endHour) return res.status(400).json({ error: 'End hour must be after start hour' });
 
-    const person = db.prepare('SELECT * FROM people WHERE id = ?').get(personId);
+    const person = await db.prepare('SELECT * FROM people WHERE id = ?').get(personId);
     if (!person) return res.status(404).json({ error: 'Person not found' });
 
-    const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
+    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
     // Check for overlapping assignments
@@ -196,10 +196,10 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), (req, res
 });
 
 // Update assignment - ADMIN & SCHEDULER ONLY
-router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const assignment = db.prepare('SELECT * FROM assignments WHERE id = ?').get(req.params.id);
+    const assignment = await db.prepare('SELECT * FROM assignments WHERE id = ?').get(req.params.id);
     if (!assignment) return res.status(404).json({ error: 'Assignment not found' });
 
     const { personId, projectId, date, startHour, endHour, status, taskDescription, location, isRemote, notes } = req.body;
@@ -232,13 +232,13 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), (req, r
 });
 
 // Delete assignment - ADMIN & SCHEDULER ONLY
-router.delete('/:id', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.delete('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const assignment = db.prepare('SELECT * FROM assignments WHERE id = ?').get(req.params.id);
+    const assignment = await db.prepare('SELECT * FROM assignments WHERE id = ?').get(req.params.id);
     if (!assignment) return res.status(404).json({ error: 'Assignment not found' });
 
-    db.prepare('DELETE FROM assignments WHERE id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM assignments WHERE id = ?').run(req.params.id);
     res.json({ message: 'Assignment deleted successfully' });
   } catch (error) {
     console.error('Delete assignment error:', error);
@@ -247,7 +247,7 @@ router.delete('/:id', authenticateToken, requireRole('admin', 'scheduler'), (req
 });
 
 // Bulk create - ADMIN & SCHEDULER ONLY
-router.post('/bulk', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.post('/bulk', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { assignments } = req.body;

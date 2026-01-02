@@ -3,16 +3,16 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/project/:projectId/candidates', authenticateToken, (req, res) => {
+router.get('/project/:projectId/candidates', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { date, minHours = 1, maxResults = 20 } = req.query;
     const { projectId } = req.params;
 
-    const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
+    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
-    const requiredSkills = db.prepare('SELECT skill_id, required_proficiency, is_mandatory FROM project_skills WHERE project_id = ?').all(projectId);
+    const requiredSkills = await db.prepare('SELECT skill_id, required_proficiency, is_mandatory FROM project_skills WHERE project_id = ?').all(projectId);
     const people = db.prepare(`SELECT p.*, GROUP_CONCAT(ps.skill_id || ':' || ps.proficiency_level, ',') as skills_data FROM people p LEFT JOIN person_skills ps ON p.id = ps.person_id WHERE p.is_active = 1 GROUP BY p.id`).all();
 
     const candidates = [];
@@ -32,7 +32,7 @@ router.get('/project/:projectId/candidates', authenticateToken, (req, res) => {
 
       for (const req of requiredSkills) {
         const personLevel = personSkills.get(req.skill_id) || 0;
-        const skill = db.prepare('SELECT name FROM skills WHERE id = ?').get(req.skill_id);
+        const skill = await db.prepare('SELECT name FROM skills WHERE id = ?').get(req.skill_id);
         
         if (personLevel >= req.required_proficiency) {
           matchScore += personLevel / 5;
@@ -75,16 +75,16 @@ router.get('/project/:projectId/candidates', authenticateToken, (req, res) => {
   }
 });
 
-router.get('/person/:personId/projects', authenticateToken, (req, res) => {
+router.get('/person/:personId/projects', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { status = 'active', maxResults = 20 } = req.query;
     const { personId } = req.params;
 
-    const person = db.prepare('SELECT * FROM people WHERE id = ?').get(personId);
+    const person = await db.prepare('SELECT * FROM people WHERE id = ?').get(personId);
     if (!person) return res.status(404).json({ error: 'Person not found' });
 
-    const personSkills = db.prepare('SELECT skill_id, proficiency_level FROM person_skills WHERE person_id = ?').all(personId);
+    const personSkills = await db.prepare('SELECT skill_id, proficiency_level FROM person_skills WHERE person_id = ?').all(personId);
     const personSkillMap = new Map(personSkills.map(s => [s.skill_id, s.proficiency_level]));
 
     const projects = db.prepare(`SELECT p.*, GROUP_CONCAT(ps.skill_id || ':' || ps.required_proficiency || ':' || ps.is_mandatory, ',') as skills_data FROM projects p LEFT JOIN project_skills ps ON p.id = ps.project_id WHERE status = ? GROUP BY p.id`).all(status);
@@ -103,7 +103,7 @@ router.get('/person/:personId/projects', authenticateToken, (req, res) => {
 
       for (const req of requiredSkills) {
         const personLevel = personSkillMap.get(req.skillId) || 0;
-        const skill = db.prepare('SELECT name FROM skills WHERE id = ?').get(req.skillId);
+        const skill = await db.prepare('SELECT name FROM skills WHERE id = ?').get(req.skillId);
         if (personLevel >= req.level) { matchScore++; matchedSkills.push(skill?.name); }
         else { missingSkills.push({ name: skill?.name, required: req.level, current: personLevel }); if (req.mandatory) mandatoryMet = false; }
       }
@@ -121,19 +121,19 @@ router.get('/person/:personId/projects', authenticateToken, (req, res) => {
   }
 });
 
-router.get('/skill-gaps', authenticateToken, (req, res) => {
+router.get('/skill-gaps', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { projectId } = req.query;
 
     let projects;
-    if (projectId) projects = db.prepare('SELECT * FROM projects WHERE id = ?').all(projectId);
-    else projects = db.prepare("SELECT * FROM projects WHERE status = 'active'").all();
+    if (projectId) projects = await db.prepare('SELECT * FROM projects WHERE id = ?').all(projectId);
+    else projects = await db.prepare("SELECT * FROM projects WHERE status = 'active'").all();
 
     const gaps = [];
 
     for (const project of projects) {
-      const requiredSkills = db.prepare('SELECT ps.*, s.name as skill_name, s.category FROM project_skills ps JOIN skills s ON ps.skill_id = s.id WHERE ps.project_id = ?').all(project.id);
+      const requiredSkills = await db.prepare('SELECT ps.*, s.name as skill_name, s.category FROM project_skills ps JOIN skills s ON ps.skill_id = s.id WHERE ps.project_id = ?').all(project.id);
 
       for (const skill of requiredSkills) {
         const qualified = db.prepare('SELECT COUNT(*) as count FROM person_skills WHERE skill_id = ? AND proficiency_level >= ? AND person_id IN (SELECT id FROM people WHERE is_active = 1)').get(skill.skill_id, skill.required_proficiency);

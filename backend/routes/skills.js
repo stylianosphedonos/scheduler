@@ -10,7 +10,7 @@ const router = express.Router();
  */
 
 // Get all skills - ALL ROLES
-router.get('/', authenticateToken, (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { page = 1, limit = 100, category, search, active } = req.query;
@@ -50,19 +50,19 @@ router.get('/', authenticateToken, (req, res) => {
 });
 
 // Get skill by ID - ALL ROLES
-router.get('/:id', authenticateToken, (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const skill = db.prepare('SELECT * FROM skills WHERE id = ?').get(req.params.id);
+    const skill = await db.prepare('SELECT * FROM skills WHERE id = ?').get(req.params.id);
     if (!skill) return res.status(404).json({ error: 'Skill not found' });
 
-    const people = db.prepare(`
+    const people = await db.prepare(`
       SELECT p.id, p.first_name, p.last_name, p.department, ps.proficiency_level, ps.years_experience, ps.certified
       FROM people p JOIN person_skills ps ON p.id = ps.person_id WHERE ps.skill_id = ? AND p.is_active = 1
       ORDER BY ps.proficiency_level DESC, p.last_name
     `).all(req.params.id);
 
-    const projects = db.prepare(`
+    const projects = await db.prepare(`
       SELECT pr.id, pr.name, pr.code, pr.status, ps.required_proficiency, ps.is_mandatory
       FROM projects pr JOIN project_skills ps ON pr.id = ps.project_id WHERE ps.skill_id = ?
       ORDER BY ps.is_mandatory DESC, pr.name
@@ -87,14 +87,14 @@ router.get('/:id', authenticateToken, (req, res) => {
 });
 
 // Create skill - ADMIN & SCHEDULER ONLY
-router.post('/', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { name, category, description, color } = req.body;
 
     if (!name) return res.status(400).json({ error: 'Skill name is required' });
 
-    const existing = db.prepare('SELECT id FROM skills WHERE name = ?').get(name);
+    const existing = await db.prepare('SELECT id FROM skills WHERE name = ?').get(name);
     if (existing) return res.status(400).json({ error: 'Skill name already exists' });
 
     const result = db.prepare(`
@@ -110,10 +110,10 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), (req, res
 });
 
 // Update skill - ADMIN & SCHEDULER ONLY
-router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const skill = db.prepare('SELECT * FROM skills WHERE id = ?').get(req.params.id);
+    const skill = await db.prepare('SELECT * FROM skills WHERE id = ?').get(req.params.id);
     if (!skill) return res.status(404).json({ error: 'Skill not found' });
 
     const { name, category, description, color, isActive } = req.body;
@@ -141,10 +141,10 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), (req, r
 });
 
 // Delete skill - ADMIN ONLY
-router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
+router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const skill = db.prepare('SELECT * FROM skills WHERE id = ?').get(req.params.id);
+    const skill = await db.prepare('SELECT * FROM skills WHERE id = ?').get(req.params.id);
     if (!skill) return res.status(404).json({ error: 'Skill not found' });
 
     const usedByPeople = db.prepare('SELECT COUNT(*) as count FROM person_skills WHERE skill_id = ?').get(req.params.id);
@@ -158,7 +158,7 @@ router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
       });
     }
 
-    db.prepare('DELETE FROM skills WHERE id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM skills WHERE id = ?').run(req.params.id);
     res.json({ message: 'Skill deleted successfully' });
   } catch (error) {
     console.error('Delete skill error:', error);
@@ -167,10 +167,10 @@ router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
 });
 
 // Get categories list - ALL ROLES
-router.get('/meta/categories', authenticateToken, (req, res) => {
+router.get('/meta/categories', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const categories = db.prepare('SELECT DISTINCT category FROM skills WHERE category IS NOT NULL ORDER BY category').all();
+    const categories = await db.prepare('SELECT DISTINCT category FROM skills WHERE category IS NOT NULL ORDER BY category').all();
     res.json(categories.map(c => c.category));
   } catch (error) {
     console.error('Get categories error:', error);

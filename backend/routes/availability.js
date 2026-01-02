@@ -3,7 +3,7 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/', authenticateToken, (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { personId, startDate, endDate, type, status } = req.query;
@@ -16,7 +16,7 @@ router.get('/', authenticateToken, (req, res) => {
     if (type) { whereClause += ' AND aw.type = ?'; params.push(type); }
     if (status) { whereClause += ' AND aw.status = ?'; params.push(status); }
 
-    const windows = db.prepare(`
+    const windows = await db.prepare(`
       SELECT aw.*, p.first_name || ' ' || p.last_name as person_name, p.department as person_department
       FROM availability_windows aw JOIN people p ON aw.person_id = p.id WHERE ${whereClause} ORDER BY aw.start_date DESC
     `).all(...params);
@@ -32,13 +32,13 @@ router.get('/', authenticateToken, (req, res) => {
   }
 });
 
-router.post('/', authenticateToken, requireRole('admin', 'manager', 'scheduler'), (req, res) => {
+router.post('/', authenticateToken, requireRole('admin', 'manager', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { personId, type, startDate, endDate, startHour, endHour, isRecurring, recurrencePattern, reason } = req.body;
     if (!personId || !startDate || !endDate) return res.status(400).json({ error: 'Person, start date, and end date are required' });
 
-    const person = db.prepare('SELECT id FROM people WHERE id = ?').get(personId);
+    const person = await db.prepare('SELECT id FROM people WHERE id = ?').get(personId);
     if (!person) return res.status(404).json({ error: 'Person not found' });
 
     const autoApprove = ['admin', 'manager'].includes(req.user.role);
@@ -55,12 +55,12 @@ router.post('/', authenticateToken, requireRole('admin', 'manager', 'scheduler')
   }
 });
 
-router.delete('/:id', authenticateToken, requireRole('admin', 'manager'), (req, res) => {
+router.delete('/:id', authenticateToken, requireRole('admin', 'manager'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const window = db.prepare('SELECT * FROM availability_windows WHERE id = ?').get(req.params.id);
+    const window = await db.prepare('SELECT * FROM availability_windows WHERE id = ?').get(req.params.id);
     if (!window) return res.status(404).json({ error: 'Availability window not found' });
-    db.prepare('DELETE FROM availability_windows WHERE id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM availability_windows WHERE id = ?').run(req.params.id);
     res.json({ message: 'Availability window deleted successfully' });
   } catch (error) {
     console.error('Delete availability error:', error);
@@ -68,7 +68,7 @@ router.delete('/:id', authenticateToken, requireRole('admin', 'manager'), (req, 
   }
 });
 
-router.get('/person/:personId/check', authenticateToken, (req, res) => {
+router.get('/person/:personId/check', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { startDate, endDate } = req.query;
@@ -77,7 +77,7 @@ router.get('/person/:personId/check', authenticateToken, (req, res) => {
 
     const unavailable = db.prepare(`SELECT * FROM availability_windows WHERE person_id = ? AND end_date >= ? AND start_date <= ? AND status = 'approved' AND type NOT IN ('preferred')`).all(personId, startDate, endDate);
     const assignments = db.prepare(`SELECT date, SUM(end_hour - start_hour) as hours FROM assignments WHERE person_id = ? AND date >= ? AND date <= ? AND status NOT IN ('cancelled') GROUP BY date`).all(personId, startDate, endDate);
-    const person = db.prepare('SELECT max_hours_per_day FROM people WHERE id = ?').get(personId);
+    const person = await db.prepare('SELECT max_hours_per_day FROM people WHERE id = ?').get(personId);
 
     const availability = {};
     const start = new Date(startDate);

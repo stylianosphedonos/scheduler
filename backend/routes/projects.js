@@ -10,7 +10,7 @@ const router = express.Router();
  */
 
 // Get all projects - ALL ROLES
-router.get('/', authenticateToken, (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { page = 1, limit = 50, status, priority, search, client } = req.query;
@@ -56,17 +56,17 @@ router.get('/', authenticateToken, (req, res) => {
 });
 
 // Get project by ID - ALL ROLES
-router.get('/:id', authenticateToken, (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const project = db.prepare(`
+    const project = await db.prepare(`
       SELECT p.*, m.first_name || ' ' || m.last_name as manager_name
       FROM projects p LEFT JOIN people m ON p.manager_id = m.id WHERE p.id = ?
     `).get(req.params.id);
 
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
-    const skills = db.prepare(`
+    const skills = await db.prepare(`
       SELECT s.id, s.name, s.category, s.color, ps.required_proficiency, ps.is_mandatory, ps.people_needed, ps.hours_needed
       FROM skills s JOIN project_skills ps ON s.id = ps.skill_id WHERE ps.project_id = ?
       ORDER BY ps.is_mandatory DESC, s.name
@@ -99,7 +99,7 @@ router.get('/:id', authenticateToken, (req, res) => {
 });
 
 // Create project - ADMIN & SCHEDULER ONLY
-router.post('/', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { name, code, client, description, status, priority, color, startDate, endDate, budgetHours, managerId, isBillable, notes, skills } = req.body;
@@ -107,7 +107,7 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), (req, res
     if (!name) return res.status(400).json({ error: 'Project name is required' });
 
     if (code) {
-      const existing = db.prepare('SELECT id FROM projects WHERE code = ?').get(code);
+      const existing = await db.prepare('SELECT id FROM projects WHERE code = ?').get(code);
       if (existing) return res.status(400).json({ error: 'Project code already exists' });
     }
 
@@ -135,10 +135,10 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), (req, res
 });
 
 // Update project - ADMIN & SCHEDULER ONLY
-router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
+    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
     const { name, code, client, description, status, priority, color, startDate, endDate, budgetHours, managerId, isBillable, notes } = req.body;
@@ -174,10 +174,10 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), (req, r
 });
 
 // Delete project - ADMIN ONLY
-router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
+router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
+    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
     const activeAssignments = db.prepare(`
@@ -188,7 +188,7 @@ router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
       return res.status(400).json({ error: 'Cannot delete project with active future assignments', assignmentCount: activeAssignments.count });
     }
 
-    db.prepare('DELETE FROM projects WHERE id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM projects WHERE id = ?').run(req.params.id);
     res.json({ message: 'Project deleted successfully' });
   } catch (error) {
     console.error('Delete project error:', error);
@@ -197,15 +197,15 @@ router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
 });
 
 // Update project skills - ADMIN & SCHEDULER ONLY
-router.put('/:id/skills', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.put('/:id/skills', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { skills } = req.body;
 
-    const project = db.prepare('SELECT id FROM projects WHERE id = ?').get(req.params.id);
+    const project = await db.prepare('SELECT id FROM projects WHERE id = ?').get(req.params.id);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
-    db.prepare('DELETE FROM project_skills WHERE project_id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM project_skills WHERE project_id = ?').run(req.params.id);
 
     if (skills && Array.isArray(skills)) {
       for (const skill of skills) {
@@ -224,10 +224,10 @@ router.put('/:id/skills', authenticateToken, requireRole('admin', 'scheduler'), 
 });
 
 // Get clients list - ALL ROLES
-router.get('/meta/clients', authenticateToken, (req, res) => {
+router.get('/meta/clients', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const clients = db.prepare('SELECT DISTINCT client FROM projects WHERE client IS NOT NULL ORDER BY client').all();
+    const clients = await db.prepare('SELECT DISTINCT client FROM projects WHERE client IS NOT NULL ORDER BY client').all();
     res.json(clients.map(c => c.client));
   } catch (error) {
     console.error('Get clients error:', error);

@@ -3,7 +3,7 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/dashboard', authenticateToken, (req, res) => {
+router.get('/dashboard', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const today = new Date().toISOString().split('T')[0];
@@ -41,7 +41,7 @@ router.get('/dashboard', authenticateToken, (req, res) => {
   }
 });
 
-router.get('/utilization', authenticateToken, (req, res) => {
+router.get('/utilization', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { startDate, endDate, department, groupBy = 'person' } = req.query;
@@ -70,7 +70,7 @@ router.get('/utilization', authenticateToken, (req, res) => {
   }
 });
 
-router.get('/efficiency', authenticateToken, (req, res) => {
+router.get('/efficiency', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { startDate, endDate } = req.query;
@@ -96,7 +96,7 @@ router.get('/efficiency', authenticateToken, (req, res) => {
 });
 
 // Project Summary Report - All active projects with assigned people and total hours
-router.get('/project-summary', authenticateToken, (req, res) => {
+router.get('/project-summary', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
 
@@ -130,7 +130,7 @@ router.get('/project-summary', authenticateToken, (req, res) => {
       `).all(project.id);
 
       // Get required skills for this project
-      const requiredSkills = db.prepare(`
+      const requiredSkills = await db.prepare(`
         SELECT s.id, s.name, s.color, ps.people_needed, ps.required_proficiency
         FROM project_skills ps
         JOIN skills s ON ps.skill_id = s.id
@@ -194,7 +194,7 @@ router.get('/project-summary', authenticateToken, (req, res) => {
 });
 
 // Daily Schedule Report - Projects by status with people for each day
-router.get('/daily-report', authenticateToken, (req, res) => {
+router.get('/daily-report', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { startDate, endDate } = req.query;
@@ -204,7 +204,7 @@ router.get('/daily-report', authenticateToken, (req, res) => {
     }
 
     // Get all projects grouped by status
-    const projects = db.prepare(`
+    const projects = await db.prepare(`
       SELECT p.id, p.name, p.code, p.client, p.status, p.priority, p.color,
         p.budget_hours, p.start_date, p.end_date, p.description
       FROM projects p
@@ -252,7 +252,7 @@ router.get('/daily-report', authenticateToken, (req, res) => {
       };
 
       // Get assignments for this date
-      const assignments = db.prepare(`
+      const assignments = await db.prepare(`
         SELECT a.id, a.project_id, a.person_id, a.start_hour, a.end_hour,
           a.status as assignment_status, a.task_description,
           p.first_name, p.last_name, p.department, p.job_title
@@ -293,7 +293,7 @@ router.get('/daily-report', authenticateToken, (req, res) => {
         const totalHours = projectAssigns.reduce((sum, a) => sum + a.hours, 0);
 
         // Get project skills
-        const skills = db.prepare(`
+        const skills = await db.prepare(`
           SELECT s.name, s.color, ps.people_needed, ps.required_proficiency
           FROM project_skills ps
           JOIN skills s ON ps.skill_id = s.id

@@ -9,7 +9,7 @@ const router = express.Router();
  */
 
 // Generate AI schedule suggestions for a date range
-router.post('/suggest', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.post('/suggest', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { startDate, endDate, projectIds, prioritizeBy = 'priority' } = req.body;
@@ -41,7 +41,7 @@ router.post('/suggest', authenticateToken, requireRole('admin', 'scheduler'), (r
         ELSE 4 
       END`;
 
-    const projects = db.prepare(projectQuery).all();
+    const projects = await db.prepare(projectQuery).all();
 
     // For each date in the range
     const currentDate = new Date(startDate);
@@ -77,7 +77,7 @@ router.post('/suggest', authenticateToken, requireRole('admin', 'scheduler'), (r
 });
 
 // Apply suggested schedule
-router.post('/apply', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.post('/apply', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { suggestions } = req.body;
@@ -149,7 +149,7 @@ router.post('/apply', authenticateToken, requireRole('admin', 'scheduler'), (req
 });
 
 // Get available people for rescheduling
-router.get('/available', authenticateToken, (req, res) => {
+router.get('/available', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { date, skillId, startHour, endHour, excludePersonId } = req.query;
@@ -208,7 +208,7 @@ router.get('/available', authenticateToken, (req, res) => {
 
     query += ` ORDER BY ps.proficiency_level DESC, p.last_name`;
 
-    const available = db.prepare(query).all(...params);
+    const available = await db.prepare(query).all(...params);
 
     res.json({
       date,
@@ -233,7 +233,7 @@ router.get('/available', authenticateToken, (req, res) => {
 });
 
 // Reschedule an assignment to a different person
-router.post('/reschedule', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.post('/reschedule', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { assignmentId, newPersonId, reason } = req.body;
@@ -243,7 +243,7 @@ router.post('/reschedule', authenticateToken, requireRole('admin', 'scheduler'),
     }
 
     // Get the original assignment
-    const assignment = db.prepare('SELECT * FROM assignments WHERE id = ?').get(assignmentId);
+    const assignment = await db.prepare('SELECT * FROM assignments WHERE id = ?').get(assignmentId);
     if (!assignment) {
       return res.status(404).json({ error: 'Assignment not found' });
     }
@@ -266,13 +266,13 @@ router.post('/reschedule', authenticateToken, requireRole('admin', 'scheduler'),
     }
 
     // Get person names for notes
-    const oldPerson = db.prepare('SELECT first_name, last_name FROM people WHERE id = ?').get(assignment.person_id);
-    const newPerson = db.prepare('SELECT first_name, last_name FROM people WHERE id = ?').get(newPersonId);
+    const oldPerson = await db.prepare('SELECT first_name, last_name FROM people WHERE id = ?').get(assignment.person_id);
+    const newPerson = await db.prepare('SELECT first_name, last_name FROM people WHERE id = ?').get(newPersonId);
 
     // Update the assignment
     const notes = `Rescheduled from ${oldPerson.first_name} ${oldPerson.last_name} to ${newPerson.first_name} ${newPerson.last_name}. ${reason || ''}`;
     
-    db.prepare(`
+    await db.prepare(`
       UPDATE assignments 
       SET person_id = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
@@ -294,7 +294,7 @@ router.post('/reschedule', authenticateToken, requireRole('admin', 'scheduler'),
 });
 
 // Get scheduling analytics
-router.get('/analytics', authenticateToken, (req, res) => {
+router.get('/analytics', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { startDate, endDate } = req.query;
@@ -411,7 +411,7 @@ function generateDailySuggestions(db, date, projects, prioritizeBy) {
     
     if (hoursRemaining > 0 && projectsRemaining > 0) {
       // Get person's skills
-      const skills = db.prepare(`
+      const skills = await db.prepare(`
         SELECT skill_id, proficiency_level 
         FROM person_skills WHERE person_id = ?
       `).all(person.id);
@@ -428,7 +428,7 @@ function generateDailySuggestions(db, date, projects, prioritizeBy) {
 
   // Process each project
   for (const project of projects) {
-    const projectSkills = db.prepare(`
+    const projectSkills = await db.prepare(`
       SELECT ps.skill_id, ps.required_proficiency, ps.people_needed, ps.is_mandatory,
         s.name as skill_name, s.color
       FROM project_skills ps
@@ -588,7 +588,7 @@ function findAvailableSlot(assignedHours, duration) {
  * Get assigned hours for a person on a date
  */
 function getAssignedHours(db, personId, date) {
-  const assignments = db.prepare(`
+  const assignments = await db.prepare(`
     SELECT start_hour, end_hour 
     FROM assignments 
     WHERE person_id = ? AND date = ? AND status != 'cancelled'

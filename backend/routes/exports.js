@@ -31,7 +31,7 @@ router.get('/excel', authenticateToken, requireRole('admin', 'scheduler'), async
       { header: 'Hours', key: 'hours', width: 8 }, { header: 'Status', key: 'status', width: 12 }
     ];
 
-    const assignments = db.prepare(`SELECT a.*, p.first_name || ' ' || p.last_name as person_name, p.department, pr.name as project_name FROM assignments a JOIN people p ON a.person_id = p.id JOIN projects pr ON a.project_id = pr.id WHERE a.date >= ? AND a.date <= ? ORDER BY a.date, p.last_name, a.start_hour`).all(startDate, endDate);
+    const assignments = await db.prepare(`SELECT a.*, p.first_name || ' ' || p.last_name as person_name, p.department, pr.name as project_name FROM assignments a JOIN people p ON a.person_id = p.id JOIN projects pr ON a.project_id = pr.id WHERE a.date >= ? AND a.date <= ? ORDER BY a.date, p.last_name, a.start_hour`).all(startDate, endDate);
 
     for (const a of assignments) {
       scheduleSheet.addRow({ date: a.date, person: a.person_name, department: a.department, project: a.project_name, start: `${a.start_hour}:00`, end: `${a.end_hour}:00`, hours: a.end_hour - a.start_hour, status: a.status });
@@ -63,7 +63,7 @@ router.get('/excel', authenticateToken, requireRole('admin', 'scheduler'), async
         { header: 'Severity', key: 'severity', width: 10 }, { header: 'Description', key: 'description', width: 50 }
       ];
 
-      const conflicts = db.prepare(`SELECT * FROM schedule_conflicts WHERE date >= ? AND date <= ? ORDER BY date`).all(startDate, endDate);
+      const conflicts = await db.prepare(`SELECT * FROM schedule_conflicts WHERE date >= ? AND date <= ? ORDER BY date`).all(startDate, endDate);
       for (const c of conflicts) {
         conflictSheet.addRow({ date: c.date, type: c.type, severity: c.severity, description: c.description });
       }
@@ -130,14 +130,14 @@ router.get('/pdf', authenticateToken, requireRole('admin', 'scheduler'), async (
 });
 
 // Get export logs - ADMIN ONLY
-router.get('/logs', authenticateToken, requireRole('admin'), (req, res) => {
+router.get('/logs', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { page = 1, limit = 50 } = req.query;
     const offset = (page - 1) * limit;
 
     const total = db.prepare('SELECT COUNT(*) as count FROM export_logs').get().count;
-    const logs = db.prepare(`SELECT e.*, u.username as exported_by_name FROM export_logs e LEFT JOIN users u ON e.exported_by = u.id ORDER BY e.created_at DESC LIMIT ? OFFSET ?`).all(parseInt(limit), offset);
+    const logs = await db.prepare(`SELECT e.*, u.username as exported_by_name FROM export_logs e LEFT JOIN users u ON e.exported_by = u.id ORDER BY e.created_at DESC LIMIT ? OFFSET ?`).all(parseInt(limit), offset);
 
     res.json({
       data: logs.map(l => ({

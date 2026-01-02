@@ -10,7 +10,7 @@ const router = express.Router();
  */
 
 // Get all conflicts - ALL ROLES
-router.get('/', authenticateToken, (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { type, severity, resolved, startDate, endDate, personId, page = 1, limit = 50 } = req.query;
@@ -27,7 +27,7 @@ router.get('/', authenticateToken, (req, res) => {
     if (personId) { whereClause += ' AND person_id = ?'; params.push(personId); }
 
     const total = db.prepare(`SELECT COUNT(*) as count FROM schedule_conflicts WHERE ${whereClause}`).get(...params).count;
-    const conflicts = db.prepare(`
+    const conflicts = await db.prepare(`
       SELECT c.*, p.first_name || ' ' || p.last_name as person_name, pr.name as project_name,
         u.username as resolved_by_name
       FROM schedule_conflicts c
@@ -58,7 +58,7 @@ router.get('/', authenticateToken, (req, res) => {
 });
 
 // Detect conflicts for a date range - ADMIN & SCHEDULER ONLY
-router.post('/detect', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.post('/detect', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { startDate, endDate } = req.body;
@@ -211,19 +211,19 @@ router.post('/detect', authenticateToken, requireRole('admin', 'scheduler'), (re
 });
 
 // Resolve a conflict - ADMIN & SCHEDULER ONLY
-router.post('/:id/resolve', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.post('/:id/resolve', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { resolutionNotes } = req.body;
 
-    const conflict = db.prepare('SELECT * FROM schedule_conflicts WHERE id = ?').get(req.params.id);
+    const conflict = await db.prepare('SELECT * FROM schedule_conflicts WHERE id = ?').get(req.params.id);
     if (!conflict) return res.status(404).json({ error: 'Conflict not found' });
 
     if (conflict.is_resolved) {
       return res.status(400).json({ error: 'Conflict is already resolved' });
     }
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE schedule_conflicts 
       SET is_resolved = 1, resolved_by = ?, resolved_at = CURRENT_TIMESTAMP, resolution_notes = ?
       WHERE id = ?
@@ -237,7 +237,7 @@ router.post('/:id/resolve', authenticateToken, requireRole('admin', 'scheduler')
 });
 
 // Bulk resolve conflicts - ADMIN & SCHEDULER ONLY
-router.post('/bulk-resolve', authenticateToken, requireRole('admin', 'scheduler'), (req, res) => {
+router.post('/bulk-resolve', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { conflictIds, resolutionNotes } = req.body;
@@ -248,7 +248,7 @@ router.post('/bulk-resolve', authenticateToken, requireRole('admin', 'scheduler'
 
     let resolvedCount = 0;
     for (const id of conflictIds) {
-      const result = db.prepare(`
+      const result = await db.prepare(`
         UPDATE schedule_conflicts 
         SET is_resolved = 1, resolved_by = ?, resolved_at = CURRENT_TIMESTAMP, resolution_notes = ?
         WHERE id = ? AND is_resolved = 0
@@ -265,7 +265,7 @@ router.post('/bulk-resolve', authenticateToken, requireRole('admin', 'scheduler'
 });
 
 // Get conflict statistics - ALL ROLES
-router.get('/stats/summary', authenticateToken, (req, res) => {
+router.get('/stats/summary', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { startDate, endDate } = req.query;
