@@ -51,7 +51,7 @@ router.post('/suggest', authenticateToken, requireRole('admin', 'scheduler'), as
       // Skip weekends
       if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
         const dateStr = currentDate.toISOString().split('T')[0];
-        const dailySuggestions = generateDailySuggestions(db, dateStr, projects, prioritizeBy);
+        const dailySuggestions = await generateDailySuggestions(db, dateStr, projects, prioritizeBy);
         suggestions.push({
           date: dateStr,
           dayName: currentDate.toLocaleDateString('en-US', { weekday: 'long' }),
@@ -383,7 +383,7 @@ router.get('/analytics', authenticateToken, async (req, res) => {
 /**
  * Generate daily schedule suggestions
  */
-function generateDailySuggestions(db, date, projects, prioritizeBy) {
+async function generateDailySuggestions(db, date, projects, prioritizeBy) {
   const suggestions = [];
   const warnings = [];
   const coverage = {};
@@ -421,7 +421,7 @@ function generateDailySuggestions(db, date, projects, prioritizeBy) {
         hoursRemaining,
         projectsRemaining,
         skills: new Map(skills.map(s => [s.skill_id, s.proficiency_level])),
-        assignedHours: getAssignedHours(db, person.id, date)
+        assignedHours: await getAssignedHours(db, person.id, date)
       });
     }
   }
@@ -587,7 +587,7 @@ function findAvailableSlot(assignedHours, duration) {
 /**
  * Get assigned hours for a person on a date
  */
-function getAssignedHours(db, personId, date) {
+async function getAssignedHours(db, personId, date) {
   const assignments = await db.prepare(`
     SELECT start_hour, end_hour 
     FROM assignments 
