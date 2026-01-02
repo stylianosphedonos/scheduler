@@ -20,7 +20,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const params = [];
 
     if (category) { whereClause += ' AND category = ?'; params.push(category); }
-    if (active !== undefined) { whereClause += ' AND is_active = ?'; params.push(active === 'true' ? 1 : 0); }
+    if (active !== undefined) { whereClause += ' AND is_active = ?'; params.push(active === 'true'); }
     if (search) {
       whereClause += ' AND (name LIKE ? OR category LIKE ? OR description LIKE ?)';
       const searchPattern = `%${search}%`;
@@ -58,7 +58,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
     const people = await db.prepare(`
       SELECT p.id, p.first_name, p.last_name, p.department, ps.proficiency_level, ps.years_experience, ps.certified
-      FROM people p JOIN person_skills ps ON p.id = ps.person_id WHERE ps.skill_id = ? AND p.is_active = 1
+      FROM people p JOIN person_skills ps ON p.id = ps.person_id WHERE ps.skill_id = ? AND p.is_active = true
       ORDER BY ps.proficiency_level DESC, p.last_name
     `).all(req.params.id);
 
@@ -125,7 +125,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     if (category !== undefined) { updates.push('category = ?'); values.push(category); }
     if (description !== undefined) { updates.push('description = ?'); values.push(description); }
     if (color !== undefined) { updates.push('color = ?'); values.push(color); }
-    if (isActive !== undefined) { updates.push('is_active = ?'); values.push(isActive ? 1 : 0); }
+    if (isActive !== undefined) { updates.push('is_active = ?'); values.push(!!isActive); }
 
     if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
 

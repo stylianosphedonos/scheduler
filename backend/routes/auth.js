@@ -417,7 +417,7 @@ router.post('/forgot-password', async (req, res) => {
     // Always return success to prevent email enumeration
     const successMessage = 'If an account exists with this email, a password reset link has been sent.';
 
-    const user = await db.prepare('SELECT id, email FROM users WHERE email = ? AND is_active = 1').get(email);
+    const user = await db.prepare('SELECT id, email FROM users WHERE email = ? AND is_active = true').get(email);
 
     if (!user) {
       // Return same message to prevent enumeration

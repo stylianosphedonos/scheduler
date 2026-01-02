@@ -95,7 +95,7 @@ router.get('/daily/:date', authenticateToken, async (req, res) => {
       warnings: { overHours: p.totalHours > p.maxHoursPerDay, overProjects: p.projectCount.size > p.maxProjectsPerDay }
     }));
 
-    const conflicts = await db.prepare('SELECT * FROM schedule_conflicts WHERE date = ? AND is_resolved = 0').all(date);
+    const conflicts = await db.prepare('SELECT * FROM schedule_conflicts WHERE date = ? AND is_resolved = false').all(date);
 
     res.json({
       date, schedule,

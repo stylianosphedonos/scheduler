@@ -181,7 +181,7 @@ router.post('/detect', authenticateToken, requireRole('admin', 'scheduler'), asy
       // Check for existing similar conflict
       const existing = await db.prepare(`
         SELECT id FROM schedule_conflicts 
-        WHERE type = ? AND date = ? AND person_id = ? AND is_resolved = 0
+        WHERE type = ? AND date = ? AND person_id = ? AND is_resolved = false
         AND (assignment_id = ? OR (assignment_id IS NULL AND ? IS NULL))
       `).get(conflict.type, conflict.date, conflict.personId, conflict.assignmentId || null, conflict.assignmentId || null);
 
@@ -225,7 +225,7 @@ router.post('/:id/resolve', authenticateToken, requireRole('admin', 'scheduler')
 
     await db.prepare(`
       UPDATE schedule_conflicts 
-      SET is_resolved = 1, resolved_by = ?, resolved_at = CURRENT_TIMESTAMP, resolution_notes = ?
+      SET is_resolved = true, resolved_by = ?, resolved_at = CURRENT_TIMESTAMP, resolution_notes = ?
       WHERE id = ?
     `).run(req.user.id, resolutionNotes || null, req.params.id);
 
@@ -250,8 +250,8 @@ router.post('/bulk-resolve', authenticateToken, requireRole('admin', 'scheduler'
     for (const id of conflictIds) {
       const result = await db.prepare(`
         UPDATE schedule_conflicts 
-        SET is_resolved = 1, resolved_by = ?, resolved_at = CURRENT_TIMESTAMP, resolution_notes = ?
-        WHERE id = ? AND is_resolved = 0
+        SET is_resolved = true, resolved_by = ?, resolved_at = CURRENT_TIMESTAMP, resolution_notes = ?
+        WHERE id = ? AND is_resolved = false
       `).run(req.user.id, resolutionNotes || 'Bulk resolved', id);
       
       if (result.changes > 0) resolvedCount++;
@@ -278,17 +278,17 @@ router.get('/stats/summary', authenticateToken, async (req, res) => {
     const stats = await db.prepare(`
       SELECT 
         COUNT(*) as total,
-        SUM(CASE WHEN is_resolved = 0 THEN 1 ELSE 0 END) as unresolved,
-        SUM(CASE WHEN is_resolved = 1 THEN 1 ELSE 0 END) as resolved,
-        SUM(CASE WHEN severity = 'critical' AND is_resolved = 0 THEN 1 ELSE 0 END) as critical,
-        SUM(CASE WHEN severity = 'error' AND is_resolved = 0 THEN 1 ELSE 0 END) as errors,
-        SUM(CASE WHEN severity = 'warning' AND is_resolved = 0 THEN 1 ELSE 0 END) as warnings
+        SUM(CASE WHEN is_resolved = false THEN 1 ELSE 0 END) as unresolved,
+        SUM(CASE WHEN is_resolved = true THEN 1 ELSE 0 END) as resolved,
+        SUM(CASE WHEN severity = 'critical' AND is_resolved = false THEN 1 ELSE 0 END) as critical,
+        SUM(CASE WHEN severity = 'error' AND is_resolved = false THEN 1 ELSE 0 END) as errors,
+        SUM(CASE WHEN severity = 'warning' AND is_resolved = false THEN 1 ELSE 0 END) as warnings
       FROM schedule_conflicts WHERE 1=1 ${dateFilter}
     `).get(...params);
 
     const byType = await db.prepare(`
       SELECT type, COUNT(*) as count
-      FROM schedule_conflicts WHERE is_resolved = 0 ${dateFilter}
+      FROM schedule_conflicts WHERE is_resolved = false ${dateFilter}
       GROUP BY type ORDER BY count DESC
     `).all(...params);
 

@@ -179,7 +179,7 @@ router.get('/available', authenticateToken, async (req, res) => {
       query += ` LEFT JOIN person_skills ps ON p.id = ps.person_id`;
     }
 
-    query += ` WHERE p.is_active = 1`;
+    query += ` WHERE p.is_active = true`;
 
     if (excludePersonId) {
       query += ` AND p.id != ?`;
@@ -309,7 +309,7 @@ router.get('/analytics', authenticateToken, async (req, res) => {
         (SELECT COUNT(DISTINCT per.id) 
          FROM people per 
          JOIN person_skills psk ON per.id = psk.person_id 
-         WHERE psk.skill_id = s.id AND per.is_active = 1) as available_people,
+         WHERE psk.skill_id = s.id AND per.is_active = true) as available_people,
         (SELECT COUNT(DISTINCT a.person_id) 
          FROM assignments a 
          JOIN person_skills psk ON a.person_id = psk.person_id AND psk.skill_id = s.id
@@ -331,7 +331,7 @@ router.get('/analytics', authenticateToken, async (req, res) => {
       FROM people p
       LEFT JOIN assignments a ON p.id = a.person_id 
         AND a.date >= ? AND a.date <= ? AND a.status != 'cancelled'
-      WHERE p.is_active = 1
+      WHERE p.is_active = true
       GROUP BY p.id
       ORDER BY hours_scheduled DESC
     `).all(start, end);
@@ -347,11 +347,11 @@ router.get('/analytics', authenticateToken, async (req, res) => {
          JOIN person_skills psk ON per.id = psk.person_id 
          WHERE psk.skill_id = s.id 
          AND psk.proficiency_level >= ps.required_proficiency
-         AND per.is_active = 1) as qualified_people
+         AND per.is_active = true) as qualified_people
       FROM project_skills ps
       JOIN projects p ON ps.project_id = p.id
       JOIN skills s ON ps.skill_id = s.id
-      WHERE p.status = 'active' AND ps.is_mandatory = 1
+      WHERE p.status = 'active' AND ps.is_mandatory = true
       HAVING qualified_people < ps.people_needed
       ORDER BY p.priority, p.name
     `).all();
@@ -396,7 +396,7 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
       (SELECT COUNT(DISTINCT project_id) FROM assignments 
        WHERE person_id = p.id AND date = ? AND status != 'cancelled') as projects_assigned
     FROM people p
-    WHERE p.is_active = 1
+    WHERE p.is_active = true
     AND p.id NOT IN (
       SELECT person_id FROM availability_windows 
       WHERE ? >= start_date AND ? <= end_date AND status = 'approved'

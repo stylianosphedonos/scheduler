@@ -20,7 +20,7 @@ router.get('/', authenticateToken, requireRole('admin'), async (req, res) => {
     const params = [];
 
     if (role) { whereClause += ' AND role = ?'; params.push(role); }
-    if (active !== undefined) { whereClause += ' AND is_active = ?'; params.push(active === 'true' ? 1 : 0); }
+    if (active !== undefined) { whereClause += ' AND is_active = ?'; params.push(active === 'true'); }
     if (search) {
       whereClause += ' AND (username LIKE ? OR email LIKE ? OR first_name LIKE ? OR last_name LIKE ?)';
       const searchPattern = `%${search}%`;
@@ -172,7 +172,7 @@ router.put('/:id', authenticateToken, requireRole('admin'), async (req, res) => 
     if (role !== undefined) { updates.push('role = ?'); values.push(role); }
     if (firstName !== undefined) { updates.push('first_name = ?'); values.push(firstName); }
     if (lastName !== undefined) { updates.push('last_name = ?'); values.push(lastName); }
-    if (isActive !== undefined) { updates.push('is_active = ?'); values.push(isActive ? 1 : 0); }
+    if (isActive !== undefined) { updates.push('is_active = ?'); values.push(!!isActive); }
 
     if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
 

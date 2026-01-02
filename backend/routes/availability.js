@@ -46,7 +46,7 @@ router.post('/', authenticateToken, requireRole('admin', 'manager', 'scheduler')
     const result = await db.prepare(`
       INSERT INTO availability_windows (person_id, type, start_date, end_date, start_hour, end_hour, is_recurring, recurrence_pattern, status, reason, approved_by)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(personId, type || 'time-off', startDate, endDate, startHour || 0, endHour || 24, isRecurring ? 1 : 0, recurrencePattern || null, autoApprove ? 'approved' : 'pending', reason || null, autoApprove ? req.user.id : null);
+    `).run(personId, type || 'time-off', startDate, endDate, startHour || 0, endHour || 24, !!isRecurring, recurrencePattern || null, autoApprove ? 'approved' : 'pending', reason || null, autoApprove ? req.user.id : null);
 
     res.status(201).json({ id: result.lastInsertRowid, message: 'Availability window created successfully', status: autoApprove ? 'approved' : 'pending' });
   } catch (error) {

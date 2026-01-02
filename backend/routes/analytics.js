@@ -10,12 +10,13 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
     // Fetch counts separately to handle async properly
-    const totalPeopleResult = await db.prepare('SELECT COUNT(*) as count FROM people WHERE is_active = 1').get();
+    // Use is_active = true for PostgreSQL compatibility (boolean type)
+    const totalPeopleResult = await db.prepare('SELECT COUNT(*) as count FROM people WHERE is_active = true').get();
     const totalProjectsResult = await db.prepare("SELECT COUNT(*) as count FROM projects WHERE status = 'active'").get();
-    const totalSkillsResult = await db.prepare('SELECT COUNT(*) as count FROM skills WHERE is_active = 1').get();
+    const totalSkillsResult = await db.prepare('SELECT COUNT(*) as count FROM skills WHERE is_active = true').get();
     const todayAssignmentsResult = await db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date = ?').get(today);
     const weekAssignmentsResult = await db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date >= ?').get(weekAgo);
-    const unresolvedConflictsResult = await db.prepare('SELECT COUNT(*) as count FROM schedule_conflicts WHERE is_resolved = 0').get();
+    const unresolvedConflictsResult = await db.prepare('SELECT COUNT(*) as count FROM schedule_conflicts WHERE is_resolved = false').get();
     const pendingAvailabilityResult = await db.prepare("SELECT COUNT(*) as count FROM availability_windows WHERE status = 'pending'").get();
 
     const metrics = {
@@ -29,7 +30,7 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
     };
 
     const todayStats = await db.prepare(`SELECT COUNT(DISTINCT person_id) as people_scheduled, SUM(end_hour - start_hour) as total_hours, COUNT(DISTINCT project_id) as projects_active FROM assignments WHERE date = ? AND status NOT IN ('cancelled')`).get(today);
-    const conflictsByType = await db.prepare('SELECT type, COUNT(*) as count FROM schedule_conflicts WHERE is_resolved = 0 GROUP BY type').all();
+    const conflictsByType = await db.prepare('SELECT type, COUNT(*) as count FROM schedule_conflicts WHERE is_resolved = false GROUP BY type').all();
     const weeklyHours = await db.prepare(`SELECT date, SUM(end_hour - start_hour) as hours, COUNT(*) as assignments FROM assignments WHERE date >= ? AND date <= ? GROUP BY date ORDER BY date`).all(weekAgo, today);
     const topUtilized = await db.prepare(`SELECT p.id, p.first_name, p.last_name, p.department, SUM(a.end_hour - a.start_hour) as total_hours, COUNT(*) as assignment_count FROM people p JOIN assignments a ON p.id = a.person_id WHERE a.date >= ? AND a.status NOT IN ('cancelled') GROUP BY p.id ORDER BY total_hours DESC LIMIT 10`).all(weekAgo);
     const projectWorkload = await db.prepare(`SELECT pr.id, pr.name, pr.color, SUM(a.end_hour - a.start_hour) as total_hours, COUNT(DISTINCT a.person_id) as people_assigned FROM projects pr JOIN assignments a ON pr.id = a.project_id WHERE a.date >= ? AND a.status NOT IN ('cancelled') GROUP BY pr.id ORDER BY total_hours DESC LIMIT 10`).all(weekAgo);
@@ -70,7 +71,7 @@ router.get('/utilization', authenticateToken, async (req, res) => {
     if (department) { whereClause += ' AND p.department = ?'; params.push(department); }
 
     if (groupBy === 'person') {
-      const data = await db.prepare(`SELECT p.id, p.first_name, p.last_name, p.department, p.max_hours_per_day, SUM(a.end_hour - a.start_hour) as actual_hours, COUNT(DISTINCT a.date) as days_worked, COUNT(DISTINCT a.project_id) as projects_worked FROM people p LEFT JOIN assignments a ON p.id = a.person_id AND ${whereClause} WHERE p.is_active = 1 ${department ? 'AND p.department = ?' : ''} GROUP BY p.id ORDER BY actual_hours DESC`).all(...params, ...(department ? [department] : []));
+      const data = await db.prepare(`SELECT p.id, p.first_name, p.last_name, p.department, p.max_hours_per_day, SUM(a.end_hour - a.start_hour) as actual_hours, COUNT(DISTINCT a.date) as days_worked, COUNT(DISTINCT a.project_id) as projects_worked FROM people p LEFT JOIN assignments a ON p.id = a.person_id AND ${whereClause} WHERE p.is_active = true ${department ? 'AND p.department = ?' : ''} GROUP BY p.id ORDER BY actual_hours DESC`).all(...params, ...(department ? [department] : []));
       res.json({ startDate, endDate, workingDays, groupBy, data: data.map(p => ({ id: p.id, name: `${p.first_name} ${p.last_name}`, department: p.department, maxHours: p.max_hours_per_day * workingDays, actualHours: p.actual_hours || 0, utilizationRate: (p.max_hours_per_day * workingDays) > 0 ? Math.round(((p.actual_hours || 0) / (p.max_hours_per_day * workingDays)) * 100) : 0, daysWorked: p.days_worked || 0, projectsWorked: p.projects_worked || 0 })) });
     } else if (groupBy === 'project') {
       const data = await db.prepare(`SELECT pr.id, pr.name, pr.code, pr.client, pr.budget_hours, SUM(a.end_hour - a.start_hour) as actual_hours, COUNT(DISTINCT a.person_id) as people_assigned, COUNT(DISTINCT a.date) as active_days FROM projects pr LEFT JOIN assignments a ON pr.id = a.project_id AND ${whereClause} GROUP BY pr.id ORDER BY actual_hours DESC`).all(...params);
