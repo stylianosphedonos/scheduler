@@ -1,0 +1,37 @@
+{
+  "name": "resource-scheduler",
+  "version": "1.0.0",
+  "description": "Enterprise Resource Scheduling System with skill matching, conflict detection, and multi-format exports",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "init-db": "node scripts/init-database.js",
+    "seed": "node scripts/seed-data.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.1",
+    "exceljs": "^4.4.0",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "pdfkit": "^0.15.0",
+    "sql.js": "^1.10.0",
+    "uuid": "^9.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "scheduler",
+    "resource-management",
+    "workforce-planning",
+    "skill-matching"
+  ],
+  "author": "Playtech OPS",
+  "license": "MIT"
+}
+
+
