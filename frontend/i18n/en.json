@@ -57,7 +57,8 @@
     "info": "Information",
     "startDate": "Start Date",
     "endDate": "End Date",
-    "saveChanges": "Save Changes"
+    "saveChanges": "Save Changes",
+    "quickAdd": "Quick Add"
   },
   "auth": {
     "login": "Login",
@@ -113,7 +114,11 @@
     "weeklyUtilization": "Weekly Utilization",
     "topUtilized": "Top Utilized",
     "activeConflicts": "Active Conflicts",
-    "skillDemand": "Skill Demand"
+    "skillDemand": "Skill Demand",
+    "noAssignmentsToday": "No assignments today",
+    "scheduleToGetStarted": "Schedule some work to get started",
+    "noUtilizationData": "No utilization data",
+    "noSkillData": "No skill data"
   },
   "people": {
     "title": "People Management",
@@ -139,7 +144,10 @@
     "yearsExperience": "Years Experience",
     "certified": "Certified",
     "notes": "Notes",
-    "confirmDelete": "Are you sure you want to delete this person?"
+    "confirmDelete": "Are you sure you want to delete this person?",
+    "noPeopleFound": "No people found",
+    "addTeamToStart": "Add team members to get started",
+    "noTeamMatch": "No team members match your search"
   },
   "projects": {
     "title": "Project Management",
@@ -169,7 +177,13 @@
     "billable": "Billable",
     "requiredSkills": "Required Skills",
     "peopleNeeded": "People Needed",
-    "confirmDelete": "Are you sure you want to delete this project?"
+    "confirmDelete": "Are you sure you want to delete this project?",
+    "noProjectsFound": "No projects found",
+    "createToStart": "Create a project to start scheduling",
+    "noProjectsMatch": "No projects match your search",
+    "noSkillRequirements": "No skill requirements defined",
+    "noCandidatesFound": "No candidates found matching the required skills.",
+    "noPeopleAssigned": "No people assigned to this project yet"
   },
   "skills": {
     "title": "Skills Management",
@@ -192,7 +206,10 @@
       "4": "Advanced",
       "5": "Expert"
     },
-    "confirmDelete": "Are you sure you want to delete this skill?"
+    "confirmDelete": "Are you sure you want to delete this skill?",
+    "noSkillsFound": "No skills found",
+    "addToEnable": "Add skills to enable skill matching",
+    "noSkillsMatch": "No skills match your search"
   },
   "schedule": {
     "title": "Schedule",
@@ -218,7 +235,11 @@
     "completed": "Completed",
     "cancelled": "Cancelled",
     "conflictDetected": "Conflict Detected",
-    "noAssignments": "No assignments for this date"
+    "noAssignments": "No assignments",
+    "noAssignmentsForDay": "No assignments for this day",
+    "clickAddAssignment": "Click \"Add Assignment\" to schedule work",
+    "noWorkScheduled": "No work scheduled for this date",
+    "noAssignmentsScheduled": "No assignments scheduled for this day"
   },
   "aiScheduler": {
     "title": "AI Schedule Optimizer",
@@ -240,7 +261,8 @@
     "feature1": "Matches skills to project requirements",
     "feature2": "Respects availability and time-off",
     "feature3": "Balances workload across team",
-    "feature4": "Prioritizes critical projects"
+    "feature4": "Prioritizes critical projects",
+    "noQualifiedPeople": "No other qualified people available for this time slot"
   },
   "conflicts": {
     "title": "Conflicts",
@@ -257,7 +279,10 @@
     "unresolved": "Unresolved",
     "resolution": "Resolution",
     "showResolved": "Show Resolved",
-    "redetect": "Re-detect"
+    "redetect": "Re-detect",
+    "noActiveConflicts": "No active conflicts",
+    "noConflicts": "No conflicts",
+    "allResolved": "All scheduling conflicts have been resolved"
   },
   "reports": {
     "title": "Reports & Exports",
@@ -278,7 +303,8 @@
     "totalHours": "Total Hours",
     "assignedPeople": "Assigned People",
     "includeConflicts": "Include Conflicts",
-    "includeSkillsMatrix": "Include Skills Matrix"
+    "includeSkillsMatrix": "Include Skills Matrix",
+    "noActiveProjects": "No Active Projects"
   },
   "settings": {
     "title": "System Settings",
@@ -330,6 +356,7 @@
     "createdAt": "Created At",
     "resetPassword": "Reset Password",
     "confirmDelete": "Are you sure you want to delete this user?",
+    "noUsersFound": "No users found",
     "perm": {
       "fullAccess": "Full system access",
       "manageUsers": "Manage all users",
@@ -385,5 +412,167 @@
     "hours": "hours",
     "minutes": "minutes",
     "days": "days"
+  },
+  "help": {
+    "title": "Help",
+    "notAvailable": "Help content not available for this page.",
+    "overview": "Overview",
+    "tips": "Tips",
+    "navigation": "Navigation",
+    "dashboard": {
+      "title": "Dashboard Help",
+      "overview": "The Dashboard provides a real-time overview of your organization's scheduling status.",
+      "keyMetrics": "Key Metrics",
+      "activePeopleDesc": "Total employees in the system",
+      "activeProjectsDesc": "Projects currently in progress",
+      "todayAssignmentsDesc": "Scheduled work for today",
+      "conflictsDesc": "Issues requiring attention",
+      "tip1": "Click any metric card to navigate to detailed view",
+      "tip2": "Red conflict indicator means urgent attention needed",
+      "tip3": "Charts show 7-day trends"
+    },
+    "schedule": {
+      "title": "Schedule Help",
+      "overview": "View and manage daily/weekly schedules with hourly time slots.",
+      "prevNext": "Previous/Next day",
+      "jumpToToday": "Jump to current date",
+      "toggleView": "Toggle view mode",
+      "creatingAssignments": "Creating Assignments",
+      "step1": "Click \"Add Assignment\" button",
+      "step2": "Select person and project",
+      "step3": "Set date and time (start/end hours)",
+      "step4": "Add optional task description",
+      "tip1": "Click on a person's timeline row to add assignment there",
+      "tip2": "Colors indicate different projects",
+      "tip3": "Hover over assignments to see details"
+    },
+    "people": {
+      "title": "People Management Help",
+      "overview": "Manage employee profiles, skills, and availability.",
+      "addingPerson": "Adding a Person",
+      "step1": "Click \"Add Person\"",
+      "step2": "Enter required fields (name, email)",
+      "step3": "Set department and job title",
+      "step4": "Configure max hours per day",
+      "assigningSkills": "Assigning Skills",
+      "skillStep1": "Click on a person card",
+      "skillStep2": "Click \"Edit\"",
+      "skillStep3": "Scroll to Skills section",
+      "skillStep4": "Check skills and set proficiency levels (1-5)",
+      "proficiencyLevels": "Proficiency Levels"
+    },
+    "projects": {
+      "title": "Project Management Help",
+      "overview": "Create projects with skill requirements and track assignments.",
+      "creating": "Creating a Project",
+      "step1": "Click \"Add Project\"",
+      "step2": "Enter project name (required)",
+      "step3": "Set code, client, status, priority",
+      "step4": "Define skill requirements",
+      "skillReqs": "Skill Requirements",
+      "skillReqsDesc": "For each required skill, specify:",
+      "peopleNeededDesc": "How many with this skill",
+      "minLevel": "Min Level",
+      "minLevelDesc": "Required proficiency (1-5)",
+      "requiredDesc": "Mandatory vs optional",
+      "findCandidates": "Find Candidates",
+      "findCandidatesDesc": "Click \"Find Candidates\" to see best matches based on skills and availability."
+    },
+    "skills": {
+      "title": "Skills Management Help",
+      "overview": "Define and manage skills available in your organization.",
+      "adding": "Adding a Skill",
+      "step1": "Click \"Add Skill\"",
+      "step2": "Enter skill name",
+      "step3": "Select category",
+      "step4": "Choose a color",
+      "step5": "Add description",
+      "statistics": "Skill Statistics",
+      "statisticsDesc": "Each skill shows:",
+      "stat1": "Number of people with this skill",
+      "stat2": "Number of projects requiring it",
+      "skillGaps": "Skill Gaps",
+      "skillGapsDesc": "If projects require more people with a skill than available, consider training or hiring."
+    },
+    "aiScheduler": {
+      "title": "AI Scheduler Help",
+      "overview": "Let AI analyze projects, skills, and availability to suggest optimal schedules.",
+      "howToUse": "How to Use",
+      "step1": "Select start and end dates",
+      "step2": "Click \"Generate Suggestions\"",
+      "step3": "Review AI-generated assignments",
+      "step4": "Accept, modify, or reject each suggestion",
+      "actions": "Suggestion Actions",
+      "accept": "Accept",
+      "acceptDesc": "Create this assignment",
+      "reschedule": "Reschedule",
+      "rescheduleDesc": "Assign to different person",
+      "removeDesc": "Discard suggestion",
+      "considerations": "AI Considerations",
+      "consideration1": "Project priority (Critical first)",
+      "consideration2": "Skill match percentage",
+      "consideration3": "Person availability",
+      "consideration4": "Workload balance"
+    },
+    "conflicts": {
+      "title": "Conflicts Help",
+      "overview": "View and resolve scheduling conflicts detected by the system.",
+      "types": "Conflict Types",
+      "overlapDesc": "Same person, same time, different projects",
+      "overallocationDesc": "Too many hours in one day",
+      "skillGapDesc": "Person lacks required skill",
+      "unavailableDesc": "Assigned during time-off",
+      "severityLevels": "Severity Levels",
+      "criticalDesc": "Must be resolved immediately",
+      "warningDesc": "Should be addressed soon",
+      "infoDesc": "For your awareness",
+      "resolving": "Resolving",
+      "resolveStep1": "Review conflict description",
+      "resolveStep2": "Modify or delete the assignment",
+      "resolveStep3": "Click \"Resolve\" to mark as handled"
+    },
+    "reports": {
+      "title": "Reports Help",
+      "overview": "Generate reports and export data.",
+      "summaryDesc": "Shows all active projects with:",
+      "item1": "Assigned team members",
+      "item2": "Total hours worked",
+      "item3": "Budget usage",
+      "previewStep1": "Select date range",
+      "previewStep2": "Click \"Preview Report\"",
+      "previewStep3": "Review before exporting",
+      "exporting": "Exporting",
+      "excelDesc": "Download .xlsx file",
+      "pdfDesc": "Print preview → Save as PDF",
+      "structure": "Report Structure",
+      "structureDesc": "Reports are organized by day, then by project status (Active first)."
+    },
+    "users": {
+      "title": "User Management Help",
+      "overview": "Manage user accounts and roles (Admin only).",
+      "adding": "Adding Users",
+      "step1": "Click \"Add User\"",
+      "step2": "Enter username and email",
+      "step3": "Set password (min 6 characters)",
+      "step4": "Assign role",
+      "roles": "Roles",
+      "adminDesc": "Full access, user management",
+      "managerDesc": "Manage people/projects",
+      "schedulerDesc": "Manage schedules",
+      "viewerDesc": "Read-only access",
+      "action1": "Edit user details and role",
+      "action2": "Activate/deactivate accounts",
+      "action3": "Delete users (except yourself)"
+    },
+    "settings": {
+      "title": "Settings Help",
+      "brandingDesc": "Customize the application appearance:",
+      "logoDesc": "Upload URL or select an icon",
+      "langDesc": "Configure language settings:",
+      "transDesc": "Customize any text in the application",
+      "transManager": "The Translation Manager allows you to override any default text with your own custom translations for each language.",
+      "preview": "Preview",
+      "previewDesc": "Changes are previewed in real-time. Click Save to apply."
+    }
   }
 }

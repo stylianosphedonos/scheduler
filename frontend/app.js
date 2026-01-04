@@ -9,302 +9,297 @@ const state = {
 };
 
 // ===== Help System =====
-const helpContent = {
-  dashboard: {
-    title: 'Dashboard Help',
-    content: `
-      <h4>Overview</h4>
-      <p>The Dashboard provides a real-time overview of your organization's scheduling status.</p>
-      
-      <h4>Key Metrics</h4>
-      <ul>
-        <li><strong>Active People:</strong> Total employees in the system</li>
-        <li><strong>Active Projects:</strong> Projects currently in progress</li>
-        <li><strong>Today's Assignments:</strong> Scheduled work for today</li>
-        <li><strong>Conflicts:</strong> Issues requiring attention</li>
-      </ul>
-      
-      <h4>Tips</h4>
-      <ul>
-        <li>Click any metric card to navigate to detailed view</li>
-        <li>Red conflict indicator means urgent attention needed</li>
-        <li>Charts show 7-day trends</li>
-      </ul>
-    `
-  },
-  schedule: {
-    title: 'Schedule Help',
-    content: `
-      <h4>Overview</h4>
-      <p>View and manage daily/weekly schedules with hourly time slots.</p>
-      
-      <h4>Navigation</h4>
-      <ul>
-        <li><strong>← / →:</strong> Previous/Next day</li>
-        <li><strong>Today:</strong> Jump to current date</li>
-        <li><strong>Day/Week:</strong> Toggle view mode</li>
-      </ul>
-      
-      <h4>Creating Assignments</h4>
-      <ol>
-        <li>Click "Add Assignment" button</li>
-        <li>Select person and project</li>
-        <li>Set date and time (start/end hours)</li>
-        <li>Add optional task description</li>
-      </ol>
-      
-      <h4>Tips</h4>
-      <ul>
-        <li>Click on a person's timeline row to add assignment there</li>
-        <li>Colors indicate different projects</li>
-        <li>Hover over assignments to see details</li>
-      </ul>
-    `
-  },
-  people: {
-    title: 'People Management Help',
-    content: `
-      <h4>Overview</h4>
-      <p>Manage employee profiles, skills, and availability.</p>
-      
-      <h4>Adding a Person</h4>
-      <ol>
-        <li>Click "Add Person"</li>
-        <li>Enter required fields (name, email)</li>
-        <li>Set department and job title</li>
-        <li>Configure max hours per day</li>
-      </ol>
-      
-      <h4>Assigning Skills</h4>
-      <ol>
-        <li>Click on a person card</li>
-        <li>Click "Edit"</li>
-        <li>Scroll to Skills section</li>
-        <li>Check skills and set proficiency levels (1-5)</li>
-      </ol>
-      
-      <h4>Proficiency Levels</h4>
-      <ul>
-        <li><strong>1:</strong> Beginner</li>
-        <li><strong>2:</strong> Elementary</li>
-        <li><strong>3:</strong> Intermediate</li>
-        <li><strong>4:</strong> Advanced</li>
-        <li><strong>5:</strong> Expert</li>
-      </ul>
-    `
-  },
-  projects: {
-    title: 'Project Management Help',
-    content: `
-      <h4>Overview</h4>
-      <p>Create projects with skill requirements and track assignments.</p>
-      
-      <h4>Creating a Project</h4>
-      <ol>
-        <li>Click "Add Project"</li>
-        <li>Enter project name (required)</li>
-        <li>Set code, client, status, priority</li>
-        <li>Define skill requirements</li>
-      </ol>
-      
-      <h4>Skill Requirements</h4>
-      <p>For each required skill, specify:</p>
-      <ul>
-        <li><strong>People Needed:</strong> How many with this skill</li>
-        <li><strong>Min Level:</strong> Required proficiency (1-5)</li>
-        <li><strong>Required:</strong> Mandatory vs optional</li>
-      </ul>
-      
-      <h4>Find Candidates</h4>
-      <p>Click "Find Candidates" to see best matches based on skills and availability.</p>
-    `
-  },
-  skills: {
-    title: 'Skills Management Help',
-    content: `
-      <h4>Overview</h4>
-      <p>Define and manage skills available in your organization.</p>
-      
-      <h4>Adding a Skill</h4>
-      <ol>
-        <li>Click "Add Skill"</li>
-        <li>Enter skill name</li>
-        <li>Select category</li>
-        <li>Choose a color</li>
-        <li>Add description</li>
-      </ol>
-      
-      <h4>Skill Statistics</h4>
-      <p>Each skill shows:</p>
-      <ul>
-        <li>Number of people with this skill</li>
-        <li>Number of projects requiring it</li>
-      </ul>
-      
-      <h4>Skill Gaps</h4>
-      <p>If projects require more people with a skill than available, consider training or hiring.</p>
-    `
-  },
-  'ai-scheduler': {
-    title: 'AI Scheduler Help',
-    content: `
-      <h4>Overview</h4>
-      <p>Let AI analyze projects, skills, and availability to suggest optimal schedules.</p>
-      
-      <h4>How to Use</h4>
-      <ol>
-        <li>Select start and end dates</li>
-        <li>Click "Generate Suggestions"</li>
-        <li>Review AI-generated assignments</li>
-        <li>Accept, modify, or reject each suggestion</li>
-      </ol>
-      
-      <h4>Suggestion Actions</h4>
-      <ul>
-        <li><strong>✓ Accept:</strong> Create this assignment</li>
-        <li><strong>↔ Reschedule:</strong> Assign to different person</li>
-        <li><strong>✗ Remove:</strong> Discard suggestion</li>
-      </ul>
-      
-      <h4>AI Considerations</h4>
-      <ul>
-        <li>Project priority (Critical first)</li>
-        <li>Skill match percentage</li>
-        <li>Person availability</li>
-        <li>Workload balance</li>
-      </ul>
-    `
-  },
-  conflicts: {
-    title: 'Conflicts Help',
-    content: `
-      <h4>Overview</h4>
-      <p>View and resolve scheduling conflicts detected by the system.</p>
-      
-      <h4>Conflict Types</h4>
-      <ul>
-        <li><strong>Overlap:</strong> Same person, same time, different projects</li>
-        <li><strong>Overallocation:</strong> Too many hours in one day</li>
-        <li><strong>Skill Gap:</strong> Person lacks required skill</li>
-        <li><strong>Availability:</strong> Assigned during time-off</li>
-      </ul>
-      
-      <h4>Severity Levels</h4>
-      <ul>
-        <li><span style="color:#ef4444">●</span> <strong>Critical:</strong> Must be resolved immediately</li>
-        <li><span style="color:#f59e0b">●</span> <strong>Warning:</strong> Should be addressed soon</li>
-        <li><span style="color:#64748b">●</span> <strong>Info:</strong> For your awareness</li>
-      </ul>
-      
-      <h4>Resolving</h4>
-      <ol>
-        <li>Review conflict description</li>
-        <li>Modify or delete the assignment</li>
-        <li>Click "Resolve" to mark as handled</li>
-      </ol>
-    `
-  },
-  reports: {
-    title: 'Reports Help',
-    content: `
-      <h4>Overview</h4>
-      <p>Generate reports and export data.</p>
-      
-      <h4>Project Summary</h4>
-      <p>Shows all active projects with:</p>
-      <ul>
-        <li>Assigned team members</li>
-        <li>Total hours worked</li>
-        <li>Budget usage</li>
-      </ul>
-      
-      <h4>Preview Report</h4>
-      <ol>
-        <li>Select date range</li>
-        <li>Click "Preview Report"</li>
-        <li>Review before exporting</li>
-      </ol>
-      
-      <h4>Exporting</h4>
-      <ul>
-        <li><strong>Excel:</strong> Download .xlsx file</li>
-        <li><strong>PDF:</strong> Print preview → Save as PDF</li>
-      </ul>
-      
-      <h4>Report Structure</h4>
-      <p>Reports are organized by day, then by project status (Active first).</p>
-    `
-  },
-  users: {
-    title: 'User Management Help',
-    content: `
-      <h4>Overview</h4>
-      <p>Manage user accounts and roles (Admin only).</p>
-      
-      <h4>Adding Users</h4>
-      <ol>
-        <li>Click "Add User"</li>
-        <li>Enter username and email</li>
-        <li>Set password (min 6 characters)</li>
-        <li>Assign role</li>
-      </ol>
-      
-      <h4>Roles</h4>
-      <ul>
-        <li><strong>Admin:</strong> Full access, user management</li>
-        <li><strong>Manager:</strong> Manage people/projects</li>
-        <li><strong>Scheduler:</strong> Manage schedules</li>
-        <li><strong>Viewer:</strong> Read-only access</li>
-      </ul>
-      
-      <h4>Actions</h4>
-      <ul>
-        <li>Edit user details and role</li>
-        <li>Activate/deactivate accounts</li>
-        <li>Delete users (except yourself)</li>
-      </ul>
-    `
-  },
-  settings: {
-    title: 'Settings Help',
-    content: `
-      <h4>Branding</h4>
-      <p>Customize the application appearance:</p>
-      <ul>
-        <li><strong>Company Name:</strong> Displayed in sidebar and reports</li>
-        <li><strong>Logo:</strong> Upload URL or select an icon</li>
-        <li><strong>Primary Color:</strong> Main accent color</li>
-        <li><strong>Footer:</strong> Text shown in exports</li>
-      </ul>
-      
-      <h4>Language & Translations</h4>
-      <p>Configure language settings:</p>
-      <ul>
-        <li><strong>Default Language:</strong> Language for new users (English or Greek)</li>
-        <li><strong>Your Language:</strong> Your personal preference</li>
-        <li><strong>Manage Translations:</strong> Customize any text in the application</li>
-      </ul>
-      <p>The Translation Manager allows you to override any default text with your own custom translations for each language.</p>
-      
-      <h4>System Settings</h4>
-      <ul>
-        <li><strong>Work Hours:</strong> Default start/end times</li>
-        <li><strong>Max Hours/Day:</strong> Default limit per person</li>
-        <li><strong>Max Projects/Day:</strong> Default project limit</li>
-        <li><strong>Conflict Detection:</strong> Auto-detect issues</li>
-      </ul>
-      
-      <h4>Preview</h4>
-      <p>Changes are previewed in real-time. Click Save to apply.</p>
-    `
-  }
-};
+function getHelpContent() {
+  return {
+    dashboard: {
+      title: t('help.dashboard.title'),
+      content: `
+        <h4>${t('help.overview')}</h4>
+        <p>${t('help.dashboard.overview')}</p>
+        
+        <h4>${t('help.dashboard.keyMetrics')}</h4>
+        <ul>
+          <li><strong>${t('dashboard.activePeople')}:</strong> ${t('help.dashboard.activePeopleDesc')}</li>
+          <li><strong>${t('dashboard.activeProjects')}:</strong> ${t('help.dashboard.activeProjectsDesc')}</li>
+          <li><strong>${t('dashboard.todaysSchedule')}:</strong> ${t('help.dashboard.todayAssignmentsDesc')}</li>
+          <li><strong>${t('conflicts.title')}:</strong> ${t('help.dashboard.conflictsDesc')}</li>
+        </ul>
+        
+        <h4>${t('help.tips')}</h4>
+        <ul>
+          <li>${t('help.dashboard.tip1')}</li>
+          <li>${t('help.dashboard.tip2')}</li>
+          <li>${t('help.dashboard.tip3')}</li>
+        </ul>
+      `
+    },
+    schedule: {
+      title: t('help.schedule.title'),
+      content: `
+        <h4>${t('help.overview')}</h4>
+        <p>${t('help.schedule.overview')}</p>
+        
+        <h4>${t('help.navigation')}</h4>
+        <ul>
+          <li><strong>← / →:</strong> ${t('help.schedule.prevNext')}</li>
+          <li><strong>${t('schedule.today')}:</strong> ${t('help.schedule.jumpToToday')}</li>
+          <li><strong>${t('schedule.day')}/${t('schedule.week')}:</strong> ${t('help.schedule.toggleView')}</li>
+        </ul>
+        
+        <h4>${t('help.schedule.creatingAssignments')}</h4>
+        <ol>
+          <li>${t('help.schedule.step1')}</li>
+          <li>${t('help.schedule.step2')}</li>
+          <li>${t('help.schedule.step3')}</li>
+          <li>${t('help.schedule.step4')}</li>
+        </ol>
+        
+        <h4>${t('help.tips')}</h4>
+        <ul>
+          <li>${t('help.schedule.tip1')}</li>
+          <li>${t('help.schedule.tip2')}</li>
+          <li>${t('help.schedule.tip3')}</li>
+        </ul>
+      `
+    },
+    people: {
+      title: t('help.people.title'),
+      content: `
+        <h4>${t('help.overview')}</h4>
+        <p>${t('help.people.overview')}</p>
+        
+        <h4>${t('help.people.addingPerson')}</h4>
+        <ol>
+          <li>${t('help.people.step1')}</li>
+          <li>${t('help.people.step2')}</li>
+          <li>${t('help.people.step3')}</li>
+          <li>${t('help.people.step4')}</li>
+        </ol>
+        
+        <h4>${t('help.people.assigningSkills')}</h4>
+        <ol>
+          <li>${t('help.people.skillStep1')}</li>
+          <li>${t('help.people.skillStep2')}</li>
+          <li>${t('help.people.skillStep3')}</li>
+          <li>${t('help.people.skillStep4')}</li>
+        </ol>
+        
+        <h4>${t('help.people.proficiencyLevels')}</h4>
+        <ul>
+          <li><strong>1:</strong> ${t('skills.proficiencyLevels.1')}</li>
+          <li><strong>2:</strong> ${t('skills.proficiencyLevels.2')}</li>
+          <li><strong>3:</strong> ${t('skills.proficiencyLevels.3')}</li>
+          <li><strong>4:</strong> ${t('skills.proficiencyLevels.4')}</li>
+          <li><strong>5:</strong> ${t('skills.proficiencyLevels.5')}</li>
+        </ul>
+      `
+    },
+    projects: {
+      title: t('help.projects.title'),
+      content: `
+        <h4>${t('help.overview')}</h4>
+        <p>${t('help.projects.overview')}</p>
+        
+        <h4>${t('help.projects.creating')}</h4>
+        <ol>
+          <li>${t('help.projects.step1')}</li>
+          <li>${t('help.projects.step2')}</li>
+          <li>${t('help.projects.step3')}</li>
+          <li>${t('help.projects.step4')}</li>
+        </ol>
+        
+        <h4>${t('help.projects.skillReqs')}</h4>
+        <p>${t('help.projects.skillReqsDesc')}</p>
+        <ul>
+          <li><strong>${t('projects.peopleNeeded')}:</strong> ${t('help.projects.peopleNeededDesc')}</li>
+          <li><strong>${t('help.projects.minLevel')}:</strong> ${t('help.projects.minLevelDesc')}</li>
+          <li><strong>${t('common.required')}:</strong> ${t('help.projects.requiredDesc')}</li>
+        </ul>
+        
+        <h4>${t('help.projects.findCandidates')}</h4>
+        <p>${t('help.projects.findCandidatesDesc')}</p>
+      `
+    },
+    skills: {
+      title: t('help.skills.title'),
+      content: `
+        <h4>${t('help.overview')}</h4>
+        <p>${t('help.skills.overview')}</p>
+        
+        <h4>${t('help.skills.adding')}</h4>
+        <ol>
+          <li>${t('help.skills.step1')}</li>
+          <li>${t('help.skills.step2')}</li>
+          <li>${t('help.skills.step3')}</li>
+          <li>${t('help.skills.step4')}</li>
+          <li>${t('help.skills.step5')}</li>
+        </ol>
+        
+        <h4>${t('help.skills.statistics')}</h4>
+        <p>${t('help.skills.statisticsDesc')}</p>
+        <ul>
+          <li>${t('help.skills.stat1')}</li>
+          <li>${t('help.skills.stat2')}</li>
+        </ul>
+        
+        <h4>${t('help.skills.skillGaps')}</h4>
+        <p>${t('help.skills.skillGapsDesc')}</p>
+      `
+    },
+    'ai-scheduler': {
+      title: t('help.aiScheduler.title'),
+      content: `
+        <h4>${t('help.overview')}</h4>
+        <p>${t('help.aiScheduler.overview')}</p>
+        
+        <h4>${t('help.aiScheduler.howToUse')}</h4>
+        <ol>
+          <li>${t('help.aiScheduler.step1')}</li>
+          <li>${t('help.aiScheduler.step2')}</li>
+          <li>${t('help.aiScheduler.step3')}</li>
+          <li>${t('help.aiScheduler.step4')}</li>
+        </ol>
+        
+        <h4>${t('help.aiScheduler.actions')}</h4>
+        <ul>
+          <li><strong>✓ ${t('help.aiScheduler.accept')}:</strong> ${t('help.aiScheduler.acceptDesc')}</li>
+          <li><strong>↔ ${t('help.aiScheduler.reschedule')}:</strong> ${t('help.aiScheduler.rescheduleDesc')}</li>
+          <li><strong>✗ ${t('aiScheduler.remove')}:</strong> ${t('help.aiScheduler.removeDesc')}</li>
+        </ul>
+        
+        <h4>${t('help.aiScheduler.considerations')}</h4>
+        <ul>
+          <li>${t('help.aiScheduler.consideration1')}</li>
+          <li>${t('help.aiScheduler.consideration2')}</li>
+          <li>${t('help.aiScheduler.consideration3')}</li>
+          <li>${t('help.aiScheduler.consideration4')}</li>
+        </ul>
+      `
+    },
+    conflicts: {
+      title: t('help.conflicts.title'),
+      content: `
+        <h4>${t('help.overview')}</h4>
+        <p>${t('help.conflicts.overview')}</p>
+        
+        <h4>${t('help.conflicts.types')}</h4>
+        <ul>
+          <li><strong>${t('conflicts.overlap')}:</strong> ${t('help.conflicts.overlapDesc')}</li>
+          <li><strong>${t('conflicts.overallocation')}:</strong> ${t('help.conflicts.overallocationDesc')}</li>
+          <li><strong>${t('conflicts.skillGap')}:</strong> ${t('help.conflicts.skillGapDesc')}</li>
+          <li><strong>${t('conflicts.unavailable')}:</strong> ${t('help.conflicts.unavailableDesc')}</li>
+        </ul>
+        
+        <h4>${t('help.conflicts.severityLevels')}</h4>
+        <ul>
+          <li><span style="color:#ef4444">●</span> <strong>${t('projects.critical')}:</strong> ${t('help.conflicts.criticalDesc')}</li>
+          <li><span style="color:#f59e0b">●</span> <strong>${t('common.warning')}:</strong> ${t('help.conflicts.warningDesc')}</li>
+          <li><span style="color:#64748b">●</span> <strong>${t('common.info')}:</strong> ${t('help.conflicts.infoDesc')}</li>
+        </ul>
+        
+        <h4>${t('help.conflicts.resolving')}</h4>
+        <ol>
+          <li>${t('help.conflicts.resolveStep1')}</li>
+          <li>${t('help.conflicts.resolveStep2')}</li>
+          <li>${t('help.conflicts.resolveStep3')}</li>
+        </ol>
+      `
+    },
+    reports: {
+      title: t('help.reports.title'),
+      content: `
+        <h4>${t('help.overview')}</h4>
+        <p>${t('help.reports.overview')}</p>
+        
+        <h4>${t('reports.projectSummary')}</h4>
+        <p>${t('help.reports.summaryDesc')}</p>
+        <ul>
+          <li>${t('help.reports.item1')}</li>
+          <li>${t('help.reports.item2')}</li>
+          <li>${t('help.reports.item3')}</li>
+        </ul>
+        
+        <h4>${t('reports.preview')}</h4>
+        <ol>
+          <li>${t('help.reports.previewStep1')}</li>
+          <li>${t('help.reports.previewStep2')}</li>
+          <li>${t('help.reports.previewStep3')}</li>
+        </ol>
+        
+        <h4>${t('help.reports.exporting')}</h4>
+        <ul>
+          <li><strong>Excel:</strong> ${t('help.reports.excelDesc')}</li>
+          <li><strong>PDF:</strong> ${t('help.reports.pdfDesc')}</li>
+        </ul>
+        
+        <h4>${t('help.reports.structure')}</h4>
+        <p>${t('help.reports.structureDesc')}</p>
+      `
+    },
+    users: {
+      title: t('help.users.title'),
+      content: `
+        <h4>${t('help.overview')}</h4>
+        <p>${t('help.users.overview')}</p>
+        
+        <h4>${t('help.users.adding')}</h4>
+        <ol>
+          <li>${t('help.users.step1')}</li>
+          <li>${t('help.users.step2')}</li>
+          <li>${t('help.users.step3')}</li>
+          <li>${t('help.users.step4')}</li>
+        </ol>
+        
+        <h4>${t('help.users.roles')}</h4>
+        <ul>
+          <li><strong>${t('users.admin')}:</strong> ${t('help.users.adminDesc')}</li>
+          <li><strong>${t('users.manager')}:</strong> ${t('help.users.managerDesc')}</li>
+          <li><strong>${t('users.scheduler')}:</strong> ${t('help.users.schedulerDesc')}</li>
+          <li><strong>${t('users.viewer')}:</strong> ${t('help.users.viewerDesc')}</li>
+        </ul>
+        
+        <h4>${t('common.actions')}</h4>
+        <ul>
+          <li>${t('help.users.action1')}</li>
+          <li>${t('help.users.action2')}</li>
+          <li>${t('help.users.action3')}</li>
+        </ul>
+      `
+    },
+    settings: {
+      title: t('help.settings.title'),
+      content: `
+        <h4>${t('settings.branding')}</h4>
+        <p>${t('help.settings.brandingDesc')}</p>
+        <ul>
+          <li><strong>${t('settings.companyName')}:</strong> ${t('settings.companyNameHint')}</li>
+          <li><strong>${t('settings.logo')}:</strong> ${t('help.settings.logoDesc')}</li>
+          <li><strong>${t('settings.primaryColor')}:</strong> ${t('settings.primaryColorHint')}</li>
+          <li><strong>${t('settings.footerText')}:</strong> ${t('settings.footerTextHint')}</li>
+        </ul>
+        
+        <h4>${t('settings.languageTranslations')}</h4>
+        <p>${t('help.settings.langDesc')}</p>
+        <ul>
+          <li><strong>${t('settings.defaultLanguage')}:</strong> ${t('settings.defaultLanguageHint')}</li>
+          <li><strong>${t('settings.yourLanguage')}:</strong> ${t('settings.yourLanguageHint')}</li>
+          <li><strong>${t('settings.translationManagement')}:</strong> ${t('help.settings.transDesc')}</li>
+        </ul>
+        <p>${t('help.settings.transManager')}</p>
+        
+        <h4>${t('help.settings.preview')}</h4>
+        <p>${t('help.settings.previewDesc')}</p>
+      `
+    }
+  };
+}
 
 function showHelp() {
   const view = state.currentView;
+  const helpContent = getHelpContent();
   const help = helpContent[view] || {
-    title: 'Help',
-    content: '<p>Help content not available for this page.</p>'
+    title: t('help.title'),
+    content: `<p>${t('help.notAvailable')}</p>`
   };
   
   showModal(help.title, `
@@ -1236,8 +1231,8 @@ async function loadDashboard() {
       timeline.innerHTML = `
         <div class="empty-state">
           <i class="fas fa-calendar-check"></i>
-          <h3>No assignments today</h3>
-          <p>Schedule some work to get started</p>
+          <h3>${t('dashboard.noAssignmentsToday')}</h3>
+          <p>${t('dashboard.scheduleToGetStarted')}</p>
         </div>
       `;
     } else {
@@ -1270,13 +1265,13 @@ async function loadDashboard() {
         `;
       }).join('');
     } else {
-      chartContainer.innerHTML = '<div class="empty-state"><p>No data available</p></div>';
+      chartContainer.innerHTML = `<div class="empty-state"><p>${t('common.noData')}</p></div>`;
     }
     
     // Top utilized
     const topList = document.getElementById('top-utilized-list');
     if (data.topUtilized.length === 0) {
-      topList.innerHTML = '<div class="empty-state"><p>No utilization data</p></div>';
+      topList.innerHTML = `<div class="empty-state"><p>${t('dashboard.noUtilizationData')}</p></div>`;
     } else {
       topList.innerHTML = data.topUtilized.slice(0, 5).map(p => `
         <div class="list-item">
@@ -1300,7 +1295,7 @@ async function loadDashboard() {
       conflictsList.innerHTML = `
         <div class="empty-state">
           <i class="fas fa-check-circle"></i>
-          <p>No active conflicts</p>
+          <p>${t('conflicts.noActiveConflicts')}</p>
         </div>
       `;
     } else {
@@ -1321,7 +1316,7 @@ async function loadDashboard() {
     // Skill demand
     const skillList = document.getElementById('skill-demand-list');
     if (data.skillDemand.length === 0) {
-      skillList.innerHTML = '<div class="empty-state"><p>No skill data</p></div>';
+      skillList.innerHTML = `<div class="empty-state"><p>${t('dashboard.noSkillData')}</p></div>`;
     } else {
       skillList.innerHTML = data.skillDemand.slice(0, 5).map(s => `
         <div class="list-item">
@@ -1357,8 +1352,8 @@ async function loadSchedule() {
         content.innerHTML = `
           <div class="empty-state">
             <i class="fas fa-calendar-times"></i>
-            <h3>No assignments for this day</h3>
-            <p>${canEdit() ? 'Click "Add Assignment" to schedule work' : 'No work scheduled for this date'}</p>
+            <h3>${t('schedule.noAssignmentsForDay')}</h3>
+            <p>${canEdit() ? t('schedule.clickAddAssignment') : t('schedule.noWorkScheduled')}</p>
           </div>
         `;
         return;
@@ -1423,7 +1418,7 @@ async function loadSchedule() {
               <span class="week-day-date">${day.date}</span>
             </div>
             <div class="week-day-assignments">
-              ${day.assignments.length === 0 ? '<p class="text-muted">No assignments</p>' : 
+              ${day.assignments.length === 0 ? `<p class="text-muted">${t('schedule.noAssignments')}</p>` : 
                 day.assignments.slice(0, 5).map(a => `
                   <div class="week-assignment" style="border-left-color: ${a.projectColor}">
                     <span>${a.personName}</span>
@@ -1480,8 +1475,8 @@ async function loadPeople() {
       grid.innerHTML = `
         <div class="empty-state">
           <i class="fas fa-users"></i>
-          <h3>No people found</h3>
-          <p>${canEdit() ? 'Add team members to get started' : 'No team members match your search'}</p>
+          <h3>${t('people.noPeopleFound')}</h3>
+          <p>${canEdit() ? t('people.addTeamToStart') : t('people.noTeamMatch')}</p>
         </div>
       `;
       return;
@@ -1827,8 +1822,8 @@ async function loadProjects() {
       grid.innerHTML = `
         <div class="empty-state">
           <i class="fas fa-folder-open"></i>
-          <h3>No projects found</h3>
-          <p>${canEdit() ? 'Create a project to start scheduling' : 'No projects match your search'}</p>
+          <h3>${t('projects.noProjectsFound')}</h3>
+          <p>${canEdit() ? t('projects.createToStart') : t('projects.noProjectsMatch')}</p>
         </div>
       `;
       return;
@@ -1892,7 +1887,7 @@ async function showProjectDetails(id) {
           <span class="detail-value">${project.statistics.totalHours}</span>
         </div>
         <h4 style="margin: 20px 0 10px;"><i class="fas fa-users"></i> Required Skills & Staffing</h4>
-        ${project.skills.length === 0 ? '<p class="text-muted">No skill requirements defined</p>' : `
+        ${project.skills.length === 0 ? `<p class="text-muted">${t('projects.noSkillRequirements')}</p>` : `
           <div class="skill-requirements-list">
             ${project.skills.map(s => `
               <div class="skill-requirement-item">
@@ -1927,7 +1922,7 @@ async function findCandidates(projectId) {
     
     showModal(`Best Candidates for ${data.projectName}`, `
       <div class="candidates-list">
-        ${data.candidates.length === 0 ? '<p>No candidates found matching the required skills.</p>' :
+        ${data.candidates.length === 0 ? `<p>${t('projects.noCandidatesFound')}</p>` :
           data.candidates.map(c => `
             <div class="list-item">
               <div class="list-item-left">
@@ -2317,8 +2312,8 @@ async function loadSkills() {
       grid.innerHTML = `
         <div class="empty-state">
           <i class="fas fa-star"></i>
-          <h3>No skills found</h3>
-          <p>${canEdit() ? 'Add skills to enable skill matching' : 'No skills match your search'}</p>
+          <h3>${t('skills.noSkillsFound')}</h3>
+          <p>${canEdit() ? t('skills.addToEnable') : t('skills.noSkillsMatch')}</p>
         </div>
       `;
       return;
@@ -2460,8 +2455,8 @@ async function loadConflicts() {
       table.innerHTML = `
         <div class="empty-state">
           <i class="fas fa-check-circle"></i>
-          <h3>No conflicts</h3>
-          <p>All scheduling conflicts have been resolved</p>
+          <h3>${t('conflicts.noConflicts')}</h3>
+          <p>${t('conflicts.allResolved')}</p>
         </div>
       `;
       return;
@@ -2799,7 +2794,7 @@ async function showRescheduleModal(suggestionId) {
         ${available.available.length === 0 ? `
           <div class="empty-state">
             <i class="fas fa-user-slash"></i>
-            <p>No other qualified people available for this time slot</p>
+            <p>${t('aiScheduler.noQualifiedPeople')}</p>
           </div>
         ` : `
           <div class="reschedule-options">
@@ -2996,7 +2991,7 @@ async function loadProjectSummaryReport() {
           <div class="project-report-people">
             <h4><i class="fas fa-users"></i> Assigned Team (${project.assignedPeople.length})</h4>
             ${project.assignedPeople.length === 0 ? `
-              <p class="text-muted">No people assigned to this project yet</p>
+              <p class="text-muted">${t('projects.noPeopleAssigned')}</p>
             ` : `
               <table class="people-table">
                 <thead>
@@ -3210,7 +3205,7 @@ function renderReportPreview(data) {
                 </tbody>
               </table>
             ` : `
-              <p class="no-assignments">No assignments scheduled for this day</p>
+              <p class="no-assignments">${t('schedule.noAssignmentsScheduled')}</p>
             `}
           </div>
         `;
@@ -3421,7 +3416,7 @@ async function loadUsers() {
     if (!table) return;
     
     if (data.data.length === 0) {
-      table.innerHTML = '<div class="empty-state"><p>No users found</p></div>';
+      table.innerHTML = `<div class="empty-state"><p>${t('users.noUsersFound')}</p></div>`;
       return;
     }
     
