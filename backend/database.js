@@ -406,6 +406,20 @@ function getSQLiteSchema() {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (exported_by) REFERENCES users(id) ON DELETE SET NULL
     );
+
+    CREATE TABLE IF NOT EXISTS custom_translations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      language_code TEXT NOT NULL,
+      translation_key TEXT NOT NULL,
+      translation_value TEXT NOT NULL,
+      created_by INTEGER,
+      updated_by INTEGER,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(language_code, translation_key),
+      FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+      FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+    );
   `;
 }
 
@@ -607,6 +621,19 @@ function getPostgresSchema() {
       status VARCHAR(20) DEFAULT 'completed',
       exported_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Custom Translations table
+    CREATE TABLE IF NOT EXISTS custom_translations (
+      id SERIAL PRIMARY KEY,
+      language_code VARCHAR(10) NOT NULL,
+      translation_key VARCHAR(255) NOT NULL,
+      translation_value TEXT NOT NULL,
+      created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(language_code, translation_key)
     );
 
     -- Create indexes

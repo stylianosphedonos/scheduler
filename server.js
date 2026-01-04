@@ -178,6 +178,7 @@ async function startServer() {
     const exportsRoutes = require('./backend/routes/exports');
     const aiSchedulerRoutes = require('./backend/routes/ai-scheduler');
     const importRoutes = require('./backend/routes/import');
+    const translationsRoutes = require('./backend/routes/translations');
 
     // API Routes
     app.use('/api/auth', authRoutes);
@@ -193,6 +194,7 @@ async function startServer() {
     app.use('/api/exports', exportsRoutes);
     app.use('/api/ai-scheduler', aiSchedulerRoutes);
     app.use('/api/import', importRoutes);
+    app.use('/api/translations', translationsRoutes);
 
     // Settings endpoints
     const { authenticateToken, requireRole } = require('./backend/middleware/auth');
@@ -200,7 +202,7 @@ async function startServer() {
     // Public branding settings - no auth required (for login page)
     app.get('/api/settings/public', async (req, res) => {
       try {
-        const brandingKeys = ['company_name', 'logo_url', 'logo_icon', 'primary_color', 'footer_text'];
+        const brandingKeys = ['company_name', 'logo_url', 'logo_icon', 'primary_color', 'footer_text', 'default_language'];
         const settings = await db.prepare(
           `SELECT key, value FROM settings WHERE key IN (${brandingKeys.map(() => '?').join(',')})`
         ).all(...brandingKeys);

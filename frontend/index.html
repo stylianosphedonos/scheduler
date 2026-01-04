@@ -711,6 +711,53 @@
               </div>
             </div>
             
+            <!-- Language & Translations Settings -->
+            <div class="card settings-card">
+              <div class="card-header">
+                <h2><i class="fas fa-language"></i> Language & Translations</h2>
+              </div>
+              <div class="card-body">
+                <form id="language-settings-form" class="settings-form">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Default Language</label>
+                      <select id="setting-default-language" onchange="saveLanguageSetting()">
+                        <option value="en">🇬🇧 English</option>
+                        <option value="el">🇬🇷 Ελληνικά (Greek)</option>
+                      </select>
+                      <span class="form-hint">Default language for new users</span>
+                    </div>
+                    <div class="form-group">
+                      <label>Your Language</label>
+                      <select id="setting-user-language" onchange="changeUserLanguage(this.value)">
+                        <option value="en">🇬🇧 English</option>
+                        <option value="el">🇬🇷 Ελληνικά (Greek)</option>
+                      </select>
+                      <span class="form-hint">Your personal language preference</span>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label>Translation Management</label>
+                    <p class="form-hint mb-2">Customize translations for your organization. Override default text for any label in the application.</p>
+                    <button type="button" class="btn btn-secondary" onclick="openTranslationModal()">
+                      <i class="fas fa-edit"></i> Manage Translations
+                    </button>
+                  </div>
+                  
+                  <div class="language-info">
+                    <div class="info-box">
+                      <i class="fas fa-info-circle"></i>
+                      <div>
+                        <strong>Available Languages</strong>
+                        <p>English (Default), Greek (Ελληνικά)</p>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+            
             <!-- System Settings -->
             <div class="card settings-card">
               <div class="card-header">
@@ -859,6 +906,42 @@
   <!-- Toast Container -->
   <div id="toast-container" class="toast-container"></div>
 
+  <!-- Translation Manager Modal -->
+  <div id="translation-modal" class="modal hidden">
+    <div class="modal-content modal-xl">
+      <div class="modal-header">
+        <h2>📝 Manage Translations</h2>
+        <button class="close-btn" onclick="closeTranslationModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="translation-toolbar">
+          <div class="toolbar-left">
+            <select id="translation-language" onchange="loadTranslationsForLanguage()">
+              <option value="en">🇬🇧 English</option>
+              <option value="el">🇬🇷 Ελληνικά (Greek)</option>
+            </select>
+            <input type="text" id="translation-search" placeholder="Search translations..." oninput="filterTranslations()">
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-secondary" onclick="exportTranslations()">
+              <span class="btn-icon">📥</span> Export JSON
+            </button>
+            <button class="btn btn-danger" onclick="resetTranslations()">
+              <span class="btn-icon">🔄</span> Reset to Default
+            </button>
+          </div>
+        </div>
+        <div class="translation-info">
+          <p>💡 Edit translations below. Changes are saved automatically. Leave empty to use default value.</p>
+        </div>
+        <div id="translation-list" class="translation-list">
+          <!-- Translation items will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="i18n.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

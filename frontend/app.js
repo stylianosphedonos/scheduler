@@ -277,6 +277,15 @@ const helpContent = {
         <li><strong>Footer:</strong> Text shown in exports</li>
       </ul>
       
+      <h4>Language & Translations</h4>
+      <p>Configure language settings:</p>
+      <ul>
+        <li><strong>Default Language:</strong> Language for new users (English or Greek)</li>
+        <li><strong>Your Language:</strong> Your personal preference</li>
+        <li><strong>Manage Translations:</strong> Customize any text in the application</li>
+      </ul>
+      <p>The Translation Manager allows you to override any default text with your own custom translations for each language.</p>
+      
       <h4>System Settings</h4>
       <ul>
         <li><strong>Work Hours:</strong> Default start/end times</li>
@@ -410,6 +419,9 @@ function loadSettings() {
   
   // Load system settings
   loadSystemSettings();
+  
+  // Load language settings
+  loadLanguageSettings();
 }
 
 async function loadSystemSettings() {
@@ -541,6 +553,285 @@ function resetBranding() {
   
   updateBrandingPreview();
   showToast('Branding reset to defaults. Click Save to apply.');
+}
+
+// ===== Language & Translation Management =====
+let translationsCache = {};
+let customTranslationsCache = {};
+
+async function loadLanguageSettings() {
+  try {
+    const settings = await api('/settings');
+    const defaultLang = settings.default_language || 'en';
+    const userLang = localStorage.getItem('scheduler_language') || defaultLang;
+    
+    document.getElementById('setting-default-language').value = defaultLang;
+    document.getElementById('setting-user-language').value = userLang;
+    
+    // Initialize i18n if available
+    if (window.i18n) {
+      await window.i18n.init();
+    }
+  } catch (error) {
+    console.error('Failed to load language settings:', error);
+  }
+}
+
+async function saveLanguageSetting() {
+  const defaultLang = document.getElementById('setting-default-language').value;
+  
+  try {
+    await api('/settings', {
+      method: 'PUT',
+      body: JSON.stringify({ key: 'default_language', value: defaultLang })
+    });
+    showToast('Default language saved');
+  } catch (error) {
+    showToast('Failed to save language setting', 'error');
+  }
+}
+
+async function changeUserLanguage(langCode) {
+  localStorage.setItem('scheduler_language', langCode);
+  
+  if (window.i18n) {
+    await window.i18n.setLanguage(langCode);
+  }
+  
+  showToast(`Language changed to ${langCode === 'el' ? 'Greek' : 'English'}. Some text will update on next page load.`);
+}
+
+async function openTranslationModal() {
+  document.getElementById('translation-modal').classList.remove('hidden');
+  
+  // Load base translations
+  const lang = document.getElementById('translation-language').value;
+  await loadTranslationsForLanguage(lang);
+}
+
+function closeTranslationModal() {
+  document.getElementById('translation-modal').classList.add('hidden');
+}
+
+async function loadTranslationsForLanguage(langCode) {
+  if (!langCode) {
+    langCode = document.getElementById('translation-language').value;
+  }
+  
+  try {
+    // Load base translations
+    if (!translationsCache[langCode]) {
+      const response = await fetch(`/i18n/${langCode}.json`);
+      if (response.ok) {
+        translationsCache[langCode] = await response.json();
+      }
+    }
+    
+    // Load custom translations
+    try {
+      const customResponse = await api(`/translations/${langCode}`);
+      customTranslationsCache[langCode] = customResponse.translations || {};
+    } catch (e) {
+      customTranslationsCache[langCode] = {};
+    }
+    
+    // Render translation list
+    renderTranslationList(langCode);
+  } catch (error) {
+    console.error('Failed to load translations:', error);
+    showToast('Failed to load translations', 'error');
+  }
+}
+
+function renderTranslationList(langCode) {
+  const container = document.getElementById('translation-list');
+  const baseTranslations = translationsCache[langCode] || {};
+  const customTranslations = customTranslationsCache[langCode] || {};
+  const searchTerm = document.getElementById('translation-search').value.toLowerCase();
+  
+  // Flatten translations for display
+  const flatBase = flattenObject(baseTranslations);
+  const flatCustom = flattenObject(customTranslations);
+  
+  // Group by category (first part of key)
+  const categories = {};
+  for (const [key, value] of Object.entries(flatBase)) {
+    if (key === 'meta' || key.startsWith('meta.')) continue;
+    if (typeof value !== 'string') continue;
+    
+    // Filter by search
+    if (searchTerm && !key.toLowerCase().includes(searchTerm) && !value.toLowerCase().includes(searchTerm)) {
+      continue;
+    }
+    
+    const category = key.split('.')[0];
+    if (!categories[category]) {
+      categories[category] = [];
+    }
+    categories[category].push({ key, defaultValue: value, customValue: flatCustom[key] || '' });
+  }
+  
+  // Render HTML
+  let html = '';
+  for (const [category, items] of Object.entries(categories)) {
+    html += `<div class="translation-category">${category}</div>`;
+    
+    for (const item of items) {
+      const hasCustom = item.customValue && item.customValue !== item.defaultValue;
+      html += `
+        <div class="translation-item" data-key="${item.key}">
+          <div class="translation-key">
+            <code>${item.key}</code>
+            <div class="default-value">${escapeHtml(item.defaultValue)}</div>
+          </div>
+          <div class="translation-value">
+            <input type="text" 
+              value="${escapeHtml(item.customValue || '')}" 
+              placeholder="${escapeHtml(item.defaultValue)}"
+              onchange="saveTranslation('${langCode}', '${item.key}', this.value)">
+            ${hasCustom ? `
+              <div class="custom-indicator">
+                <span>✓ Custom value</span>
+                <button class="reset-btn" onclick="resetTranslation('${langCode}', '${item.key}')">Reset</button>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+  }
+  
+  container.innerHTML = html || '<div class="p-4 text-center text-muted">No translations found</div>';
+}
+
+function filterTranslations() {
+  const langCode = document.getElementById('translation-language').value;
+  renderTranslationList(langCode);
+}
+
+async function saveTranslation(langCode, key, value) {
+  try {
+    if (value.trim() === '') {
+      // Reset to default
+      await resetTranslation(langCode, key);
+      return;
+    }
+    
+    await api(`/translations/${langCode}/${key}`, {
+      method: 'PUT',
+      body: JSON.stringify({ value })
+    });
+    
+    // Update cache
+    if (!customTranslationsCache[langCode]) {
+      customTranslationsCache[langCode] = {};
+    }
+    setNestedValue(customTranslationsCache[langCode], key, value);
+    
+    // Update i18n if available
+    if (window.i18n && window.i18n.customTranslations) {
+      if (!window.i18n.customTranslations[langCode]) {
+        window.i18n.customTranslations[langCode] = {};
+      }
+      setNestedValue(window.i18n.customTranslations[langCode], key, value);
+    }
+    
+    // Re-render
+    renderTranslationList(langCode);
+    showToast('Translation saved');
+  } catch (error) {
+    showToast('Failed to save translation', 'error');
+  }
+}
+
+async function resetTranslation(langCode, key) {
+  try {
+    await api(`/translations/${langCode}/${key}`, {
+      method: 'DELETE'
+    });
+    
+    // Update cache
+    if (customTranslationsCache[langCode]) {
+      deleteNestedValue(customTranslationsCache[langCode], key);
+    }
+    
+    // Re-render
+    await loadTranslationsForLanguage(langCode);
+    showToast('Translation reset to default');
+  } catch (error) {
+    showToast('Failed to reset translation', 'error');
+  }
+}
+
+async function resetTranslations() {
+  const langCode = document.getElementById('translation-language').value;
+  const langName = langCode === 'el' ? 'Greek' : 'English';
+  
+  if (!confirm(`Reset ALL custom translations for ${langName}? This cannot be undone.`)) {
+    return;
+  }
+  
+  try {
+    await api(`/translations/${langCode}`, {
+      method: 'DELETE'
+    });
+    
+    customTranslationsCache[langCode] = {};
+    await loadTranslationsForLanguage(langCode);
+    showToast(`All ${langName} translations reset to defaults`);
+  } catch (error) {
+    showToast('Failed to reset translations', 'error');
+  }
+}
+
+async function exportTranslations() {
+  const langCode = document.getElementById('translation-language').value;
+  window.open(`/api/translations/export/${langCode}`, '_blank');
+}
+
+// Helper functions for translation management
+function flattenObject(obj, prefix = '') {
+  const result = {};
+  for (const [key, value] of Object.entries(obj || {})) {
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      Object.assign(result, flattenObject(value, fullKey));
+    } else {
+      result[fullKey] = value;
+    }
+  }
+  return result;
+}
+
+function setNestedValue(obj, path, value) {
+  const parts = path.split('.');
+  let current = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (!current[parts[i]]) {
+      current[parts[i]] = {};
+    }
+    current = current[parts[i]];
+  }
+  current[parts[parts.length - 1]] = value;
+}
+
+function deleteNestedValue(obj, path) {
+  const parts = path.split('.');
+  let current = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (!current[parts[i]]) return;
+    current = current[parts[i]];
+  }
+  delete current[parts[parts.length - 1]];
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
 }
 
 // ===== Role-Based Access Control =====
