@@ -1758,7 +1758,10 @@ async function showPersonDetails(id) {
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" onclick="closeModal()">Close</button>
-          ${canEdit() ? `<button class="btn btn-primary" onclick="editPerson(${id})">Edit</button>` : ''}
+          ${canEdit() ? `
+            <button class="btn btn-danger" onclick="deletePerson(${id})"><i class="fas fa-trash"></i> Delete</button>
+            <button class="btn btn-primary" onclick="editPerson(${id})"><i class="fas fa-edit"></i> Edit</button>
+          ` : ''}
         </div>
       </div>
     `);
@@ -2088,10 +2091,10 @@ async function showProjectDetails(id) {
         </div>
         <div class="detail-row">
           <span class="detail-label">Hours Used</span>
-          <span class="detail-value">${project.statistics.totalHours}</span>
+          <span class="detail-value">${project.statistics?.totalHours || 0}</span>
         </div>
         <h4 style="margin: 20px 0 10px;"><i class="fas fa-users"></i> Required Skills & Staffing</h4>
-        ${project.skills.length === 0 ? `<p class="text-muted">${t('projects.noSkillRequirements')}</p>` : `
+        ${!project.skills || project.skills.length === 0 ? `<p class="text-muted">${t('projects.noSkillRequirements')}</p>` : `
           <div class="skill-requirements-list">
             ${project.skills.map(s => `
               <div class="skill-requirement-item">
@@ -2109,13 +2112,37 @@ async function showProjectDetails(id) {
         `}
         <div class="modal-footer">
           <button class="btn btn-secondary" onclick="closeModal()">Close</button>
-          ${canEdit() ? `<button class="btn btn-secondary" onclick="editProject(${id})"><i class="fas fa-edit"></i> Edit</button>` : ''}
+          ${canEdit() ? `
+            <button class="btn btn-danger" onclick="deleteProject(${id})"><i class="fas fa-trash"></i> Delete</button>
+            <button class="btn btn-secondary" onclick="editProject(${id})"><i class="fas fa-edit"></i> Edit</button>
+          ` : ''}
           <button class="btn btn-primary" onclick="findCandidates(${id})">Find Candidates</button>
         </div>
       </div>
     `);
   } catch (error) {
     showToast('Failed to load project details', 'error');
+  }
+}
+
+// Delete project
+async function deleteProject(id) {
+  if (!canEdit()) {
+    showToast('You do not have permission to delete projects', 'error');
+    return;
+  }
+  
+  if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+    return;
+  }
+  
+  try {
+    await api(`/projects/${id}`, { method: 'DELETE' });
+    closeModal();
+    showToast('Project deleted successfully');
+    loadProjects();
+  } catch (error) {
+    showToast(error.message || 'Failed to delete project', 'error');
   }
 }
 
@@ -2580,11 +2607,128 @@ async function showSkillDetails(id) {
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+          ${canEdit() ? `
+            <button class="btn btn-danger" onclick="deleteSkill(${id})"><i class="fas fa-trash"></i> Delete</button>
+            <button class="btn btn-primary" onclick="editSkill(${id})"><i class="fas fa-edit"></i> Edit</button>
+          ` : ''}
         </div>
       </div>
     `);
   } catch (error) {
     showToast('Failed to load skill details', 'error');
+  }
+}
+
+// Edit skill
+async function editSkill(id) {
+  if (!canEdit()) {
+    showToast('You do not have permission to edit skills', 'error');
+    return;
+  }
+  
+  try {
+    const skill = await api(`/skills/${id}`);
+    
+    showModal(`Edit ${skill.name}`, `
+      <form id="edit-skill-form" class="modal-form">
+        <div class="form-group">
+          <label>Skill Name *</label>
+          <input type="text" name="name" value="${skill.name}" required>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <input type="text" name="category" value="${skill.category || ''}" placeholder="e.g., Programming, Design, Management">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea name="description" rows="3" placeholder="Brief description of this skill">${skill.description || ''}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Color</label>
+          <input type="color" name="color" value="${skill.color || '#6366f1'}">
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" name="isActive" ${skill.isActive ? 'checked' : ''}>
+            Active Skill
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    `);
+    
+    document.getElementById('edit-skill-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      
+      const data = {
+        name: formData.get('name'),
+        category: formData.get('category') || null,
+        description: formData.get('description') || null,
+        color: formData.get('color'),
+        isActive: formData.get('isActive') === 'on'
+      };
+      
+      try {
+        await api(`/skills/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify(data)
+        });
+        
+        closeModal();
+        showToast('Skill updated successfully');
+        loadSkills();
+      } catch (error) {
+        showToast(error.message || 'Failed to update skill', 'error');
+      }
+    };
+  } catch (error) {
+    showToast('Failed to load skill details', 'error');
+  }
+}
+
+// Delete skill
+async function deleteSkill(id) {
+  if (!canEdit()) {
+    showToast('You do not have permission to delete skills', 'error');
+    return;
+  }
+  
+  if (!confirm('Are you sure you want to delete this skill? This will remove it from all people and projects.')) {
+    return;
+  }
+  
+  try {
+    await api(`/skills/${id}`, { method: 'DELETE' });
+    closeModal();
+    showToast('Skill deleted successfully');
+    loadSkills();
+  } catch (error) {
+    showToast(error.message || 'Failed to delete skill. It may be in use by people or projects.', 'error');
+  }
+}
+
+// Delete person
+async function deletePerson(id) {
+  if (!canEdit()) {
+    showToast('You do not have permission to delete people', 'error');
+    return;
+  }
+  
+  if (!confirm('Are you sure you want to delete this person? This will also remove all their assignments.')) {
+    return;
+  }
+  
+  try {
+    await api(`/people/${id}`, { method: 'DELETE' });
+    closeModal();
+    showToast('Person deleted successfully');
+    loadPeople();
+  } catch (error) {
+    showToast(error.message || 'Failed to delete person', 'error');
   }
 }
 
