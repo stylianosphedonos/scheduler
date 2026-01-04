@@ -143,7 +143,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     if (category !== undefined) { updates.push('category = ?'); values.push(category); }
     if (description !== undefined) { updates.push('description = ?'); values.push(description); }
     if (color !== undefined) { updates.push('color = ?'); values.push(color); }
-    if (isActive !== undefined) { updates.push('is_active = ?'); values.push(!!isActive); }
+    if (isActive !== undefined) { updates.push('is_active = ?'); values.push(isActive ? 1 : 0); }
 
     if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
 

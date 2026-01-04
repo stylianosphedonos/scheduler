@@ -190,19 +190,20 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
     }
 
     const isPostgres = getDatabaseType() === 'postgres';
+    const isRemoteValue = isRemote ? 1 : 0;
     let assignmentId;
     
     if (isPostgres) {
       const result = await db.prepare(`
         INSERT INTO assignments (person_id, project_id, date, start_hour, end_hour, status, task_description, location, is_remote, notes, created_by)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
-      `).get(personId, projectId, date, startHour, endHour, status || 'scheduled', taskDescription || null, location || null, !!isRemote, notes || null, req.user.id);
+      `).get(personId, projectId, date, startHour, endHour, status || 'scheduled', taskDescription || null, location || null, isRemoteValue, notes || null, req.user.id);
       assignmentId = result?.id;
     } else {
       const result = await db.prepare(`
         INSERT INTO assignments (person_id, project_id, date, start_hour, end_hour, status, task_description, location, is_remote, notes, created_by)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(personId, projectId, date, startHour, endHour, status || 'scheduled', taskDescription || null, location || null, isRemote ? 1 : 0, notes || null, req.user.id);
+      `).run(personId, projectId, date, startHour, endHour, status || 'scheduled', taskDescription || null, location || null, isRemoteValue, notes || null, req.user.id);
       assignmentId = result.lastInsertRowid;
     }
 

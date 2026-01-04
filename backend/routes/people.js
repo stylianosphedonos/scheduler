@@ -145,7 +145,7 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
       for (const skill of skills) {
         if (skill.skillId) {
           await db.prepare(`INSERT INTO person_skills (person_id, skill_id, proficiency_level, years_experience, certified) VALUES (?, ?, ?, ?, ?)`)
-            .run(personId, skill.skillId, skill.proficiencyLevel || 3, skill.yearsExperience || null, !!skill.certified);
+            .run(personId, skill.skillId, skill.proficiencyLevel || 3, skill.yearsExperience || null, skill.certified ? 1 : 0);
         }
       }
     }
@@ -182,7 +182,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     if (employmentType !== undefined) { updates.push('employment_type = ?'); values.push(employmentType); }
     if (startDate !== undefined) { updates.push('start_date = ?'); values.push(startDate); }
     if (notes !== undefined) { updates.push('notes = ?'); values.push(notes); }
-    if (isActive !== undefined) { updates.push('is_active = ?'); values.push(!!isActive); }
+    if (isActive !== undefined) { updates.push('is_active = ?'); values.push(isActive ? 1 : 0); }
 
     if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
 
@@ -233,7 +233,7 @@ router.put('/:id/skills', authenticateToken, requireRole('admin', 'scheduler'), 
       for (const skill of skills) {
         if (skill.skillId) {
           await db.prepare(`INSERT INTO person_skills (person_id, skill_id, proficiency_level, years_experience, certified) VALUES (?, ?, ?, ?, ?)`)
-            .run(req.params.id, skill.skillId, skill.proficiencyLevel || 3, skill.yearsExperience || null, !!skill.certified);
+            .run(req.params.id, skill.skillId, skill.proficiencyLevel || 3, skill.yearsExperience || null, skill.certified ? 1 : 0);
         }
       }
     }

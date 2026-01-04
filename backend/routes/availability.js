@@ -47,17 +47,19 @@ router.post('/', authenticateToken, requireRole('admin', 'manager', 'scheduler')
     const isPostgres = getDatabaseType() === 'postgres';
     let windowId;
     
+    const isRecurringValue = isRecurring ? 1 : 0;
+    
     if (isPostgres) {
       const result = await db.prepare(`
         INSERT INTO availability_windows (person_id, type, start_date, end_date, start_hour, end_hour, is_recurring, recurrence_pattern, status, reason, approved_by)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
-      `).get(personId, type || 'time-off', startDate, endDate, startHour || 0, endHour || 24, !!isRecurring, recurrencePattern || null, autoApprove ? 'approved' : 'pending', reason || null, autoApprove ? req.user.id : null);
+      `).get(personId, type || 'time-off', startDate, endDate, startHour || 0, endHour || 24, isRecurringValue, recurrencePattern || null, autoApprove ? 'approved' : 'pending', reason || null, autoApprove ? req.user.id : null);
       windowId = result?.id;
     } else {
       const result = await db.prepare(`
         INSERT INTO availability_windows (person_id, type, start_date, end_date, start_hour, end_hour, is_recurring, recurrence_pattern, status, reason, approved_by)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(personId, type || 'time-off', startDate, endDate, startHour || 0, endHour || 24, isRecurring ? 1 : 0, recurrencePattern || null, autoApprove ? 'approved' : 'pending', reason || null, autoApprove ? req.user.id : null);
+      `).run(personId, type || 'time-off', startDate, endDate, startHour || 0, endHour || 24, isRecurringValue, recurrencePattern || null, autoApprove ? 'approved' : 'pending', reason || null, autoApprove ? req.user.id : null);
       windowId = result.lastInsertRowid;
     }
 

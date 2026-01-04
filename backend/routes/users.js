@@ -186,7 +186,7 @@ router.put('/:id', authenticateToken, requireRole('admin'), async (req, res) => 
     if (role !== undefined) { updates.push('role = ?'); values.push(role); }
     if (firstName !== undefined) { updates.push('first_name = ?'); values.push(firstName); }
     if (lastName !== undefined) { updates.push('last_name = ?'); values.push(lastName); }
-    if (isActive !== undefined) { updates.push('is_active = ?'); values.push(!!isActive); }
+    if (isActive !== undefined) { updates.push('is_active = ?'); values.push(isActive ? 1 : 0); }
 
     if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
 

@@ -139,18 +139,19 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
 
     const isPostgres = getDatabaseType() === 'postgres';
     let projectId;
+    const isBillableValue = isBillable !== false ? 1 : 0;
     
     if (isPostgres) {
       const result = await db.prepare(`
         INSERT INTO projects (name, code, client, description, status, priority, color, start_date, end_date, budget_hours, manager_id, is_billable, notes)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
-      `).get(name, code || null, client || null, description || null, status || 'planning', priority || 'medium', color || '#8b5cf6', startDate || null, endDate || null, budgetHours || null, managerId || null, isBillable !== false, notes || null);
+      `).get(name, code || null, client || null, description || null, status || 'planning', priority || 'medium', color || '#8b5cf6', startDate || null, endDate || null, budgetHours || null, managerId || null, isBillableValue, notes || null);
       projectId = result?.id;
     } else {
       const result = await db.prepare(`
         INSERT INTO projects (name, code, client, description, status, priority, color, start_date, end_date, budget_hours, manager_id, is_billable, notes)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(name, code || null, client || null, description || null, status || 'planning', priority || 'medium', color || '#8b5cf6', startDate || null, endDate || null, budgetHours || null, managerId || null, isBillable !== false, notes || null);
+      `).run(name, code || null, client || null, description || null, status || 'planning', priority || 'medium', color || '#8b5cf6', startDate || null, endDate || null, budgetHours || null, managerId || null, isBillableValue, notes || null);
       projectId = result.lastInsertRowid;
     }
 
@@ -158,7 +159,7 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
       for (const skill of skills) {
         if (skill.skillId) {
           await db.prepare(`INSERT INTO project_skills (project_id, skill_id, required_proficiency, is_mandatory, people_needed, hours_needed) VALUES (?, ?, ?, ?, ?, ?)`)
-            .run(projectId, skill.skillId, skill.requiredProficiency || 3, skill.isMandatory !== false, skill.peopleNeeded || 1, skill.hoursNeeded || null);
+            .run(projectId, skill.skillId, skill.requiredProficiency || 3, skill.isMandatory !== false ? 1 : 0, skill.peopleNeeded || 1, skill.hoursNeeded || null);
         }
       }
     }
@@ -197,7 +198,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     if (budgetHours !== undefined) { updates.push('budget_hours = ?'); values.push(budgetHours); }
     if (managerId !== undefined) { updates.push('manager_id = ?'); values.push(managerId); }
     if (notes !== undefined) { updates.push('notes = ?'); values.push(notes); }
-    if (isBillable !== undefined) { updates.push('is_billable = ?'); values.push(!!isBillable); }
+    if (isBillable !== undefined) { updates.push('is_billable = ?'); values.push(isBillable ? 1 : 0); }
 
     if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
 
@@ -257,7 +258,7 @@ router.put('/:id/skills', authenticateToken, requireRole('admin', 'scheduler'), 
       for (const skill of skills) {
         if (skill.skillId) {
           await db.prepare(`INSERT INTO project_skills (project_id, skill_id, required_proficiency, is_mandatory, people_needed, hours_needed) VALUES (?, ?, ?, ?, ?, ?)`)
-            .run(projectId, skill.skillId, skill.requiredProficiency || 3, skill.isMandatory !== false, skill.peopleNeeded || 1, skill.hoursNeeded || null);
+            .run(projectId, skill.skillId, skill.requiredProficiency || 3, skill.isMandatory !== false ? 1 : 0, skill.peopleNeeded || 1, skill.hoursNeeded || null);
         }
       }
     }
