@@ -78,3 +78,4 @@ for (const filePath of otherFiles) {
 
 console.log(`\nTotal fixes: ${totalFixed}`);
 
+

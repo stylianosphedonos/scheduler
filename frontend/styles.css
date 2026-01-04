@@ -4208,10 +4208,10 @@ body {
   .view-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 14px;
-    padding: 16px;
-    margin: 12px 4px 16px;
-    border-radius: 16px;
+    gap: 10px;
+    padding: 12px;
+    margin: 8px 4px 12px;
+    border-radius: 12px;
     position: sticky;
     top: var(--header-height);
     z-index: 50;
@@ -4220,14 +4220,14 @@ body {
   }
   
   .view-header h1 {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
   
   .view-header .view-actions {
     width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 6px;
   }
   
   .view-header .btn {
@@ -4235,21 +4235,26 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding: 10px 8px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+  
+  .view-header .btn i {
+    font-size: 13px;
+    margin-right: 4px;
   }
   
   .view-header .search-bar {
     grid-column: 1 / -1;
+    order: -1;
   }
   
   .view-header .select {
     min-width: 0;
-  }
-  
-  /* Search bar full width on mobile */
-  .view-header .search-bar {
-    width: 100%;
-    min-width: 100%;
-    order: -1;
+    padding: 10px 28px 10px 10px;
+    font-size: 12px;
+    min-height: 40px;
   }
   
   .search-bar input {
@@ -5645,56 +5650,58 @@ body {
   
   /* View header - prevent button overlap */
   .view-header {
-    gap: 12px;
-    padding: 14px 12px;
+    gap: 10px;
+    padding: 12px 10px;
+    margin: 8px 4px 12px;
   }
   
   .view-header h1 {
-    font-size: 1rem;
+    font-size: 0.95rem;
     margin-bottom: 4px;
+    width: 100%;
   }
   
   .view-header .view-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    width: 100%;
   }
   
   .view-header .btn {
-    flex: 1 1 calc(50% - 4px);
-    min-width: calc(50% - 4px);
-    max-width: 100%;
-    padding: 10px 12px;
-    font-size: 13px;
+    padding: 8px 6px;
+    font-size: 11px;
     justify-content: center;
+    min-height: 36px;
+    border-radius: 8px;
   }
   
   .view-header .btn i {
-    margin-right: 4px;
+    margin-right: 3px;
+    font-size: 12px;
   }
   
   .view-header .btn span {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 80px;
   }
   
   .view-header .search-bar {
-    flex: 1 1 100%;
+    grid-column: 1 / -1;
     order: -1;
   }
   
   .view-header .select {
-    flex: 1 1 calc(50% - 4px);
-    min-width: calc(50% - 4px);
-    padding: 10px 28px 10px 10px;
-    font-size: 12px;
+    padding: 8px 24px 8px 8px;
+    font-size: 11px;
+    min-height: 36px;
   }
   
   /* Ensure single full-width button on its own row */
   .view-header .btn-primary {
-    flex: 1 1 100%;
-    min-width: 100%;
+    grid-column: 1 / -1;
   }
   
   /* Stat cards - prevent overlap */
@@ -5972,13 +5979,24 @@ body {
   }
   
   .view-header .btn {
-    padding: 8px 10px;
-    font-size: 12px;
+    padding: 6px 4px;
+    font-size: 10px;
+    min-height: 32px;
+  }
+  
+  .view-header .btn i {
+    font-size: 11px;
+    margin-right: 2px;
+  }
+  
+  .view-header .btn span {
+    max-width: 60px;
   }
   
   .view-header .select {
-    padding: 8px 24px 8px 8px;
-    font-size: 11px;
+    padding: 6px 20px 6px 6px;
+    font-size: 10px;
+    min-height: 32px;
   }
   
   .stat-card .stat-value {
