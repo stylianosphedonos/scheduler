@@ -118,12 +118,22 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
       if (existing) return res.status(400).json({ error: 'Project code already exists' });
     }
 
-    const result = await db.prepare(`
-      INSERT INTO projects (name, code, client, description, status, priority, color, start_date, end_date, budget_hours, manager_id, is_billable, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(name, code || null, client || null, description || null, status || 'planning', priority || 'medium', color || '#8b5cf6', startDate || null, endDate || null, budgetHours || null, managerId || null, isBillable !== false, notes || null);
-
-    const projectId = result.lastInsertRowid;
+    const isPostgres = getDatabaseType() === 'postgres';
+    let projectId;
+    
+    if (isPostgres) {
+      const result = await db.prepare(`
+        INSERT INTO projects (name, code, client, description, status, priority, color, start_date, end_date, budget_hours, manager_id, is_billable, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+      `).get(name, code || null, client || null, description || null, status || 'planning', priority || 'medium', color || '#8b5cf6', startDate || null, endDate || null, budgetHours || null, managerId || null, isBillable !== false, notes || null);
+      projectId = result?.id;
+    } else {
+      const result = await db.prepare(`
+        INSERT INTO projects (name, code, client, description, status, priority, color, start_date, end_date, budget_hours, manager_id, is_billable, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(name, code || null, client || null, description || null, status || 'planning', priority || 'medium', color || '#8b5cf6', startDate || null, endDate || null, budgetHours || null, managerId || null, isBillable !== false, notes || null);
+      projectId = result.lastInsertRowid;
+    }
 
     if (skills && Array.isArray(skills)) {
       for (const skill of skills) {

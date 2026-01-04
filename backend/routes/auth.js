@@ -226,19 +226,31 @@ router.post('/register', async (req, res) => {
     const passwordHash = bcrypt.hashSync(password, 12);
     const role = 'viewer'; // New registrations are viewers by default
 
-    const result = await db.prepare(`
-      INSERT INTO users (username, email, password_hash, role, first_name, last_name)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(username, email, passwordHash, role, firstName || null, lastName || null);
+    const isPostgres = getDatabaseType() === 'postgres';
+    let userId;
+    
+    if (isPostgres) {
+      const result = await db.prepare(`
+        INSERT INTO users (username, email, password_hash, role, first_name, last_name)
+        VALUES (?, ?, ?, ?, ?, ?) RETURNING id
+      `).get(username, email, passwordHash, role, firstName || null, lastName || null);
+      userId = result?.id;
+    } else {
+      const result = await db.prepare(`
+        INSERT INTO users (username, email, password_hash, role, first_name, last_name)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(username, email, passwordHash, role, firstName || null, lastName || null);
+      userId = result.lastInsertRowid;
+    }
 
     const roleInfo = ROLE_PERMISSIONS[role];
 
     // Audit registration
     createAuditLog(db, {
-      userId: result.lastInsertRowid,
+      userId: userId,
       action: 'REGISTER',
       entityType: 'user',
-      entityId: result.lastInsertRowid,
+      entityId: userId,
       newValues: { username, email, role },
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
@@ -247,7 +259,7 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       message: 'Registration successful',
       user: {
-        id: result.lastInsertRowid,
+        id: userId,
         username,
         email,
         role,

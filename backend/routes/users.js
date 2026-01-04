@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { authenticateToken, requireRole, getAllRoles, ROLE_PERMISSIONS } = require('../middleware/auth');
+const { getDatabaseType } = require('../database');
 
 const router = express.Router();
 
@@ -116,19 +117,31 @@ router.post('/', authenticateToken, requireRole('admin'), async (req, res) => {
     const passwordHash = bcrypt.hashSync(password, 10);
     const userRole = validRoles.includes(role) ? role : 'viewer';
 
-    const result = await db.prepare(`
-      INSERT INTO users (username, email, password_hash, role, first_name, last_name)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(username, email, passwordHash, userRole, firstName || null, lastName || null);
+    const isPostgres = getDatabaseType() === 'postgres';
+    let userId;
+    
+    if (isPostgres) {
+      const result = await db.prepare(`
+        INSERT INTO users (username, email, password_hash, role, first_name, last_name)
+        VALUES (?, ?, ?, ?, ?, ?) RETURNING id
+      `).get(username, email, passwordHash, userRole, firstName || null, lastName || null);
+      userId = result?.id;
+    } else {
+      const result = await db.prepare(`
+        INSERT INTO users (username, email, password_hash, role, first_name, last_name)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(username, email, passwordHash, userRole, firstName || null, lastName || null);
+      userId = result.lastInsertRowid;
+    }
 
     // Audit log
     await db.prepare(`
       INSERT INTO audit_log (user_id, action, entity_type, entity_id, new_values)
       VALUES (?, ?, ?, ?, ?)
-    `).run(req.user.id, 'CREATE_USER', 'user', result.lastInsertRowid, JSON.stringify({ username, email, role: userRole }));
+    `).run(req.user.id, 'CREATE_USER', 'user', userId, JSON.stringify({ username, email, role: userRole }));
 
     res.status(201).json({
-      id: result.lastInsertRowid,
+      id: userId,
       username, email, role: userRole, firstName, lastName,
       message: 'User created successfully',
       roleDescription: ROLE_PERMISSIONS[userRole]?.description

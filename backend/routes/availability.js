@@ -1,5 +1,6 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const { getDatabaseType } = require('../database');
 
 const router = express.Router();
 
@@ -43,12 +44,24 @@ router.post('/', authenticateToken, requireRole('admin', 'manager', 'scheduler')
 
     const autoApprove = ['admin', 'manager'].includes(req.user.role);
 
-    const result = await db.prepare(`
-      INSERT INTO availability_windows (person_id, type, start_date, end_date, start_hour, end_hour, is_recurring, recurrence_pattern, status, reason, approved_by)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(personId, type || 'time-off', startDate, endDate, startHour || 0, endHour || 24, !!isRecurring, recurrencePattern || null, autoApprove ? 'approved' : 'pending', reason || null, autoApprove ? req.user.id : null);
+    const isPostgres = getDatabaseType() === 'postgres';
+    let windowId;
+    
+    if (isPostgres) {
+      const result = await db.prepare(`
+        INSERT INTO availability_windows (person_id, type, start_date, end_date, start_hour, end_hour, is_recurring, recurrence_pattern, status, reason, approved_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+      `).get(personId, type || 'time-off', startDate, endDate, startHour || 0, endHour || 24, !!isRecurring, recurrencePattern || null, autoApprove ? 'approved' : 'pending', reason || null, autoApprove ? req.user.id : null);
+      windowId = result?.id;
+    } else {
+      const result = await db.prepare(`
+        INSERT INTO availability_windows (person_id, type, start_date, end_date, start_hour, end_hour, is_recurring, recurrence_pattern, status, reason, approved_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(personId, type || 'time-off', startDate, endDate, startHour || 0, endHour || 24, isRecurring ? 1 : 0, recurrencePattern || null, autoApprove ? 'approved' : 'pending', reason || null, autoApprove ? req.user.id : null);
+      windowId = result.lastInsertRowid;
+    }
 
-    res.status(201).json({ id: result.lastInsertRowid, message: 'Availability window created successfully', status: autoApprove ? 'approved' : 'pending' });
+    res.status(201).json({ id: windowId, message: 'Availability window created successfully', status: autoApprove ? 'approved' : 'pending' });
   } catch (error) {
     console.error('Create availability error:', error);
     res.status(500).json({ error: 'Failed to create availability window' });

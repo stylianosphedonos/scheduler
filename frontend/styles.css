@@ -5431,3 +5431,426 @@ body {
     border-bottom: 1px dashed var(--border-color);
   }
 }
+
+/* ===== Mobile Overlap Fixes ===== */
+@media (max-width: 575px) {
+  /* Grid card - prevent text overflow */
+  .grid-card {
+    padding: 16px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  .grid-card-header {
+    gap: 12px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  .grid-card-header > div {
+    min-width: 0;
+    overflow: hidden;
+    flex: 1;
+  }
+  
+  .grid-card-title {
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+  }
+  
+  .grid-card-subtitle {
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+  }
+  
+  .grid-card-avatar {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    font-size: 14px;
+  }
+  
+  .grid-card-body {
+    margin-bottom: 12px;
+  }
+  
+  .grid-card-tags {
+    max-width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .grid-card-tags .tag {
+    flex-shrink: 0;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  
+  .grid-card-footer {
+    padding-top: 12px;
+    gap: 8px;
+  }
+  
+  .grid-card-stat-value {
+    font-size: 16px;
+  }
+  
+  .grid-card-stat-label {
+    font-size: 10px;
+  }
+  
+  /* View header - prevent button overlap */
+  .view-header {
+    gap: 12px;
+    padding: 14px 12px;
+  }
+  
+  .view-header h1 {
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+  
+  .view-header .view-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .view-header .btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: calc(50% - 4px);
+    max-width: 100%;
+    padding: 10px 12px;
+    font-size: 13px;
+    justify-content: center;
+  }
+  
+  .view-header .btn i {
+    margin-right: 4px;
+  }
+  
+  .view-header .btn span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .view-header .search-bar {
+    flex: 1 1 100%;
+    order: -1;
+  }
+  
+  .view-header .select {
+    flex: 1 1 calc(50% - 4px);
+    min-width: calc(50% - 4px);
+    padding: 10px 28px 10px 10px;
+    font-size: 12px;
+  }
+  
+  /* Ensure single full-width button on its own row */
+  .view-header .btn-primary {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+  
+  /* Stat cards - prevent overlap */
+  .stats-row {
+    gap: 10px;
+  }
+  
+  .stat-card {
+    padding: 14px 12px;
+    min-width: 0;
+  }
+  
+  .stat-card .stat-value {
+    font-size: 1.5rem;
+  }
+  
+  .stat-card .stat-label {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .stat-card .stat-icon {
+    font-size: 1.2rem;
+  }
+  
+  /* Modal fixes */
+  .modal-content {
+    padding: 0;
+  }
+  
+  .modal-header {
+    padding: 16px;
+    position: sticky;
+    top: 0;
+    background: var(--bg-card);
+    z-index: 10;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 40px);
+  }
+  
+  .modal-body {
+    padding: 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .modal-footer {
+    padding: 16px;
+    position: sticky;
+    bottom: 0;
+    background: var(--bg-card);
+    z-index: 10;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+  }
+  
+  .modal-footer .btn {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  /* Form fixes */
+  .form-row {
+    gap: 12px;
+  }
+  
+  .form-group {
+    margin-bottom: 14px;
+  }
+  
+  /* Table responsive */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -12px;
+    padding: 0 12px;
+  }
+  
+  table {
+    min-width: 600px;
+  }
+  
+  th, td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  
+  /* Detail rows - prevent overlap */
+  .detail-row {
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 0;
+  }
+  
+  .detail-label {
+    font-size: 12px;
+  }
+  
+  .detail-value {
+    font-size: 14px;
+    word-break: break-word;
+  }
+  
+  /* Dashboard cards */
+  .dashboard-grid {
+    gap: 12px;
+  }
+  
+  .dashboard-card {
+    padding: 16px;
+  }
+  
+  .card-header h3 {
+    font-size: 14px;
+  }
+  
+  /* AI Scheduler specific */
+  .ai-suggestion-card {
+    padding: 14px;
+  }
+  
+  .ai-person-info {
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  .ai-person-info .person-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* Report preview */
+  .report-preview {
+    padding: 12px;
+  }
+  
+  /* Settings page */
+  .settings-container {
+    padding: 12px;
+  }
+  
+  .branding-preview {
+    padding: 14px;
+  }
+  
+  /* User list */
+  .user-list {
+    gap: 10px;
+  }
+  
+  .user-card {
+    padding: 14px;
+  }
+  
+  /* Schedule view */
+  .schedule-controls {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .schedule-nav .btn {
+    padding: 10px;
+    font-size: 13px;
+  }
+  
+  /* Conflict cards */
+  .conflict-card {
+    padding: 14px;
+  }
+  
+  .conflict-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  
+  /* Skills in modals */
+  .person-skills-list,
+  .project-skills-list {
+    max-height: 200px;
+  }
+  
+  .skill-assignment-row {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+  }
+  
+  .skill-checkbox {
+    width: 100%;
+  }
+  
+  .skill-proficiency {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  /* Language switcher */
+  .language-switcher {
+    position: relative;
+  }
+  
+  .language-dropdown {
+    right: 0;
+    left: auto;
+    min-width: 140px;
+  }
+  
+  /* Mobile bottom nav - prevent overlap */
+  .mobile-bottom-nav {
+    gap: 0;
+    padding: 8px 4px;
+  }
+  
+  .mobile-nav-item {
+    padding: 8px 4px;
+    font-size: 10px;
+  }
+  
+  .mobile-nav-item i {
+    font-size: 18px;
+  }
+  
+  /* More menu - proper sizing */
+  .mobile-more-menu {
+    padding: 12px;
+  }
+  
+  .mobile-more-menu a {
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+}
+
+/* Extra small screens (less than 375px) */
+@media (max-width: 374px) {
+  .grid-card {
+    padding: 12px;
+  }
+  
+  .grid-card-header {
+    gap: 10px;
+  }
+  
+  .grid-card-avatar {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+  
+  .grid-card-title {
+    font-size: 14px;
+  }
+  
+  .grid-card-subtitle {
+    font-size: 11px;
+  }
+  
+  .grid-card-stat-value {
+    font-size: 14px;
+  }
+  
+  .view-header .btn {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  
+  .view-header .select {
+    padding: 8px 24px 8px 8px;
+    font-size: 11px;
+  }
+  
+  .stat-card .stat-value {
+    font-size: 1.25rem;
+  }
+  
+  .stat-card .stat-label {
+    font-size: 10px;
+  }
+}

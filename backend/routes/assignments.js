@@ -1,7 +1,11 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const { getDatabaseType, getBooleanCondition } = require('../database');
 
 const router = express.Router();
+
+// Helper for boolean conditions
+const getResolvedCondition = (resolved) => getBooleanCondition('is_resolved', resolved);
 
 /**
  * ASSIGNMENT/SCHEDULE MANAGEMENT
@@ -96,7 +100,8 @@ router.get('/daily/:date', authenticateToken, async (req, res) => {
       warnings: { overHours: p.totalHours > p.maxHoursPerDay, overProjects: p.projectCount.size > p.maxProjectsPerDay }
     }));
 
-    const conflicts = await db.prepare('SELECT * FROM schedule_conflicts WHERE date = ? AND is_resolved = false').all(date);
+    const unresolvedCond = getResolvedCondition(false);
+    const conflicts = await db.prepare(`SELECT * FROM schedule_conflicts WHERE date = ? AND ${unresolvedCond}`).all(date);
 
     res.json({
       date, schedule,
@@ -184,12 +189,24 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
       return res.status(400).json({ error: 'Time slot overlaps with existing assignment', conflictingAssignments: overlaps });
     }
 
-    const result = await db.prepare(`
-      INSERT INTO assignments (person_id, project_id, date, start_hour, end_hour, status, task_description, location, is_remote, notes, created_by)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(personId, projectId, date, startHour, endHour, status || 'scheduled', taskDescription || null, location || null, isRemote ? 1 : 0, notes || null, req.user.id);
+    const isPostgres = getDatabaseType() === 'postgres';
+    let assignmentId;
+    
+    if (isPostgres) {
+      const result = await db.prepare(`
+        INSERT INTO assignments (person_id, project_id, date, start_hour, end_hour, status, task_description, location, is_remote, notes, created_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+      `).get(personId, projectId, date, startHour, endHour, status || 'scheduled', taskDescription || null, location || null, !!isRemote, notes || null, req.user.id);
+      assignmentId = result?.id;
+    } else {
+      const result = await db.prepare(`
+        INSERT INTO assignments (person_id, project_id, date, start_hour, end_hour, status, task_description, location, is_remote, notes, created_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(personId, projectId, date, startHour, endHour, status || 'scheduled', taskDescription || null, location || null, isRemote ? 1 : 0, notes || null, req.user.id);
+      assignmentId = result.lastInsertRowid;
+    }
 
-    res.status(201).json({ id: result.lastInsertRowid, message: 'Assignment created successfully' });
+    res.status(201).json({ id: assignmentId, message: 'Assignment created successfully' });
   } catch (error) {
     console.error('Create assignment error:', error);
     res.status(500).json({ error: 'Failed to create assignment' });

@@ -103,12 +103,24 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
     const existing = await db.prepare('SELECT id FROM skills WHERE name = ?').get(name);
     if (existing) return res.status(400).json({ error: 'Skill name already exists' });
 
-    const result = await db.prepare(`
-      INSERT INTO skills (name, category, description, color)
-      VALUES (?, ?, ?, ?)
-    `).run(name, category || null, description || null, color || '#6366f1');
+    const isPostgres = getDatabaseType() === 'postgres';
+    let skillId;
+    
+    if (isPostgres) {
+      const result = await db.prepare(`
+        INSERT INTO skills (name, category, description, color)
+        VALUES (?, ?, ?, ?) RETURNING id
+      `).get(name, category || null, description || null, color || '#6366f1');
+      skillId = result?.id;
+    } else {
+      const result = await db.prepare(`
+        INSERT INTO skills (name, category, description, color)
+        VALUES (?, ?, ?, ?)
+      `).run(name, category || null, description || null, color || '#6366f1');
+      skillId = result.lastInsertRowid;
+    }
 
-    res.status(201).json({ id: result.lastInsertRowid, message: 'Skill created successfully' });
+    res.status(201).json({ id: skillId, message: 'Skill created successfully' });
   } catch (error) {
     console.error('Create skill error:', error);
     res.status(500).json({ error: 'Failed to create skill' });

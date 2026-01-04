@@ -124,12 +124,22 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
     const existing = await db.prepare('SELECT id FROM people WHERE email = ?').get(email);
     if (existing) return res.status(400).json({ error: 'Email already exists' });
 
-    const result = await db.prepare(`
-      INSERT INTO people (employee_id, first_name, last_name, email, phone, department, job_title, max_hours_per_day, max_projects_per_day, hourly_rate, employment_type, start_date, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(employeeId || null, firstName, lastName, email, phone || null, department || null, jobTitle || null, maxHoursPerDay || 8, maxProjectsPerDay || 3, hourlyRate || null, employmentType || 'full-time', startDate || null, notes || null);
-
-    const personId = result.lastInsertRowid;
+    const isPostgres = getDatabaseType() === 'postgres';
+    let personId;
+    
+    if (isPostgres) {
+      const result = await db.prepare(`
+        INSERT INTO people (employee_id, first_name, last_name, email, phone, department, job_title, max_hours_per_day, max_projects_per_day, hourly_rate, employment_type, start_date, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+      `).get(employeeId || null, firstName, lastName, email, phone || null, department || null, jobTitle || null, maxHoursPerDay || 8, maxProjectsPerDay || 3, hourlyRate || null, employmentType || 'full-time', startDate || null, notes || null);
+      personId = result?.id;
+    } else {
+      const result = await db.prepare(`
+        INSERT INTO people (employee_id, first_name, last_name, email, phone, department, job_title, max_hours_per_day, max_projects_per_day, hourly_rate, employment_type, start_date, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(employeeId || null, firstName, lastName, email, phone || null, department || null, jobTitle || null, maxHoursPerDay || 8, maxProjectsPerDay || 3, hourlyRate || null, employmentType || 'full-time', startDate || null, notes || null);
+      personId = result.lastInsertRowid;
+    }
 
     if (skills && Array.isArray(skills)) {
       for (const skill of skills) {
