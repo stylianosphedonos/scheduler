@@ -1047,6 +1047,18 @@ function showToast(message, type = 'success') {
   }, 4000);
 }
 
+// ===== Utilities =====
+// Format date to yyyy-MM-dd for HTML date inputs
+function formatDateForInput(dateString) {
+  if (!dateString) return '';
+  // Handle ISO format with time (e.g., "2026-01-04T00:00:00.000Z")
+  if (dateString.includes('T')) {
+    return dateString.split('T')[0];
+  }
+  // Already in correct format
+  return dateString;
+}
+
 // ===== Modal =====
 function showModal(title, content) {
   document.getElementById('modal-title').textContent = title;
@@ -2161,11 +2173,11 @@ async function editProject(id) {
         <div class="form-row">
           <div class="form-group">
             <label>Start Date</label>
-            <input type="date" name="startDate" value="${project.startDate || ''}">
+            <input type="date" name="startDate" value="${formatDateForInput(project.startDate)}">
           </div>
           <div class="form-group">
             <label>End Date</label>
-            <input type="date" name="endDate" value="${project.endDate || ''}">
+            <input type="date" name="endDate" value="${formatDateForInput(project.endDate)}">
           </div>
         </div>
         <div class="form-group">

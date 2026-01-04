@@ -15,6 +15,18 @@ const getDateNow = () => {
  * - Viewer: Read-only access
  */
 
+// Get clients list - ALL ROLES (must be before /:id to avoid route conflict)
+router.get('/meta/clients', authenticateToken, async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const clients = await db.prepare('SELECT DISTINCT client FROM projects WHERE client IS NOT NULL ORDER BY client').all();
+    res.json(clients.map(c => c.client));
+  } catch (error) {
+    console.error('Get clients error:', error);
+    res.status(500).json({ error: 'Failed to get clients' });
+  }
+});
+
 // Get all projects - ALL ROLES
 router.get('/', authenticateToken, async (req, res) => {
   try {
@@ -97,7 +109,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
         requiredProficiency: s.required_proficiency, isMandatory: !!s.is_mandatory, 
         peopleNeeded: s.people_needed || 1, hoursNeeded: s.hours_needed
       })),
-      statistics: { totalAssignments: stats.total_assignments, uniquePeople: stats.unique_people, totalHours: stats.total_hours || 0, completedCount: stats.completed_count }
+      statistics: { totalAssignments: stats?.total_assignments || 0, uniquePeople: stats?.unique_people || 0, totalHours: stats?.total_hours || 0, completedCount: stats?.completed_count || 0 }
     });
   } catch (error) {
     console.error('Get project error:', error);
@@ -238,18 +250,6 @@ router.put('/:id/skills', authenticateToken, requireRole('admin', 'scheduler'), 
   } catch (error) {
     console.error('Update project skills error:', error);
     res.status(500).json({ error: 'Failed to update project skills' });
-  }
-});
-
-// Get clients list - ALL ROLES
-router.get('/meta/clients', authenticateToken, async (req, res) => {
-  try {
-    const db = req.app.locals.db;
-    const clients = await db.prepare('SELECT DISTINCT client FROM projects WHERE client IS NOT NULL ORDER BY client').all();
-    res.json(clients.map(c => c.client));
-  } catch (error) {
-    console.error('Get clients error:', error);
-    res.status(500).json({ error: 'Failed to get clients' });
   }
 });
 
