@@ -3861,11 +3861,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Logout
   document.getElementById('logout-btn').addEventListener('click', logout);
   
-  // Mobile menu
-  document.getElementById('mobile-menu-btn').addEventListener('click', () => {
-    document.querySelector('.sidebar').classList.toggle('open');
-  });
-  
   // Modal close
   document.getElementById('modal-close').addEventListener('click', closeModal);
   document.getElementById('modal-overlay').addEventListener('click', (e) => {

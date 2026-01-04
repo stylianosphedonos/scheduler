@@ -84,6 +84,7 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "home": "Home",
     "schedule": "Schedule",
     "people": "People",
     "projects": "Projects",
@@ -94,7 +95,8 @@
     "aiScheduler": "AI Scheduler",
     "help": "Help",
     "profile": "Profile",
-    "conflicts": "Conflicts"
+    "conflicts": "Conflicts",
+    "more": "More"
   },
   "dashboard": {
     "title": "Dashboard",
