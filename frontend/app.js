@@ -418,9 +418,9 @@ function loadSettings() {
   // Load language settings
   loadLanguageSettings();
   
-  // Load database info (admin only)
+  // Load database info (admin only) - silent load, no toast
   if (canManageUsers()) {
-    loadDatabaseInfo();
+    loadDatabaseInfo(false);
   }
 }
 
@@ -611,15 +611,24 @@ async function changeUserLanguage(langCode) {
 }
 
 // ===== Database Management Functions =====
-async function loadDatabaseInfo() {
+async function loadDatabaseInfo(showNotification = true) {
   try {
+    // Check if elements exist first (settings view might not be active)
+    const dbTypeEl = document.getElementById('db-type');
+    const dbTotalEl = document.getElementById('db-total-records');
+    const infoContent = document.getElementById('db-info-content');
+    
+    // Only proceed if at least one element exists (settings view is visible)
+    if (!dbTypeEl && !dbTotalEl && !infoContent) {
+      return; // Settings view not visible, skip silently
+    }
+    
     const info = await api('/database/info');
     
-    document.getElementById('db-type').textContent = info.databaseType || 'Unknown';
-    document.getElementById('db-total-records').textContent = info.totalRecords?.toLocaleString() || '0';
+    if (dbTypeEl) dbTypeEl.textContent = info.databaseType || 'Unknown';
+    if (dbTotalEl) dbTotalEl.textContent = info.totalRecords?.toLocaleString() || '0';
     
     // Show table breakdown
-    const infoContent = document.getElementById('db-info-content');
     if (infoContent && info.tables) {
       let html = `
         <div class="db-info-item">
@@ -645,9 +654,13 @@ async function loadDatabaseInfo() {
       infoContent.innerHTML = html;
     }
     
-    showToast('Database info refreshed', 'success');
+    if (showNotification) {
+      showToast('Database info refreshed', 'success');
+    }
   } catch (error) {
-    showToast('Failed to load database info: ' + error.message, 'error');
+    if (showNotification) {
+      showToast('Failed to load database info: ' + error.message, 'error');
+    }
   }
 }
 
