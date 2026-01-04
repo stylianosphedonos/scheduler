@@ -9,6 +9,18 @@ const getStringAgg = () => {
   return getDatabaseType() === 'postgres' ? 'STRING_AGG' : 'GROUP_CONCAT';
 };
 
+// Helper for database-agnostic date functions
+const getDateNow = () => {
+  return getDatabaseType() === 'postgres' ? 'CURRENT_DATE' : "date('now')";
+};
+
+const getDateOffset = (days) => {
+  if (getDatabaseType() === 'postgres') {
+    return `CURRENT_DATE - INTERVAL '${Math.abs(days)} days'`;
+  }
+  return `date('now', '${days} days')`;
+};
+
 /**
  * PEOPLE MANAGEMENT
  * - Admin & Scheduler: Full CRUD access
@@ -72,14 +84,17 @@ router.get('/:id', authenticateToken, async (req, res) => {
       ORDER BY ps.proficiency_level DESC, s.name
     `).all(req.params.id);
 
+    const dateOffset = getDateOffset(-7);
+    const dateNow = getDateNow();
+    
     const assignments = await db.prepare(`
       SELECT a.*, p.name as project_name, p.color as project_color
       FROM assignments a JOIN projects p ON a.project_id = p.id
-      WHERE a.person_id = ? AND a.date >= date('now', '-7 days')
+      WHERE a.person_id = ? AND a.date >= ${dateOffset}
       ORDER BY a.date DESC, a.start_hour LIMIT 20
     `).all(req.params.id);
 
-    const availability = await db.prepare(`SELECT * FROM availability_windows WHERE person_id = ? AND end_date >= date('now') ORDER BY start_date`).all(req.params.id);
+    const availability = await db.prepare(`SELECT * FROM availability_windows WHERE person_id = ? AND end_date >= ${dateNow} ORDER BY start_date`).all(req.params.id);
 
     res.json({
       id: person.id, employeeId: person.employee_id, firstName: person.first_name, lastName: person.last_name,
@@ -179,8 +194,9 @@ router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) 
     const person = await db.prepare('SELECT * FROM people WHERE id = ?').get(req.params.id);
     if (!person) return res.status(404).json({ error: 'Person not found' });
 
-    const activeAssignments = await db.prepare(`SELECT COUNT(*) as count FROM assignments WHERE person_id = ? AND date >= date('now') AND status NOT IN ('completed', 'cancelled')`).get(req.params.id);
-    if (activeAssignments.count > 0) {
+    const dateNowDel = getDateNow();
+    const activeAssignments = await db.prepare(`SELECT COUNT(*) as count FROM assignments WHERE person_id = ? AND date >= ${dateNowDel} AND status NOT IN ('completed', 'cancelled')`).get(req.params.id);
+    if (activeAssignments?.count > 0) {
       return res.status(400).json({ error: 'Cannot delete person with active future assignments', assignmentCount: activeAssignments.count });
     }
 

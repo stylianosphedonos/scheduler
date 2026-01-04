@@ -1,7 +1,13 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const { getDatabaseType } = require('../database');
 
 const router = express.Router();
+
+// Helper for database-agnostic date functions
+const getDateNow = () => {
+  return getDatabaseType() === 'postgres' ? 'CURRENT_DATE' : "date('now')";
+};
 
 /**
  * PROJECT MANAGEMENT
@@ -181,11 +187,12 @@ router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) 
     const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
+    const dateNow = getDateNow();
     const activeAssignments = await db.prepare(`
-      SELECT COUNT(*) as count FROM assignments WHERE project_id = ? AND date >= date('now') AND status NOT IN ('completed', 'cancelled')
+      SELECT COUNT(*) as count FROM assignments WHERE project_id = ? AND date >= ${dateNow} AND status NOT IN ('completed', 'cancelled')
     `).get(req.params.id);
 
-    if (activeAssignments.count > 0) {
+    if (activeAssignments?.count > 0) {
       return res.status(400).json({ error: 'Cannot delete project with active future assignments', assignmentCount: activeAssignments.count });
     }
 
