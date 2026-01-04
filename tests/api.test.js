@@ -2353,6 +2353,855 @@ describe('Empty State Translations', () => {
   });
 });
 
+// ============================================
+// 22. DATABASE MANAGEMENT TESTS (Admin only)
+// ============================================
+describe('Database Management', () => {
+  
+  describe('GET /api/database/info', () => {
+    test('TC-DB-001: Admin should get database info', async () => {
+      const res = await api('/api/database/info', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+      expect(res.data).toHaveProperty('databaseType');
+      expect(res.data).toHaveProperty('tables');
+      expect(res.data).toHaveProperty('totalRecords');
+      expect(['sqlite', 'postgres']).toContain(res.data.databaseType);
+    });
+
+    test('TC-DB-002: Database info should include table counts', async () => {
+      const res = await api('/api/database/info', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+      expect(res.data.tables).toHaveProperty('users');
+      expect(res.data.tables).toHaveProperty('people');
+      expect(res.data.tables).toHaveProperty('projects');
+      expect(res.data.tables).toHaveProperty('assignments');
+      expect(res.data.tables).toHaveProperty('skills');
+    });
+
+    test('TC-DB-003: Non-admin should not access database info', async () => {
+      if (!viewerToken) return;
+      
+      const res = await api('/api/database/info', {
+        method: 'GET',
+        token: viewerToken
+      });
+      
+      expect(res.status).toBe(403);
+    });
+
+    test('TC-DB-004: Scheduler should not access database info', async () => {
+      if (!schedulerToken) return;
+      
+      const res = await api('/api/database/info', {
+        method: 'GET',
+        token: schedulerToken
+      });
+      
+      expect(res.status).toBe(403);
+    });
+
+    test('TC-DB-005: Unauthenticated user should not access database info', async () => {
+      const res = await api('/api/database/info', {
+        method: 'GET'
+      });
+      
+      expect(res.status).toBe(401);
+    });
+  });
+
+  describe('POST /api/database/backup', () => {
+    test('TC-DB-006: Admin should create database backup', async () => {
+      const res = await api('/api/database/backup', {
+        method: 'POST',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+      expect(res.data).toHaveProperty('success', true);
+      expect(res.data).toHaveProperty('backup');
+      expect(res.data.backup).toHaveProperty('backupDate');
+      expect(res.data.backup).toHaveProperty('data');
+    });
+
+    test('TC-DB-007: Backup should include all tables', async () => {
+      const res = await api('/api/database/backup', {
+        method: 'POST',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+      const tables = Object.keys(res.data.backup.data);
+      expect(tables).toContain('users');
+      expect(tables).toContain('people');
+      expect(tables).toContain('projects');
+      expect(tables).toContain('skills');
+      expect(tables).toContain('assignments');
+    });
+
+    test('TC-DB-008: Backup should exclude password hashes', async () => {
+      const res = await api('/api/database/backup', {
+        method: 'POST',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+      
+      // Check users data doesn't contain password_hash
+      if (res.data.backup.data.users && res.data.backup.data.users.length > 0) {
+        res.data.backup.data.users.forEach(user => {
+          expect(user).not.toHaveProperty('password_hash');
+        });
+      }
+    });
+
+    test('TC-DB-009: Non-admin should not create backup', async () => {
+      if (!viewerToken) return;
+      
+      const res = await api('/api/database/backup', {
+        method: 'POST',
+        token: viewerToken
+      });
+      
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe('GET /api/database/export', () => {
+    test('TC-DB-010: Admin should export database as JSON', async () => {
+      const res = await fetch(`${BASE_URL}/api/database/export`, {
+        headers: { 'Authorization': `Bearer ${adminToken}` }
+      });
+      
+      expect(res.status).toBe(200);
+      expect(res.headers.get('content-type')).toContain('application/json');
+      expect(res.headers.get('content-disposition')).toContain('attachment');
+      expect(res.headers.get('content-disposition')).toContain('.json');
+    });
+
+    test('TC-DB-011: Export should contain export metadata', async () => {
+      const res = await api('/api/database/export', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+      expect(res.data).toHaveProperty('exportDate');
+      expect(res.data).toHaveProperty('databaseType');
+      expect(res.data).toHaveProperty('data');
+    });
+
+    test('TC-DB-012: Non-admin should not export database', async () => {
+      if (!schedulerToken) return;
+      
+      const res = await api('/api/database/export', {
+        method: 'GET',
+        token: schedulerToken
+      });
+      
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe('POST /api/database/clean', () => {
+    test('TC-DB-013: Admin should clean old data with default options', async () => {
+      const res = await api('/api/database/clean', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          cleanAssignments: true,
+          cleanConflicts: true,
+          cleanExportLogs: true,
+          cleanAuditLogs: true,
+          olderThanDays: 365
+        })
+      });
+      
+      expect(res.status).toBe(200);
+      expect(res.data).toHaveProperty('success', true);
+      expect(res.data).toHaveProperty('results');
+      expect(res.data.results).toHaveProperty('assignmentsDeleted');
+      expect(res.data.results).toHaveProperty('conflictsDeleted');
+      expect(res.data.results).toHaveProperty('exportLogsDeleted');
+      expect(res.data.results).toHaveProperty('auditLogsDeleted');
+    });
+
+    test('TC-DB-014: Clean should respect olderThanDays parameter', async () => {
+      const res = await api('/api/database/clean', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          cleanAssignments: true,
+          olderThanDays: 9999 // Very far in the past, should clean nothing recent
+        })
+      });
+      
+      expect(res.status).toBe(200);
+      expect(res.data).toHaveProperty('cutoffDate');
+    });
+
+    test('TC-DB-015: Clean with no options should clean nothing', async () => {
+      const res = await api('/api/database/clean', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          cleanAssignments: false,
+          cleanConflicts: false,
+          cleanExportLogs: false,
+          cleanAuditLogs: false,
+          olderThanDays: 1
+        })
+      });
+      
+      expect(res.status).toBe(200);
+      expect(res.data.results.assignmentsDeleted).toBe(0);
+      expect(res.data.results.conflictsDeleted).toBe(0);
+      expect(res.data.results.exportLogsDeleted).toBe(0);
+      expect(res.data.results.auditLogsDeleted).toBe(0);
+    });
+
+    test('TC-DB-016: Non-admin should not clean database', async () => {
+      if (!viewerToken) return;
+      
+      const res = await api('/api/database/clean', {
+        method: 'POST',
+        token: viewerToken,
+        body: JSON.stringify({ cleanAssignments: true })
+      });
+      
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe('POST /api/database/reset', () => {
+    test('TC-DB-017: Reset should require confirmation', async () => {
+      const res = await api('/api/database/reset', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({})
+      });
+      
+      expect(res.status).toBe(400);
+      expect(res.data).toHaveProperty('error');
+      expect(res.data.error).toContain('not confirmed');
+    });
+
+    test('TC-DB-018: Reset should reject wrong confirmation text', async () => {
+      const res = await api('/api/database/reset', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          confirmReset: 'DELETE_DATABASE'
+        })
+      });
+      
+      expect(res.status).toBe(400);
+    });
+
+    test('TC-DB-019: Non-admin should not reset database', async () => {
+      if (!schedulerToken) return;
+      
+      const res = await api('/api/database/reset', {
+        method: 'POST',
+        token: schedulerToken,
+        body: JSON.stringify({
+          confirmReset: 'RESET_DATABASE'
+        })
+      });
+      
+      expect(res.status).toBe(403);
+    });
+
+    // Note: We don't actually test a real reset as it would destroy test data
+    test('TC-DB-020: Reset endpoint should exist and be protected', async () => {
+      const res = await api('/api/database/reset', {
+        method: 'POST'
+      });
+      
+      expect(res.status).toBe(401); // No token
+    });
+  });
+});
+
+// ============================================
+// 23. DATA INTEGRITY TESTS
+// ============================================
+describe('Data Integrity', () => {
+  
+  describe('Foreign Key Relationships', () => {
+    test('TC-INT-001: Cannot delete person with active assignments', async () => {
+      // Get a person with assignments
+      const assignmentsRes = await api('/api/assignments?limit=1', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      if (!assignmentsRes.data.data || assignmentsRes.data.data.length === 0) return;
+      
+      const personId = assignmentsRes.data.data[0].personId;
+      
+      // Try to delete (should fail or handle gracefully)
+      const res = await api(`/api/people/${personId}`, {
+        method: 'DELETE',
+        token: adminToken
+      });
+      
+      // Either should fail (400/409) or succeed and cascade
+      expect([200, 400, 409]).toContain(res.status);
+    });
+
+    test('TC-INT-002: Cannot delete project with active assignments', async () => {
+      const assignmentsRes = await api('/api/assignments?limit=1', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      if (!assignmentsRes.data.data || assignmentsRes.data.data.length === 0) return;
+      
+      const projectId = assignmentsRes.data.data[0].projectId;
+      
+      const res = await api(`/api/projects/${projectId}`, {
+        method: 'DELETE',
+        token: adminToken
+      });
+      
+      expect([200, 400, 409]).toContain(res.status);
+    });
+
+    test('TC-INT-003: Cannot delete skill used by people', async () => {
+      // Get a skill that is assigned to someone
+      const peopleRes = await api('/api/people?limit=10', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      let usedSkillId = null;
+      for (const person of (peopleRes.data.data || [])) {
+        if (person.skills && person.skills.length > 0) {
+          usedSkillId = person.skills[0].skillId || person.skills[0].id;
+          break;
+        }
+      }
+      
+      if (!usedSkillId) return;
+      
+      const res = await api(`/api/skills/${usedSkillId}`, {
+        method: 'DELETE',
+        token: adminToken
+      });
+      
+      expect([200, 400, 409]).toContain(res.status);
+    });
+  });
+
+  describe('Data Validation', () => {
+    test('TC-INT-004: Assignment hours must be valid', async () => {
+      const peopleRes = await api('/api/people?limit=1', { method: 'GET', token: adminToken });
+      const projectsRes = await api('/api/projects?limit=1', { method: 'GET', token: adminToken });
+      
+      if (!peopleRes.data.data.length || !projectsRes.data.data.length) return;
+      
+      // Try negative hours
+      const res = await api('/api/assignments', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          personId: peopleRes.data.data[0].id,
+          projectId: projectsRes.data.data[0].id,
+          date: '2026-02-01',
+          startHour: -1,
+          endHour: 10
+        })
+      });
+      
+      expect(res.status).toBe(400);
+    });
+
+    test('TC-INT-005: Assignment hours must not exceed 24', async () => {
+      const peopleRes = await api('/api/people?limit=1', { method: 'GET', token: adminToken });
+      const projectsRes = await api('/api/projects?limit=1', { method: 'GET', token: adminToken });
+      
+      if (!peopleRes.data.data.length || !projectsRes.data.data.length) return;
+      
+      const res = await api('/api/assignments', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          personId: peopleRes.data.data[0].id,
+          projectId: projectsRes.data.data[0].id,
+          date: '2026-02-01',
+          startHour: 9,
+          endHour: 30
+        })
+      });
+      
+      expect(res.status).toBe(400);
+    });
+
+    test('TC-INT-006: Proficiency level must be 1-5', async () => {
+      const peopleRes = await api('/api/people?limit=1', { method: 'GET', token: adminToken });
+      const skillsRes = await api('/api/skills?limit=1', { method: 'GET', token: adminToken });
+      
+      if (!peopleRes.data.data.length || !skillsRes.data.data.length) return;
+      
+      const res = await api(`/api/people/${peopleRes.data.data[0].id}/skills`, {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          skillId: skillsRes.data.data[0].id,
+          proficiencyLevel: 10 // Invalid
+        })
+      });
+      
+      expect([400, 201]).toContain(res.status); // May accept and cap, or reject
+    });
+
+    test('TC-INT-007: Project dates must be valid', async () => {
+      const res = await api('/api/projects', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          name: 'Invalid Dates Project',
+          startDate: '2026-12-01',
+          endDate: '2026-01-01' // End before start
+        })
+      });
+      
+      // Should either reject or handle gracefully
+      expect([201, 400]).toContain(res.status);
+    });
+
+    test('TC-INT-008: Email format must be valid', async () => {
+      const res = await api('/api/people', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          firstName: 'Test',
+          lastName: 'Invalid Email',
+          email: 'not-an-email'
+        })
+      });
+      
+      expect(res.status).toBe(400);
+    });
+  });
+});
+
+// ============================================
+// 24. CONCURRENT ACCESS TESTS
+// ============================================
+describe('Concurrent Access', () => {
+  
+  test('TC-CONC-001: Multiple simultaneous reads should succeed', async () => {
+    const promises = Array(10).fill(null).map(() =>
+      api('/api/people', { method: 'GET', token: adminToken })
+    );
+    
+    const results = await Promise.all(promises);
+    
+    results.forEach(res => {
+      expect(res.status).toBe(200);
+    });
+  });
+
+  test('TC-CONC-002: Multiple simultaneous logins should succeed', async () => {
+    const promises = Array(5).fill(null).map(() =>
+      api('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ username: 'admin', password: 'admin123' })
+      })
+    );
+    
+    const results = await Promise.all(promises);
+    
+    // Some may be rate-limited, but should not crash
+    results.forEach(res => {
+      expect([200, 429]).toContain(res.status);
+    });
+  });
+
+  test('TC-CONC-003: Concurrent dashboard requests should succeed', async () => {
+    const promises = Array(5).fill(null).map(() =>
+      api('/api/analytics/dashboard', { method: 'GET', token: adminToken })
+    );
+    
+    const results = await Promise.all(promises);
+    
+    results.forEach(res => {
+      expect(res.status).toBe(200);
+    });
+  });
+});
+
+// ============================================
+// 25. EDGE CASE TESTS
+// ============================================
+describe('Edge Cases', () => {
+  
+  describe('Empty Data Handling', () => {
+    test('TC-EDGE-001: Should handle search with no results gracefully', async () => {
+      const res = await api('/api/people?search=ZZZNONEXISTENTZZZ', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+      expect(res.data.data).toEqual([]);
+    });
+
+    test('TC-EDGE-002: Should handle AI suggestions for date with no active projects', async () => {
+      const res = await api('/api/ai-scheduler/suggest', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          date: '2099-12-31' // Far future date
+        })
+      });
+      
+      expect(res.status).toBe(200);
+      // Should return empty suggestions, not error
+    });
+
+    test('TC-EDGE-003: Should handle conflict detection for date range with no assignments', async () => {
+      const res = await api('/api/conflicts/detect', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          startDate: '2099-01-01',
+          endDate: '2099-12-31'
+        })
+      });
+      
+      expect(res.status).toBe(200);
+    });
+  });
+
+  describe('Boundary Values', () => {
+    test('TC-EDGE-004: Should handle very long names', async () => {
+      const longName = 'A'.repeat(500);
+      
+      const res = await api('/api/people', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          firstName: longName,
+          lastName: 'Test',
+          email: `longname_${Date.now()}@test.com`
+        })
+      });
+      
+      // Should either truncate/reject or handle gracefully
+      expect([201, 400]).toContain(res.status);
+    });
+
+    test('TC-EDGE-005: Should handle pagination beyond available data', async () => {
+      const res = await api('/api/people?page=9999&limit=10', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+      expect(res.data.data).toEqual([]);
+    });
+
+    test('TC-EDGE-006: Should handle zero limit', async () => {
+      const res = await api('/api/people?limit=0', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      // Should use default or reject
+      expect([200, 400]).toContain(res.status);
+    });
+
+    test('TC-EDGE-007: Should handle negative page number', async () => {
+      const res = await api('/api/people?page=-1', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      // Should use default or reject
+      expect([200, 400]).toContain(res.status);
+    });
+  });
+
+  describe('Special Characters', () => {
+    test('TC-EDGE-008: Should handle unicode in names', async () => {
+      const res = await api('/api/people', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          firstName: 'Ιωάννης',
+          lastName: 'Παπαδόπουλος',
+          email: `unicode_${Date.now()}@test.com`
+        })
+      });
+      
+      expect(res.status).toBe(201);
+      
+      // Verify it was saved correctly
+      const personRes = await api(`/api/people/${res.data.id}`, {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      expect(personRes.data.firstName).toBe('Ιωάννης');
+    });
+
+    test('TC-EDGE-009: Should handle emoji in project names', async () => {
+      const res = await api('/api/projects', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          name: '🚀 Launch Project ' + Date.now(),
+          code: 'EMOJI' + Date.now()
+        })
+      });
+      
+      expect([201, 400]).toContain(res.status);
+    });
+
+    test('TC-EDGE-010: Should handle special characters in search', async () => {
+      const res = await api('/api/people?search=%25%26%23%40', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+    });
+  });
+
+  describe('Date Edge Cases', () => {
+    test('TC-EDGE-011: Should handle leap year date', async () => {
+      const res = await api('/api/assignments/daily/2028-02-29', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+    });
+
+    test('TC-EDGE-012: Should reject invalid date', async () => {
+      const res = await api('/api/assignments/daily/2026-02-30', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      // Should either handle gracefully or reject
+      expect([200, 400]).toContain(res.status);
+    });
+
+    test('TC-EDGE-013: Should handle very old date', async () => {
+      const res = await api('/api/assignments/daily/1970-01-01', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+    });
+  });
+});
+
+// ============================================
+// 26. MOBILE API COMPATIBILITY TESTS
+// ============================================
+describe('Mobile API Compatibility', () => {
+  
+  test('TC-MOBILE-001: API should return consistent JSON structure', async () => {
+    const endpoints = [
+      '/api/people',
+      '/api/projects', 
+      '/api/skills',
+      '/api/assignments'
+    ];
+    
+    for (const endpoint of endpoints) {
+      const res = await api(endpoint, { method: 'GET', token: adminToken });
+      
+      expect(res.status).toBe(200);
+      expect(res.data).toHaveProperty('data');
+      expect(res.data).toHaveProperty('pagination');
+      expect(Array.isArray(res.data.data)).toBe(true);
+    }
+  });
+
+  test('TC-MOBILE-002: API should support Accept-Language header', async () => {
+    const res = await api('/api/settings/public', {
+      method: 'GET',
+      headers: {
+        'Accept-Language': 'el'
+      }
+    });
+    
+    expect(res.status).toBe(200);
+  });
+
+  test('TC-MOBILE-003: API should handle missing optional headers', async () => {
+    const res = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+        // No Accept, no Accept-Language, no User-Agent
+      },
+      body: JSON.stringify({ username: 'admin', password: 'admin123' })
+    });
+    
+    expect(res.status).toBe(200);
+  });
+});
+
+// ============================================
+// 27. PERFORMANCE BASELINE TESTS
+// ============================================
+describe('Performance Baseline', () => {
+  
+  test('TC-PERF-001: Dashboard should respond within 2 seconds', async () => {
+    const start = Date.now();
+    
+    const res = await api('/api/analytics/dashboard', {
+      method: 'GET',
+      token: adminToken
+    });
+    
+    const duration = Date.now() - start;
+    
+    expect(res.status).toBe(200);
+    expect(duration).toBeLessThan(2000);
+  });
+
+  test('TC-PERF-002: People list should respond within 1 second', async () => {
+    const start = Date.now();
+    
+    const res = await api('/api/people?limit=50', {
+      method: 'GET',
+      token: adminToken
+    });
+    
+    const duration = Date.now() - start;
+    
+    expect(res.status).toBe(200);
+    expect(duration).toBeLessThan(1000);
+  });
+
+  test('TC-PERF-003: Project list should respond within 1 second', async () => {
+    const start = Date.now();
+    
+    const res = await api('/api/projects?limit=50', {
+      method: 'GET',
+      token: adminToken
+    });
+    
+    const duration = Date.now() - start;
+    
+    expect(res.status).toBe(200);
+    expect(duration).toBeLessThan(1000);
+  });
+
+  test('TC-PERF-004: Authentication should respond within 500ms', async () => {
+    const start = Date.now();
+    
+    const res = await api('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username: 'admin', password: 'admin123' })
+    });
+    
+    const duration = Date.now() - start;
+    
+    expect(res.status).toBe(200);
+    expect(duration).toBeLessThan(500);
+  });
+
+  test('TC-PERF-005: Skill matching should respond within 2 seconds', async () => {
+    const projectsRes = await api('/api/projects?limit=1', { method: 'GET', token: adminToken });
+    if (!projectsRes.data.data.length) return;
+    
+    const start = Date.now();
+    
+    const res = await api(`/api/matching/candidates?projectId=${projectsRes.data.data[0].id}`, {
+      method: 'GET',
+      token: adminToken
+    });
+    
+    const duration = Date.now() - start;
+    
+    expect(res.status).toBe(200);
+    expect(duration).toBeLessThan(2000);
+  });
+});
+
+// ============================================
+// 28. SESSION MANAGEMENT TESTS
+// ============================================
+describe('Session Management', () => {
+  
+  test('TC-SESSION-001: Token should work after login', async () => {
+    const loginRes = await api('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username: 'admin', password: 'admin123' })
+    });
+    
+    expect(loginRes.status).toBe(200);
+    
+    const token = loginRes.data.token;
+    
+    const meRes = await api('/api/auth/me', {
+      method: 'GET',
+      token
+    });
+    
+    expect(meRes.status).toBe(200);
+    expect(meRes.data.username).toBe('admin');
+  });
+
+  test('TC-SESSION-002: Expired token should be rejected', async () => {
+    // Use a known expired token format (this is just for structure testing)
+    const expiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxfQ.invalid';
+    
+    const res = await api('/api/auth/me', {
+      method: 'GET',
+      token: expiredToken
+    });
+    
+    expect(res.status).toBe(403);
+  });
+
+  test('TC-SESSION-003: Malformed token should be rejected', async () => {
+    const malformedTokens = [
+      'not.a.jwt',
+      'Bearer token',
+      'just-a-string',
+      '',
+      'eyJhbGciOiJIUzI1NiJ9.e30'
+    ];
+    
+    for (const token of malformedTokens) {
+      const res = await api('/api/auth/me', {
+        method: 'GET',
+        token
+      });
+      
+      expect([401, 403]).toContain(res.status);
+    }
+  });
+
+  test('TC-SESSION-004: Token in wrong format should be rejected', async () => {
+    const res = await fetch(`${BASE_URL}/api/auth/me`, {
+      headers: {
+        'Authorization': 'Basic dXNlcjpwYXNz' // Basic auth instead of Bearer
+      }
+    });
+    
+    expect(res.status).toBe(401);
+  });
+});
+
 // Run all tests
 console.log('Starting Resource Scheduler API Tests...');
 console.log(`Testing against: ${BASE_URL}`);

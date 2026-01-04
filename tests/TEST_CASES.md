@@ -394,3 +394,140 @@ The test suite will create additional test data as needed.
 | Empty States | 8 | ✅ |
 | **Total i18n Tests** | **43** | ✅ |
 
+---
+
+## 22. Database Management Tests (Admin Only)
+
+| Test ID | Description | Steps | Expected Result | Priority |
+|---------|-------------|-------|-----------------|----------|
+| TC-DB-001 | Admin gets database info | GET /api/database/info as admin | 200 OK, returns databaseType, tables, totalRecords | High |
+| TC-DB-002 | Database info includes table counts | GET /api/database/info | tables object has users, people, projects, etc. | High |
+| TC-DB-003 | Non-admin cannot access database info | GET /api/database/info as viewer | 403 Forbidden | Critical |
+| TC-DB-004 | Scheduler cannot access database info | GET /api/database/info as scheduler | 403 Forbidden | Critical |
+| TC-DB-005 | Unauthenticated user rejected | GET /api/database/info without token | 401 Unauthorized | Critical |
+| TC-DB-006 | Admin creates database backup | POST /api/database/backup | 200 OK, returns success, backup object | High |
+| TC-DB-007 | Backup includes all tables | POST /api/database/backup | backup.data contains all tables | High |
+| TC-DB-008 | Backup excludes password hashes | POST /api/database/backup | users don't have password_hash field | Critical |
+| TC-DB-009 | Non-admin cannot create backup | POST /api/database/backup as viewer | 403 Forbidden | Critical |
+| TC-DB-010 | Admin exports database as JSON | GET /api/database/export | 200 OK, content-type: application/json | High |
+| TC-DB-011 | Export contains metadata | GET /api/database/export | Has exportDate, databaseType, data | High |
+| TC-DB-012 | Non-admin cannot export database | GET /api/database/export as scheduler | 403 Forbidden | Critical |
+| TC-DB-013 | Admin cleans old data | POST /api/database/clean | 200 OK, returns results with counts | High |
+| TC-DB-014 | Clean respects olderThanDays | POST /api/database/clean with date | Returns cutoffDate | Medium |
+| TC-DB-015 | Clean with no options cleans nothing | POST /api/database/clean all false | All counts are 0 | Medium |
+| TC-DB-016 | Non-admin cannot clean database | POST /api/database/clean as viewer | 403 Forbidden | Critical |
+| TC-DB-017 | Reset requires confirmation | POST /api/database/reset without confirm | 400 Bad Request | Critical |
+| TC-DB-018 | Reset rejects wrong confirmation | POST /api/database/reset wrong text | 400 Bad Request | Critical |
+| TC-DB-019 | Non-admin cannot reset database | POST /api/database/reset as scheduler | 403 Forbidden | Critical |
+| TC-DB-020 | Reset endpoint protected | POST /api/database/reset no token | 401 Unauthorized | Critical |
+
+---
+
+## 23. Data Integrity Tests
+
+| Test ID | Description | Steps | Expected Result | Priority |
+|---------|-------------|-------|-----------------|----------|
+| TC-INT-001 | Cannot delete person with assignments | DELETE /api/people/:id with assignments | 400/409 or cascade delete | High |
+| TC-INT-002 | Cannot delete project with assignments | DELETE /api/projects/:id with assignments | 400/409 or cascade delete | High |
+| TC-INT-003 | Cannot delete skill used by people | DELETE /api/skills/:id in use | 400/409 or cascade delete | High |
+| TC-INT-004 | Assignment hours must be valid | POST /api/assignments negative hours | 400 Bad Request | High |
+| TC-INT-005 | Hours cannot exceed 24 | POST /api/assignments endHour=30 | 400 Bad Request | High |
+| TC-INT-006 | Proficiency must be 1-5 | POST person skill level=10 | 400 or capped to 5 | Medium |
+| TC-INT-007 | Project dates validation | POST /api/projects end before start | 400 or handled | Medium |
+| TC-INT-008 | Email format validation | POST /api/people invalid email | 400 Bad Request | High |
+
+---
+
+## 24. Concurrent Access Tests
+
+| Test ID | Description | Steps | Expected Result | Priority |
+|---------|-------------|-------|-----------------|----------|
+| TC-CONC-001 | Multiple simultaneous reads | 10 parallel GET /api/people | All return 200 OK | High |
+| TC-CONC-002 | Multiple simultaneous logins | 5 parallel POST /api/auth/login | 200 or 429 (rate limit) | High |
+| TC-CONC-003 | Concurrent dashboard requests | 5 parallel GET /api/analytics/dashboard | All return 200 OK | High |
+
+---
+
+## 25. Edge Case Tests
+
+| Test ID | Description | Steps | Expected Result | Priority |
+|---------|-------------|-------|-----------------|----------|
+| TC-EDGE-001 | Search with no results | GET /api/people?search=ZZZNONEXISTENTZZZ | 200 OK, empty array | Medium |
+| TC-EDGE-002 | AI suggestions for far future date | POST /api/ai-scheduler/suggest date=2099 | 200 OK, empty suggestions | Low |
+| TC-EDGE-003 | Conflict detection empty range | POST /api/conflicts/detect far future | 200 OK | Low |
+| TC-EDGE-004 | Very long names | POST /api/people 500-char name | 400 or truncated | Low |
+| TC-EDGE-005 | Pagination beyond data | GET /api/people?page=9999 | 200 OK, empty array | Low |
+| TC-EDGE-006 | Zero limit | GET /api/people?limit=0 | 200 with default or 400 | Low |
+| TC-EDGE-007 | Negative page number | GET /api/people?page=-1 | 200 with default or 400 | Low |
+| TC-EDGE-008 | Unicode in names | POST /api/people Greek name | 201, preserves Unicode | Medium |
+| TC-EDGE-009 | Emoji in project names | POST /api/projects with emoji | 201 or 400 | Low |
+| TC-EDGE-010 | Special characters in search | GET /api/people?search=%25%26 | 200 OK | Medium |
+| TC-EDGE-011 | Leap year date | GET /api/assignments/daily/2028-02-29 | 200 OK | Low |
+| TC-EDGE-012 | Invalid date | GET /api/assignments/daily/2026-02-30 | 200 or 400 | Low |
+| TC-EDGE-013 | Very old date | GET /api/assignments/daily/1970-01-01 | 200 OK | Low |
+
+---
+
+## 26. Mobile API Compatibility Tests
+
+| Test ID | Description | Steps | Expected Result | Priority |
+|---------|-------------|-------|-----------------|----------|
+| TC-MOBILE-001 | Consistent JSON structure | GET multiple endpoints | All have data and pagination | High |
+| TC-MOBILE-002 | Accept-Language header | GET with Accept-Language: el | 200 OK | Medium |
+| TC-MOBILE-003 | Missing optional headers | POST login without Accept/User-Agent | 200 OK | Medium |
+
+---
+
+## 27. Performance Baseline Tests
+
+| Test ID | Description | Steps | Expected Result | Priority |
+|---------|-------------|-------|-----------------|----------|
+| TC-PERF-001 | Dashboard response time | GET /api/analytics/dashboard | < 2000ms | High |
+| TC-PERF-002 | People list response time | GET /api/people?limit=50 | < 1000ms | High |
+| TC-PERF-003 | Project list response time | GET /api/projects?limit=50 | < 1000ms | High |
+| TC-PERF-004 | Authentication response time | POST /api/auth/login | < 500ms | High |
+| TC-PERF-005 | Skill matching response time | GET /api/matching/candidates | < 2000ms | Medium |
+
+---
+
+## 28. Session Management Tests
+
+| Test ID | Description | Steps | Expected Result | Priority |
+|---------|-------------|-------|-----------------|----------|
+| TC-SESSION-001 | Token works after login | Login then GET /api/auth/me | 200 OK with user info | Critical |
+| TC-SESSION-002 | Expired token rejected | Use expired JWT | 403 Forbidden | Critical |
+| TC-SESSION-003 | Malformed token rejected | Use invalid JWT strings | 401/403 | Critical |
+| TC-SESSION-004 | Wrong auth format rejected | Use Basic auth instead of Bearer | 401 Unauthorized | High |
+
+---
+
+## Complete Test Coverage Summary
+
+| Category | Test Count | Priority |
+|----------|------------|----------|
+| Authentication | 15 | Critical |
+| User Management | 14 | High |
+| Skills Management | 9 | High |
+| People Management | 13 | High |
+| Project Management | 9 | High |
+| Assignments/Scheduling | 10 | High |
+| Availability Management | 3 | Medium |
+| Conflict Detection | 6 | High |
+| AI Scheduler | 4 | Medium |
+| Skill Matching | 4 | Medium |
+| Analytics & Reports | 4 | Medium |
+| Exports | 3 | Medium |
+| Settings | 4 | Medium |
+| Role-Based Access Control | 9 | Critical |
+| Data Import | 3 | Medium |
+| Security | 5 | Critical |
+| Error Handling | 3 | Medium |
+| Internationalization | 43 | High |
+| **Database Management** | **20** | **Critical** |
+| **Data Integrity** | **8** | **High** |
+| **Concurrent Access** | **3** | **High** |
+| **Edge Cases** | **13** | **Low-Medium** |
+| **Mobile Compatibility** | **3** | **Medium** |
+| **Performance** | **5** | **High** |
+| **Session Management** | **4** | **Critical** |
+| **TOTAL TESTS** | **214** | - |
