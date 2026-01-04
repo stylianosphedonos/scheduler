@@ -1,7 +1,13 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const { getDatabaseType } = require('../database');
 
 const router = express.Router();
+
+// Helper for database-agnostic string aggregation
+const getStringAgg = () => {
+  return getDatabaseType() === 'postgres' ? 'STRING_AGG' : 'GROUP_CONCAT';
+};
 
 /**
  * PEOPLE MANAGEMENT
@@ -30,8 +36,10 @@ router.get('/', authenticateToken, async (req, res) => {
 
     const totalResult = await db.prepare(`SELECT COUNT(*) as count FROM people WHERE ${whereClause}`).get(...params);
     const total = totalResult?.count || 0;
+    
+    const stringAgg = getStringAgg();
     const people = await db.prepare(`
-      SELECT p.*, (SELECT STRING_AGG(s.name, ', ') FROM skills s JOIN person_skills ps ON s.id = ps.skill_id WHERE ps.person_id = p.id) as skills_list
+      SELECT p.*, (SELECT ${stringAgg}(s.name, ', ') FROM skills s JOIN person_skills ps ON s.id = ps.skill_id WHERE ps.person_id = p.id) as skills_list
       FROM people p WHERE ${whereClause} ORDER BY p.last_name, p.first_name LIMIT ? OFFSET ?
     `).all(...params, parseInt(limit), offset);
 
