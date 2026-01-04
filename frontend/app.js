@@ -417,6 +417,11 @@ function loadSettings() {
   
   // Load language settings
   loadLanguageSettings();
+  
+  // Load database info (admin only)
+  if (canManageUsers()) {
+    loadDatabaseInfo();
+  }
 }
 
 async function loadSystemSettings() {
@@ -603,6 +608,178 @@ async function changeUserLanguage(langCode) {
   }
   
   showToast(`Language changed to ${langCode === 'el' ? 'Greek (Ελληνικά)' : 'English'}. Some text will update on next page load.`);
+}
+
+// ===== Database Management Functions =====
+async function loadDatabaseInfo() {
+  try {
+    const info = await api('/database/info');
+    
+    document.getElementById('db-type').textContent = info.databaseType || 'Unknown';
+    document.getElementById('db-total-records').textContent = info.totalRecords?.toLocaleString() || '0';
+    
+    // Show table breakdown
+    const infoContent = document.getElementById('db-info-content');
+    if (infoContent && info.tables) {
+      let html = `
+        <div class="db-info-item">
+          <span class="db-info-label">Type:</span>
+          <span class="db-info-value">${info.databaseType}</span>
+        </div>
+        <div class="db-info-item">
+          <span class="db-info-label">Total Records:</span>
+          <span class="db-info-value">${info.totalRecords?.toLocaleString()}</span>
+        </div>
+      `;
+      
+      // Add table counts
+      for (const [table, count] of Object.entries(info.tables)) {
+        html += `
+          <div class="db-info-item">
+            <span class="db-info-label">${table}:</span>
+            <span class="db-info-value">${count?.toLocaleString()}</span>
+          </div>
+        `;
+      }
+      
+      infoContent.innerHTML = html;
+    }
+    
+    showToast('Database info refreshed', 'success');
+  } catch (error) {
+    showToast('Failed to load database info: ' + error.message, 'error');
+  }
+}
+
+async function createDatabaseBackup() {
+  try {
+    showToast('Creating backup...', 'info');
+    
+    const response = await api('/database/backup', {
+      method: 'POST'
+    });
+    
+    if (response.success && response.backup) {
+      // Create downloadable file
+      const blob = new Blob([JSON.stringify(response.backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `scheduler_backup_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showToast('Backup created and downloaded successfully', 'success');
+    }
+  } catch (error) {
+    showToast('Failed to create backup: ' + error.message, 'error');
+  }
+}
+
+async function exportDatabase() {
+  try {
+    showToast('Exporting database...', 'info');
+    
+    // Use fetch directly for download
+    const response = await fetch('/api/database/export', {
+      headers: {
+        'Authorization': `Bearer ${state.token}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Export failed');
+    
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `scheduler_export_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('Database exported successfully', 'success');
+  } catch (error) {
+    showToast('Failed to export database: ' + error.message, 'error');
+  }
+}
+
+async function cleanDatabase() {
+  const olderThanDays = parseInt(document.getElementById('clean-older-than').value) || 90;
+  
+  const confirmed = confirm(`This will delete:\n\n• Completed/cancelled assignments older than ${olderThanDays} days\n• Resolved conflicts older than ${olderThanDays} days\n• Export logs older than ${olderThanDays} days\n• Audit logs older than ${olderThanDays} days\n\nContinue?`);
+  
+  if (!confirmed) return;
+  
+  try {
+    showToast('Cleaning database...', 'info');
+    
+    const response = await api('/database/clean', {
+      method: 'POST',
+      body: JSON.stringify({
+        cleanAssignments: true,
+        cleanConflicts: true,
+        cleanExportLogs: true,
+        cleanAuditLogs: true,
+        olderThanDays
+      })
+    });
+    
+    if (response.success) {
+      const total = (response.results.assignmentsDeleted || 0) + 
+                   (response.results.conflictsDeleted || 0) + 
+                   (response.results.exportLogsDeleted || 0) +
+                   (response.results.auditLogsDeleted || 0);
+      
+      showToast(`Database cleaned! ${total} records removed.`, 'success');
+      loadDatabaseInfo(); // Refresh stats
+    }
+  } catch (error) {
+    showToast('Failed to clean database: ' + error.message, 'error');
+  }
+}
+
+function confirmResetDatabase() {
+  // First confirmation
+  const confirmed1 = confirm('⚠️ WARNING: This will DELETE ALL DATA!\n\nOnly admin user accounts will be preserved.\n\nAre you absolutely sure?');
+  if (!confirmed1) return;
+  
+  // Second confirmation with typed input
+  const confirmText = prompt('Type "RESET_DATABASE" to confirm this action:');
+  if (confirmText !== 'RESET_DATABASE') {
+    showToast('Reset cancelled - confirmation text did not match', 'warning');
+    return;
+  }
+  
+  resetDatabase();
+}
+
+async function resetDatabase() {
+  try {
+    showToast('Resetting database...', 'info');
+    
+    const response = await api('/database/reset', {
+      method: 'POST',
+      body: JSON.stringify({
+        confirmReset: 'RESET_DATABASE'
+      })
+    });
+    
+    if (response.success) {
+      showToast('Database reset successfully! Admin users preserved.', 'success');
+      loadDatabaseInfo(); // Refresh stats
+      
+      // Reload the page after a short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    }
+  } catch (error) {
+    showToast('Failed to reset database: ' + error.message, 'error');
+  }
 }
 
 // Language Switcher Functions

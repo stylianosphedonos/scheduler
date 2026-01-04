@@ -179,6 +179,7 @@ async function startServer() {
     const aiSchedulerRoutes = require('./backend/routes/ai-scheduler');
     const importRoutes = require('./backend/routes/import');
     const translationsRoutes = require('./backend/routes/translations');
+    const databaseRoutes = require('./backend/routes/database');
 
     // API Routes
     app.use('/api/auth', authRoutes);
@@ -195,6 +196,7 @@ async function startServer() {
     app.use('/api/ai-scheduler', aiSchedulerRoutes);
     app.use('/api/import', importRoutes);
     app.use('/api/translations', translationsRoutes);
+    app.use('/api/database', databaseRoutes);
 
     // Settings endpoints
     const { authenticateToken, requireRole } = require('./backend/middleware/auth');

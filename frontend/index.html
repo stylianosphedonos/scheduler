@@ -839,6 +839,84 @@
                 </form>
               </div>
             </div>
+            
+            <!-- Database Management - Admin Only -->
+            <div class="card settings-card" id="database-management-card">
+              <div class="card-header">
+                <h2><i class="fas fa-database"></i> <span data-i18n="settings.databaseManagement">Database Management</span></h2>
+              </div>
+              <div class="card-body">
+                <div class="db-info-section">
+                  <h4><i class="fas fa-info-circle"></i> Database Information</h4>
+                  <div id="db-info-content" class="db-info-grid">
+                    <div class="db-info-item">
+                      <span class="db-info-label">Type:</span>
+                      <span id="db-type" class="db-info-value">-</span>
+                    </div>
+                    <div class="db-info-item">
+                      <span class="db-info-label">Total Records:</span>
+                      <span id="db-total-records" class="db-info-value">-</span>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="loadDatabaseInfo()">
+                    <i class="fas fa-sync"></i> Refresh Info
+                  </button>
+                </div>
+                
+                <div class="db-actions-section">
+                  <h4><i class="fas fa-tools"></i> Actions</h4>
+                  
+                  <div class="db-action-row">
+                    <div class="db-action-info">
+                      <strong><i class="fas fa-download"></i> Backup Database</strong>
+                      <p>Create a full backup of all data (JSON format). Excludes sensitive password data.</p>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="createDatabaseBackup()">
+                      <i class="fas fa-download"></i> Create Backup
+                    </button>
+                  </div>
+                  
+                  <div class="db-action-row">
+                    <div class="db-action-info">
+                      <strong><i class="fas fa-file-export"></i> Export Data</strong>
+                      <p>Download all data as a JSON file for archival or migration purposes.</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="exportDatabase()">
+                      <i class="fas fa-file-export"></i> Export JSON
+                    </button>
+                  </div>
+                  
+                  <div class="db-action-row">
+                    <div class="db-action-info">
+                      <strong><i class="fas fa-broom"></i> Clean Old Data</strong>
+                      <p>Remove completed assignments and resolved conflicts older than specified days.</p>
+                    </div>
+                    <div class="db-clean-options">
+                      <select id="clean-older-than" class="select">
+                        <option value="30">30 days</option>
+                        <option value="60">60 days</option>
+                        <option value="90" selected>90 days</option>
+                        <option value="180">180 days</option>
+                        <option value="365">1 year</option>
+                      </select>
+                      <button type="button" class="btn btn-warning" onclick="cleanDatabase()">
+                        <i class="fas fa-broom"></i> Clean Data
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div class="db-action-row db-danger-zone">
+                    <div class="db-action-info">
+                      <strong><i class="fas fa-exclamation-triangle"></i> Reset Database</strong>
+                      <p class="text-danger">WARNING: This will delete ALL data except admin users. This action cannot be undone!</p>
+                    </div>
+                    <button type="button" class="btn btn-danger" onclick="confirmResetDatabase()">
+                      <i class="fas fa-trash-alt"></i> Reset Database
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

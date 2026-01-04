@@ -5432,6 +5432,136 @@ body {
   }
 }
 
+/* ===== Database Management ===== */
+.db-info-section {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.db-info-section h4,
+.db-actions-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.db-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.db-info-item {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.db-info-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.db-info-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary-light);
+}
+
+.db-actions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.db-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px;
+  background: var(--bg-elevated);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.db-action-info {
+  flex: 1;
+}
+
+.db-action-info strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.db-action-info p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.db-action-row.db-danger-zone {
+  border-color: var(--danger);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.db-action-row.db-danger-zone strong {
+  color: var(--danger);
+}
+
+.db-clean-options {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.db-clean-options .select {
+  min-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .db-action-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .db-action-row .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .db-clean-options {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .db-clean-options .select,
+  .db-clean-options .btn {
+    width: 100%;
+  }
+  
+  .db-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* ===== Mobile Overlap Fixes ===== */
 @media (max-width: 575px) {
   /* Grid card - prevent text overflow */
