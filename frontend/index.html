@@ -187,7 +187,7 @@
                 </div>
                 <div class="stat-content">
                   <span class="stat-value" id="stat-people">0</span>
-                  <span class="stat-label">Active People</span>
+                  <span class="stat-label" data-i18n="dashboard.activePeople">Active People</span>
                 </div>
               </div>
               <div class="stat-card">
@@ -196,7 +196,7 @@
                 </div>
                 <div class="stat-content">
                   <span class="stat-value" id="stat-projects">0</span>
-                  <span class="stat-label">Active Projects</span>
+                  <span class="stat-label" data-i18n="dashboard.activeProjects">Active Projects</span>
                 </div>
               </div>
               <div class="stat-card">
@@ -205,7 +205,7 @@
                 </div>
                 <div class="stat-content">
                   <span class="stat-value" id="stat-hours">0</span>
-                  <span class="stat-label">Hours Today</span>
+                  <span class="stat-label" data-i18n="dashboard.hoursToday">Hours Today</span>
                 </div>
               </div>
               <div class="stat-card">
@@ -214,7 +214,7 @@
                 </div>
                 <div class="stat-content">
                   <span class="stat-value" id="stat-conflicts">0</span>
-                  <span class="stat-label">Conflicts</span>
+                  <span class="stat-label" data-i18n="conflicts.title">Conflicts</span>
                 </div>
               </div>
             </div>
@@ -222,12 +222,12 @@
             <!-- Today's Schedule -->
             <div class="card today-schedule">
               <div class="card-header">
-                <h2><i class="fas fa-calendar-day"></i> Today's Schedule</h2>
-                <a href="#" class="btn btn-sm btn-secondary" data-view="schedule">View All</a>
+                <h2><i class="fas fa-calendar-day"></i> <span data-i18n="dashboard.todaysSchedule">Today's Schedule</span></h2>
+                <a href="#" class="btn btn-sm btn-secondary" data-view="schedule" data-i18n="common.viewAll">View All</a>
               </div>
               <div class="card-body">
                 <div id="today-timeline" class="timeline">
-                  <div class="loading">Loading...</div>
+                  <div class="loading" data-i18n="common.loading">Loading...</div>
                 </div>
               </div>
             </div>
@@ -235,7 +235,7 @@
             <!-- Utilization Chart -->
             <div class="card utilization-card">
               <div class="card-header">
-                <h2><i class="fas fa-chart-bar"></i> Weekly Utilization</h2>
+                <h2><i class="fas fa-chart-bar"></i> <span data-i18n="dashboard.weeklyUtilization">Weekly Utilization</span></h2>
               </div>
               <div class="card-body">
                 <div id="utilization-chart" class="chart-container"></div>
@@ -245,11 +245,11 @@
             <!-- Top Utilized -->
             <div class="card top-utilized">
               <div class="card-header">
-                <h2><i class="fas fa-trophy"></i> Top Utilized</h2>
+                <h2><i class="fas fa-trophy"></i> <span data-i18n="dashboard.topUtilized">Top Utilized</span></h2>
               </div>
               <div class="card-body">
                 <div id="top-utilized-list" class="list">
-                  <div class="loading">Loading...</div>
+                  <div class="loading" data-i18n="common.loading">Loading...</div>
                 </div>
               </div>
             </div>
@@ -257,12 +257,12 @@
             <!-- Active Conflicts -->
             <div class="card active-conflicts">
               <div class="card-header">
-                <h2><i class="fas fa-exclamation-circle"></i> Active Conflicts</h2>
-                <a href="#" class="btn btn-sm btn-secondary" data-view="conflicts">View All</a>
+                <h2><i class="fas fa-exclamation-circle"></i> <span data-i18n="dashboard.activeConflicts">Active Conflicts</span></h2>
+                <a href="#" class="btn btn-sm btn-secondary" data-view="conflicts" data-i18n="common.viewAll">View All</a>
               </div>
               <div class="card-body">
                 <div id="conflicts-list" class="list">
-                  <div class="loading">Loading...</div>
+                  <div class="loading" data-i18n="common.loading">Loading...</div>
                 </div>
               </div>
             </div>
@@ -270,11 +270,11 @@
             <!-- Skill Demand -->
             <div class="card skill-demand">
               <div class="card-header">
-                <h2><i class="fas fa-star"></i> Skill Demand</h2>
+                <h2><i class="fas fa-star"></i> <span data-i18n="dashboard.skillDemand">Skill Demand</span></h2>
               </div>
               <div class="card-body">
                 <div id="skill-demand-list" class="list">
-                  <div class="loading">Loading...</div>
+                  <div class="loading" data-i18n="common.loading">Loading...</div>
                 </div>
               </div>
             </div>
@@ -292,20 +292,20 @@
               <button class="btn btn-icon" id="next-date">
                 <i class="fas fa-chevron-right"></i>
               </button>
-              <button class="btn btn-secondary" id="today-btn">Today</button>
+              <button class="btn btn-secondary" id="today-btn" data-i18n="schedule.today">Today</button>
             </div>
             <div class="schedule-actions">
               <div class="view-toggle">
-                <button class="btn btn-sm active" data-schedule-view="day">Day</button>
-                <button class="btn btn-sm" data-schedule-view="week">Week</button>
+                <button class="btn btn-sm active" data-schedule-view="day" data-i18n="schedule.day">Day</button>
+                <button class="btn btn-sm" data-schedule-view="week" data-i18n="schedule.week">Week</button>
               </div>
               <button class="btn btn-primary" id="add-assignment-btn">
-                <i class="fas fa-plus"></i> Add Assignment
+                <i class="fas fa-plus"></i> <span data-i18n="schedule.addAssignment">Add Assignment</span>
               </button>
             </div>
           </div>
           <div id="schedule-content" class="schedule-content">
-            <div class="loading">Loading schedule...</div>
+            <div class="loading" data-i18n="common.loadingSchedule">Loading schedule...</div>
           </div>
         </div>
 
@@ -314,19 +314,19 @@
           <div class="view-header">
             <div class="search-bar">
               <i class="fas fa-search"></i>
-              <input type="text" id="people-search" placeholder="Search people...">
+              <input type="text" id="people-search" data-i18n-placeholder="people.searchPlaceholder" placeholder="Search people...">
             </div>
             <div class="view-actions">
               <select id="people-department-filter" class="select">
-                <option value="">All Departments</option>
+                <option value="" data-i18n="people.allDepartments">All Departments</option>
               </select>
               <button class="btn btn-primary" id="add-person-btn">
-                <i class="fas fa-plus"></i> Add Person
+                <i class="fas fa-plus"></i> <span data-i18n="people.addPerson">Add Person</span>
               </button>
             </div>
           </div>
           <div id="people-grid" class="people-grid">
-            <div class="loading">Loading people...</div>
+            <div class="loading" data-i18n="common.loadingPeople">Loading people...</div>
           </div>
         </div>
 
@@ -335,23 +335,23 @@
           <div class="view-header">
             <div class="search-bar">
               <i class="fas fa-search"></i>
-              <input type="text" id="projects-search" placeholder="Search projects...">
+              <input type="text" id="projects-search" data-i18n-placeholder="projects.searchPlaceholder" placeholder="Search projects...">
             </div>
             <div class="view-actions">
               <select id="projects-status-filter" class="select">
-                <option value="">All Statuses</option>
-                <option value="planning">Planning</option>
-                <option value="active">Active</option>
-                <option value="on-hold">On Hold</option>
-                <option value="completed">Completed</option>
+                <option value="" data-i18n="projects.allStatuses">All Statuses</option>
+                <option value="planning" data-i18n="projects.planning">Planning</option>
+                <option value="active" data-i18n="projects.active">Active</option>
+                <option value="on-hold" data-i18n="projects.onHold">On Hold</option>
+                <option value="completed" data-i18n="projects.completed">Completed</option>
               </select>
               <button class="btn btn-primary" id="add-project-btn">
-                <i class="fas fa-plus"></i> Add Project
+                <i class="fas fa-plus"></i> <span data-i18n="projects.addProject">Add Project</span>
               </button>
             </div>
           </div>
           <div id="projects-grid" class="projects-grid">
-            <div class="loading">Loading projects...</div>
+            <div class="loading" data-i18n="common.loadingProjects">Loading projects...</div>
           </div>
         </div>
 
@@ -360,19 +360,19 @@
           <div class="view-header">
             <div class="search-bar">
               <i class="fas fa-search"></i>
-              <input type="text" id="skills-search" placeholder="Search skills...">
+              <input type="text" id="skills-search" data-i18n-placeholder="skills.searchPlaceholder" placeholder="Search skills...">
             </div>
             <div class="view-actions">
               <select id="skills-category-filter" class="select">
-                <option value="">All Categories</option>
+                <option value="" data-i18n="skills.allCategories">All Categories</option>
               </select>
               <button class="btn btn-primary" id="add-skill-btn">
-                <i class="fas fa-plus"></i> Add Skill
+                <i class="fas fa-plus"></i> <span data-i18n="skills.addSkill">Add Skill</span>
               </button>
             </div>
           </div>
           <div id="skills-grid" class="skills-grid">
-            <div class="loading">Loading skills...</div>
+            <div class="loading" data-i18n="common.loadingSkills">Loading skills...</div>
           </div>
         </div>
 
@@ -381,32 +381,32 @@
           <div class="view-header">
             <div class="filter-bar">
               <select id="conflicts-type-filter" class="select">
-                <option value="">All Types</option>
-                <option value="overlap">Overlap</option>
-                <option value="overallocation">Overallocation</option>
-                <option value="skill_gap">Skill Gap</option>
-                <option value="availability">Availability</option>
+                <option value="" data-i18n="conflicts.allTypes">All Types</option>
+                <option value="overlap" data-i18n="conflicts.overlap">Overlap</option>
+                <option value="overallocation" data-i18n="conflicts.overallocation">Overallocation</option>
+                <option value="skill_gap" data-i18n="conflicts.skillGap">Skill Gap</option>
+                <option value="availability" data-i18n="conflicts.unavailable">Availability</option>
               </select>
               <select id="conflicts-severity-filter" class="select">
-                <option value="">All Severities</option>
-                <option value="critical">Critical</option>
-                <option value="error">Error</option>
-                <option value="warning">Warning</option>
-                <option value="info">Info</option>
+                <option value="" data-i18n="conflicts.allSeverities">All Severities</option>
+                <option value="critical" data-i18n="projects.critical">Critical</option>
+                <option value="error" data-i18n="common.error">Error</option>
+                <option value="warning" data-i18n="common.warning">Warning</option>
+                <option value="info" data-i18n="common.info">Info</option>
               </select>
               <label class="checkbox-label">
                 <input type="checkbox" id="conflicts-show-resolved">
-                Show Resolved
+                <span data-i18n="conflicts.showResolved">Show Resolved</span>
               </label>
             </div>
             <div class="view-actions">
               <button class="btn btn-secondary" id="detect-conflicts-btn">
-                <i class="fas fa-sync"></i> Re-detect
+                <i class="fas fa-sync"></i> <span data-i18n="conflicts.redetect">Re-detect</span>
               </button>
             </div>
           </div>
           <div id="conflicts-table" class="conflicts-table">
-            <div class="loading">Loading conflicts...</div>
+            <div class="loading" data-i18n="common.loadingConflicts">Loading conflicts...</div>
           </div>
         </div>
 
@@ -414,8 +414,8 @@
         <div id="ai-scheduler-view" class="view">
           <div class="view-header">
             <div class="view-title">
-              <h2><i class="fas fa-robot"></i> AI Schedule Optimizer</h2>
-              <p class="text-muted">Generate optimal schedules based on skills, availability, and project requirements</p>
+              <h2><i class="fas fa-robot"></i> <span data-i18n="aiScheduler.title">AI Schedule Optimizer</span></h2>
+              <p class="text-muted" data-i18n="aiScheduler.subtitle">Generate optimal schedules based on skills, availability, and project requirements</p>
             </div>
           </div>
           
@@ -424,17 +424,17 @@
             <div class="card-body">
               <div class="form-row">
                 <div class="form-group">
-                  <label>Start Date</label>
+                  <label data-i18n="common.startDate">Start Date</label>
                   <input type="date" id="ai-start-date">
                 </div>
                 <div class="form-group">
-                  <label>End Date</label>
+                  <label data-i18n="common.endDate">End Date</label>
                   <input type="date" id="ai-end-date">
                 </div>
                 <div class="form-group">
                   <label>&nbsp;</label>
                   <button class="btn btn-primary" id="generate-schedule-btn">
-                    <i class="fas fa-magic"></i> Generate Suggestions
+                    <i class="fas fa-magic"></i> <span data-i18n="aiScheduler.generateSuggestions">Generate Suggestions</span>
                   </button>
                 </div>
               </div>
@@ -447,24 +447,24 @@
               <div class="ai-icon">
                 <i class="fas fa-brain"></i>
               </div>
-              <h3>Ready to Optimize</h3>
-              <p>Select a date range and click "Generate Suggestions" to let the AI analyze your projects, skills, and availability to create an optimal schedule.</p>
+              <h3 data-i18n="aiScheduler.readyToOptimize">Ready to Optimize</h3>
+              <p data-i18n="aiScheduler.emptyStateDescription">Select a date range and click "Generate Suggestions" to let the AI analyze your projects, skills, and availability to create an optimal schedule.</p>
               <div class="ai-features">
                 <div class="ai-feature">
                   <i class="fas fa-check-circle"></i>
-                  <span>Matches skills to project requirements</span>
+                  <span data-i18n="aiScheduler.feature1">Matches skills to project requirements</span>
                 </div>
                 <div class="ai-feature">
                   <i class="fas fa-check-circle"></i>
-                  <span>Respects availability and time-off</span>
+                  <span data-i18n="aiScheduler.feature2">Respects availability and time-off</span>
                 </div>
                 <div class="ai-feature">
                   <i class="fas fa-check-circle"></i>
-                  <span>Balances workload across team</span>
+                  <span data-i18n="aiScheduler.feature3">Balances workload across team</span>
                 </div>
                 <div class="ai-feature">
                   <i class="fas fa-check-circle"></i>
-                  <span>Prioritizes critical projects</span>
+                  <span data-i18n="aiScheduler.feature4">Prioritizes critical projects</span>
                 </div>
               </div>
             </div>
@@ -474,20 +474,20 @@
         <!-- Reports View -->
         <div id="reports-view" class="view">
           <div class="view-header">
-            <h2><i class="fas fa-file-export"></i> Reports & Exports</h2>
+            <h2><i class="fas fa-file-export"></i> <span data-i18n="reports.title">Reports & Exports</span></h2>
           </div>
           <div class="reports-container">
             <!-- Project Summary Report -->
             <div class="card report-card full-width">
               <div class="card-header">
-                <h2><i class="fas fa-project-diagram"></i> Active Projects Summary</h2>
+                <h2><i class="fas fa-project-diagram"></i> <span data-i18n="reports.projectSummary">Active Projects Summary</span></h2>
                 <button class="btn btn-sm btn-secondary" onclick="loadProjectSummaryReport()">
-                  <i class="fas fa-sync"></i> Refresh
+                  <i class="fas fa-sync"></i> <span data-i18n="common.refresh">Refresh</span>
                 </button>
               </div>
               <div class="card-body">
                 <div id="project-summary-report" class="project-summary-report">
-                  <div class="loading">Loading project summary...</div>
+                  <div class="loading" data-i18n="common.loadingReport">Loading project summary...</div>
                 </div>
               </div>
             </div>
@@ -495,38 +495,38 @@
             <!-- Export Section -->
             <div class="card export-card">
               <div class="card-header">
-                <h2><i class="fas fa-file-excel"></i> Export Schedule</h2>
+                <h2><i class="fas fa-file-excel"></i> <span data-i18n="reports.exportSchedule">Export Schedule</span></h2>
               </div>
               <div class="card-body">
                 <form id="export-form" class="export-form">
                   <div class="form-row">
                     <div class="form-group">
-                      <label>Start Date</label>
+                      <label data-i18n="common.startDate">Start Date</label>
                       <input type="date" id="export-start-date" required>
                     </div>
                     <div class="form-group">
-                      <label>End Date</label>
+                      <label data-i18n="common.endDate">End Date</label>
                       <input type="date" id="export-end-date" required>
                     </div>
                   </div>
                   <div class="form-group">
                     <label class="checkbox-label">
                       <input type="checkbox" id="export-conflicts" checked>
-                      Include Conflicts
+                      <span data-i18n="reports.includeConflicts">Include Conflicts</span>
                     </label>
                   </div>
                   <div class="form-group">
                     <label class="checkbox-label">
                       <input type="checkbox" id="export-skills" checked>
-                      Include Skills Matrix
+                      <span data-i18n="reports.includeSkillsMatrix">Include Skills Matrix</span>
                     </label>
                   </div>
                   <div class="export-buttons">
                     <button type="button" class="btn btn-primary" id="preview-report-btn">
-                      <i class="fas fa-eye"></i> Preview Report
+                      <i class="fas fa-eye"></i> <span data-i18n="reports.preview">Preview Report</span>
                     </button>
                     <button type="button" class="btn btn-secondary" id="export-excel-btn">
-                      <i class="fas fa-file-excel"></i> Export Excel
+                      <i class="fas fa-file-excel"></i> <span data-i18n="reports.exportExcel">Export Excel</span>
                     </button>
                   </div>
                 </form>
@@ -536,13 +536,13 @@
             <!-- Report Preview Section (hidden by default) -->
             <div id="report-preview-section" class="card full-width" style="display: none;">
               <div class="card-header">
-                <h2><i class="fas fa-file-alt"></i> Report Preview</h2>
+                <h2><i class="fas fa-file-alt"></i> <span data-i18n="reports.reportPreview">Report Preview</span></h2>
                 <div class="preview-actions">
                   <button class="btn btn-sm btn-primary" id="print-report-btn">
-                    <i class="fas fa-print"></i> Print / Save as PDF
+                    <i class="fas fa-print"></i> <span data-i18n="reports.printSavePdf">Print / Save as PDF</span>
                   </button>
                   <button class="btn btn-sm btn-secondary" onclick="closePreview()">
-                    <i class="fas fa-times"></i> Close Preview
+                    <i class="fas fa-times"></i> <span data-i18n="reports.closePreview">Close Preview</span>
                   </button>
                 </div>
               </div>
@@ -554,11 +554,11 @@
             </div>
             <div class="card">
               <div class="card-header">
-                <h2><i class="fas fa-history"></i> Export History</h2>
+                <h2><i class="fas fa-history"></i> <span data-i18n="reports.exportHistory">Export History</span></h2>
               </div>
               <div class="card-body">
                 <div id="export-history" class="export-history">
-                  <div class="loading">Loading history...</div>
+                  <div class="loading" data-i18n="common.loadingHistory">Loading history...</div>
                 </div>
               </div>
             </div>
@@ -569,12 +569,12 @@
         <div id="users-view" class="view">
           <div class="view-header">
             <div class="view-title">
-              <h2><i class="fas fa-user-shield"></i> User Management</h2>
-              <p class="text-muted">Manage user accounts and permissions</p>
+              <h2><i class="fas fa-user-shield"></i> <span data-i18n="users.title">User Management</span></h2>
+              <p class="text-muted" data-i18n="users.subtitle">Manage user accounts and permissions</p>
             </div>
             <div class="view-actions">
               <button class="btn btn-primary" id="add-user-btn">
-                <i class="fas fa-plus"></i> Add User
+                <i class="fas fa-plus"></i> <span data-i18n="users.addUser">Add User</span>
               </button>
             </div>
           </div>
@@ -584,40 +584,40 @@
             <div class="permission-card admin">
               <div class="permission-header">
                 <i class="fas fa-crown"></i>
-                <h3>Administrator</h3>
+                <h3 data-i18n="users.admin">Administrator</h3>
               </div>
               <ul class="permission-list">
-                <li><i class="fas fa-check"></i> Full system access</li>
-                <li><i class="fas fa-check"></i> Manage all users</li>
-                <li><i class="fas fa-check"></i> Create/edit schedules</li>
-                <li><i class="fas fa-check"></i> Export reports</li>
-                <li><i class="fas fa-check"></i> System settings</li>
+                <li><i class="fas fa-check"></i> <span data-i18n="users.perm.fullAccess">Full system access</span></li>
+                <li><i class="fas fa-check"></i> <span data-i18n="users.perm.manageUsers">Manage all users</span></li>
+                <li><i class="fas fa-check"></i> <span data-i18n="users.perm.createSchedules">Create/edit schedules</span></li>
+                <li><i class="fas fa-check"></i> <span data-i18n="users.perm.exportReports">Export reports</span></li>
+                <li><i class="fas fa-check"></i> <span data-i18n="users.perm.systemSettings">System settings</span></li>
               </ul>
             </div>
             <div class="permission-card scheduler">
               <div class="permission-header">
                 <i class="fas fa-calendar-check"></i>
-                <h3>Scheduler</h3>
+                <h3 data-i18n="users.scheduler">Scheduler</h3>
               </div>
               <ul class="permission-list">
-                <li><i class="fas fa-check"></i> Manage schedules</li>
-                <li><i class="fas fa-check"></i> Manage people</li>
-                <li><i class="fas fa-check"></i> Manage projects</li>
-                <li><i class="fas fa-check"></i> Export reports</li>
-                <li><i class="fas fa-times"></i> <span class="muted">No user management</span></li>
+                <li><i class="fas fa-check"></i> <span data-i18n="users.perm.manageSchedules">Manage schedules</span></li>
+                <li><i class="fas fa-check"></i> <span data-i18n="users.perm.managePeople">Manage people</span></li>
+                <li><i class="fas fa-check"></i> <span data-i18n="users.perm.manageProjects">Manage projects</span></li>
+                <li><i class="fas fa-check"></i> <span data-i18n="users.perm.exportReports">Export reports</span></li>
+                <li><i class="fas fa-times"></i> <span class="muted" data-i18n="users.perm.noUserManagement">No user management</span></li>
               </ul>
             </div>
             <div class="permission-card viewer">
               <div class="permission-header">
                 <i class="fas fa-eye"></i>
-                <h3>Viewer</h3>
+                <h3 data-i18n="users.viewer">Viewer</h3>
               </div>
               <ul class="permission-list">
-                <li><i class="fas fa-check"></i> View schedules</li>
-                <li><i class="fas fa-check"></i> View people</li>
-                <li><i class="fas fa-check"></i> View projects</li>
-                <li><i class="fas fa-times"></i> <span class="muted">No editing</span></li>
-                <li><i class="fas fa-times"></i> <span class="muted">No exports</span></li>
+                <li><i class="fas fa-check"></i> <span data-i18n="users.perm.viewSchedules">View schedules</span></li>
+                <li><i class="fas fa-check"></i> <span data-i18n="users.perm.viewPeople">View people</span></li>
+                <li><i class="fas fa-check"></i> <span data-i18n="users.perm.viewProjects">View projects</span></li>
+                <li><i class="fas fa-times"></i> <span class="muted" data-i18n="users.perm.noEditing">No editing</span></li>
+                <li><i class="fas fa-times"></i> <span class="muted" data-i18n="users.perm.noExports">No exports</span></li>
               </ul>
             </div>
           </div>
@@ -625,11 +625,11 @@
           <!-- Users Table -->
           <div class="card">
             <div class="card-header">
-              <h2><i class="fas fa-users"></i> All Users</h2>
+              <h2><i class="fas fa-users"></i> <span data-i18n="users.allUsers">All Users</span></h2>
             </div>
             <div class="card-body">
               <div id="users-table" class="users-table">
-                <div class="loading">Loading users...</div>
+                <div class="loading" data-i18n="common.loadingUsers">Loading users...</div>
               </div>
             </div>
           </div>
@@ -639,8 +639,8 @@
         <div id="settings-view" class="view">
           <div class="view-header">
             <div class="view-title">
-              <h2><i class="fas fa-cog"></i> System Settings</h2>
-              <p class="text-muted">Configure application branding and settings</p>
+              <h2><i class="fas fa-cog"></i> <span data-i18n="settings.title">System Settings</span></h2>
+              <p class="text-muted" data-i18n="settings.subtitle">Configure application branding and settings</p>
             </div>
           </div>
           
@@ -648,31 +648,31 @@
             <!-- Branding Settings -->
             <div class="card settings-card">
               <div class="card-header">
-                <h2><i class="fas fa-palette"></i> Branding</h2>
+                <h2><i class="fas fa-palette"></i> <span data-i18n="settings.branding">Branding</span></h2>
               </div>
               <div class="card-body">
                 <form id="branding-form" class="settings-form">
                   <div class="form-group">
-                    <label>Company / Application Name</label>
+                    <label data-i18n="settings.companyName">Company / Application Name</label>
                     <input type="text" id="setting-company-name" placeholder="Resource Scheduler" maxlength="50">
-                    <span class="form-hint">Displayed in sidebar and reports</span>
+                    <span class="form-hint" data-i18n="settings.companyNameHint">Displayed in sidebar and reports</span>
                   </div>
                   
                   <div class="form-group">
-                    <label>Logo</label>
+                    <label data-i18n="settings.logo">Logo</label>
                     <div class="logo-upload-area">
                       <div class="current-logo" id="current-logo-preview">
                         <i class="fas fa-calendar-check"></i>
                       </div>
                       <div class="logo-options">
                         <div class="form-group">
-                          <label>Logo URL (optional)</label>
+                          <label data-i18n="settings.logoUrl">Logo URL (optional)</label>
                           <input type="url" id="setting-logo-url" placeholder="https://example.com/logo.png">
-                          <span class="form-hint">Enter URL to your company logo (PNG, JPG, SVG)</span>
+                          <span class="form-hint" data-i18n="settings.logoUrlHint">Enter URL to your company logo (PNG, JPG, SVG)</span>
                         </div>
                         <div class="logo-or">- OR -</div>
                         <div class="form-group">
-                          <label>Icon</label>
+                          <label data-i18n="settings.icon">Icon</label>
                           <div class="icon-selector" id="icon-selector">
                             <button type="button" class="icon-option selected" data-icon="fa-calendar-check" title="Calendar"><i class="fas fa-calendar-check"></i></button>
                             <button type="button" class="icon-option" data-icon="fa-building" title="Building"><i class="fas fa-building"></i></button>
@@ -685,35 +685,35 @@
                             <button type="button" class="icon-option" data-icon="fa-layer-group" title="Layers"><i class="fas fa-layer-group"></i></button>
                             <button type="button" class="icon-option" data-icon="fa-cubes" title="Cubes"><i class="fas fa-cubes"></i></button>
                           </div>
-                          <span class="form-hint">Select an icon if not using a logo image</span>
+                          <span class="form-hint" data-i18n="settings.iconHint">Select an icon if not using a logo image</span>
                         </div>
                       </div>
                     </div>
                   </div>
                   
                   <div class="form-group">
-                    <label>Primary Color</label>
+                    <label data-i18n="settings.primaryColor">Primary Color</label>
                     <div class="color-picker-row">
                       <input type="color" id="setting-primary-color" value="#6366f1">
                       <input type="text" id="setting-primary-color-hex" value="#6366f1" pattern="^#[0-9A-Fa-f]{6}$" maxlength="7">
                     </div>
-                    <span class="form-hint">Main accent color used throughout the app</span>
+                    <span class="form-hint" data-i18n="settings.primaryColorHint">Main accent color used throughout the app</span>
                   </div>
                   
                   <div class="form-group">
-                    <label>Footer Text</label>
+                    <label data-i18n="settings.footerText">Footer Text</label>
                     <input type="text" id="setting-footer-text" placeholder="© 2026 Your Company. All rights reserved." maxlength="100">
-                    <span class="form-hint">Displayed in exports and reports</span>
+                    <span class="form-hint" data-i18n="settings.footerTextHint">Displayed in exports and reports</span>
                   </div>
                   
                   <div class="form-group">
-                    <label>Support Email</label>
+                    <label data-i18n="settings.supportEmail">Support Email</label>
                     <input type="email" id="setting-support-email" placeholder="support@company.com">
-                    <span class="form-hint">Contact email shown in manual and reports</span>
+                    <span class="form-hint" data-i18n="settings.supportEmailHint">Contact email shown in manual and reports</span>
                   </div>
                   
                   <div class="settings-preview">
-                    <h4>Preview</h4>
+                    <h4 data-i18n="settings.preview">Preview</h4>
                     <div class="branding-preview">
                       <div class="preview-logo" id="preview-logo">
                         <div class="preview-logo-icon"><i class="fas fa-calendar-check"></i></div>
@@ -727,10 +727,10 @@
                   
                   <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="resetBranding()">
-                      <i class="fas fa-undo"></i> Reset to Default
+                      <i class="fas fa-undo"></i> <span data-i18n="settings.resetDefault">Reset to Default</span>
                     </button>
                     <button type="submit" class="btn btn-primary">
-                      <i class="fas fa-save"></i> Save Changes
+                      <i class="fas fa-save"></i> <span data-i18n="common.saveChanges">Save Changes</span>
                     </button>
                   </div>
                 </form>
@@ -740,32 +740,32 @@
             <!-- Language & Translations Settings -->
             <div class="card settings-card">
               <div class="card-header">
-                <h2><i class="fas fa-language"></i> Language & Translations</h2>
+                <h2><i class="fas fa-language"></i> <span data-i18n="settings.languageTranslations">Language & Translations</span></h2>
               </div>
               <div class="card-body">
                 <form id="language-settings-form" class="settings-form">
                   <div class="form-row">
                     <div class="form-group">
-                      <label>Default Language</label>
+                      <label data-i18n="settings.defaultLanguage">Default Language</label>
                       <select id="setting-default-language" onchange="saveLanguageSetting()">
                         <option value="en">🇬🇧 English</option>
                         <option value="el">🇬🇷 Ελληνικά (Greek)</option>
                       </select>
-                      <span class="form-hint">Default language for new users</span>
+                      <span class="form-hint" data-i18n="settings.defaultLanguageHint">Default language for new users</span>
                     </div>
                     <div class="form-group">
-                      <label>Your Language</label>
+                      <label data-i18n="settings.yourLanguage">Your Language</label>
                       <select id="setting-user-language" onchange="changeUserLanguage(this.value)">
                         <option value="en">🇬🇧 English</option>
                         <option value="el">🇬🇷 Ελληνικά (Greek)</option>
                       </select>
-                      <span class="form-hint">Your personal language preference</span>
+                      <span class="form-hint" data-i18n="settings.yourLanguageHint">Your personal language preference</span>
                     </div>
                   </div>
                   
                   <div class="form-group">
-                    <label>Translation Management</label>
-                    <p class="form-hint mb-2">Customize translations for your organization. Override default text for any label in the application.</p>
+                    <label data-i18n="settings.translationManagement">Translation Management</label>
+                    <p class="form-hint mb-2" data-i18n="settings.translationManagementHint">Customize translations for your organization. Override default text for any label in the application.</p>
                     <button type="button" class="btn btn-secondary" onclick="openTranslationModal()">
                       <i class="fas fa-edit"></i> Manage Translations
                     </button>
