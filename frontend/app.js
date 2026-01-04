@@ -598,7 +598,63 @@ async function changeUserLanguage(langCode) {
     await window.i18n.setLanguage(langCode);
   }
   
-  showToast(`Language changed to ${langCode === 'el' ? 'Greek' : 'English'}. Some text will update on next page load.`);
+  // Update language switcher UI
+  updateLanguageSwitcherUI(langCode);
+  
+  // Update settings dropdown if visible
+  const settingsDropdown = document.getElementById('setting-user-language');
+  if (settingsDropdown) {
+    settingsDropdown.value = langCode;
+  }
+  
+  showToast(`Language changed to ${langCode === 'el' ? 'Greek (Ελληνικά)' : 'English'}. Some text will update on next page load.`);
+}
+
+// Language Switcher Functions
+function initLanguageSwitcher() {
+  const currentLang = localStorage.getItem('scheduler_language') || 'en';
+  updateLanguageSwitcherUI(currentLang);
+  
+  // Toggle dropdown
+  const toggleBtn = document.getElementById('lang-toggle-btn');
+  const switcher = document.getElementById('language-switcher');
+  
+  if (toggleBtn && switcher) {
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      switcher.classList.toggle('open');
+    });
+    
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!switcher.contains(e.target)) {
+        switcher.classList.remove('open');
+      }
+    });
+  }
+}
+
+function updateLanguageSwitcherUI(langCode) {
+  const flag = document.getElementById('current-lang-flag');
+  if (flag) {
+    flag.textContent = langCode === 'el' ? '🇬🇷' : '🇬🇧';
+  }
+  
+  // Update active state in dropdown
+  document.querySelectorAll('.lang-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.lang === langCode);
+  });
+}
+
+async function switchLanguage(langCode) {
+  // Close dropdown
+  const switcher = document.getElementById('language-switcher');
+  if (switcher) {
+    switcher.classList.remove('open');
+  }
+  
+  // Change language
+  await changeUserLanguage(langCode);
 }
 
 async function openTranslationModal() {
@@ -1074,6 +1130,9 @@ function showApp() {
   
   // Load branding settings
   loadBranding();
+  
+  // Initialize language switcher
+  initLanguageSwitcher();
   
   loadDashboard();
 }

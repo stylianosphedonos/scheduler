@@ -131,6 +131,22 @@
           <h1 id="page-title">Dashboard</h1>
         </div>
         <div class="header-right">
+          <div class="language-switcher" id="language-switcher">
+            <button class="btn-icon lang-btn" id="lang-toggle-btn" title="Change Language">
+              <span class="lang-flag" id="current-lang-flag">🇬🇧</span>
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="lang-dropdown" id="lang-dropdown">
+              <button class="lang-option" data-lang="en" onclick="switchLanguage('en')">
+                <span class="lang-flag">🇬🇧</span>
+                <span>English</span>
+              </button>
+              <button class="lang-option" data-lang="el" onclick="switchLanguage('el')">
+                <span class="lang-flag">🇬🇷</span>
+                <span>Ελληνικά</span>
+              </button>
+            </div>
+          </div>
           <button class="btn-icon help-btn" id="help-btn" title="Help (Press ?)">
             <i class="fas fa-question-circle"></i>
           </button>
