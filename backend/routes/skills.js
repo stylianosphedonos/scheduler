@@ -1,6 +1,6 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth');
-const { getBooleanCondition } = require('../database');
+const { getBooleanCondition, getDatabaseType } = require('../database');
 
 const router = express.Router();
 

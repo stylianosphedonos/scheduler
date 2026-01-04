@@ -16,7 +16,7 @@ const {
   invalidateToken,
   createAuditLog
 } = require('../middleware/security');
-const { getBooleanCondition } = require('../database');
+const { getBooleanCondition, getDatabaseType } = require('../database');
 
 const router = express.Router();
 
