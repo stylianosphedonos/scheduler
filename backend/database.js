@@ -239,7 +239,8 @@ function getSQLiteSchema() {
       description TEXT,
       color TEXT DEFAULT '#6366f1',
       is_active INTEGER DEFAULT 1,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
     -- Person Skills junction table
@@ -473,7 +474,8 @@ function getPostgresSchema() {
       description TEXT,
       color VARCHAR(7) DEFAULT '#6366f1',
       is_active BOOLEAN DEFAULT true,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
     -- Person Skills junction table
@@ -712,7 +714,9 @@ async function runPostgresMigrations(pool) {
   const migrations = [
     // Add location and is_remote columns to assignments if they don't exist
     `ALTER TABLE assignments ADD COLUMN IF NOT EXISTS location TEXT`,
-    `ALTER TABLE assignments ADD COLUMN IF NOT EXISTS is_remote BOOLEAN DEFAULT false`
+    `ALTER TABLE assignments ADD COLUMN IF NOT EXISTS is_remote BOOLEAN DEFAULT false`,
+    // Add updated_at column to skills if it doesn't exist
+    `ALTER TABLE skills ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
   ];
 
   for (const migration of migrations) {
@@ -733,7 +737,9 @@ function runSQLiteMigrations(database) {
   const migrations = [
     // Add location column to assignments if it doesn't exist
     { check: `PRAGMA table_info(assignments)`, column: 'location', sql: `ALTER TABLE assignments ADD COLUMN location TEXT` },
-    { check: `PRAGMA table_info(assignments)`, column: 'is_remote', sql: `ALTER TABLE assignments ADD COLUMN is_remote INTEGER DEFAULT 0` }
+    { check: `PRAGMA table_info(assignments)`, column: 'is_remote', sql: `ALTER TABLE assignments ADD COLUMN is_remote INTEGER DEFAULT 0` },
+    // Add updated_at column to skills if it doesn't exist
+    { check: `PRAGMA table_info(skills)`, column: 'updated_at', sql: `ALTER TABLE skills ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP` }
   ];
 
   for (const migration of migrations) {
