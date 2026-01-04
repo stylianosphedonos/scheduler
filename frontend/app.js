@@ -611,7 +611,14 @@ async function changeUserLanguage(langCode) {
 }
 
 // Language Switcher Functions
-function initLanguageSwitcher() {
+async function initLanguageSwitcher() {
+  // Initialize i18n system
+  if (window.i18n) {
+    await window.i18n.init();
+    // Apply translations after init
+    window.i18n.applyTranslations();
+  }
+  
   const currentLang = localStorage.getItem('scheduler_language') || 'en';
   updateLanguageSwitcherUI(currentLang);
   
@@ -632,6 +639,13 @@ function initLanguageSwitcher() {
       }
     });
   }
+  
+  // Listen for language changes
+  document.addEventListener('languageChanged', () => {
+    if (window.i18n) {
+      window.i18n.applyTranslations();
+    }
+  });
 }
 
 function updateLanguageSwitcherUI(langCode) {
@@ -3757,8 +3771,61 @@ async function showAddAssignmentModal() {
   }
 }
 
+// ===== Login Language Switcher =====
+function toggleLoginLangMenu() {
+  const menu = document.getElementById('login-lang-menu');
+  if (menu) {
+    menu.classList.toggle('open');
+  }
+}
+
+async function switchLoginLanguage(langCode) {
+  // Close menu
+  const menu = document.getElementById('login-lang-menu');
+  if (menu) menu.classList.remove('open');
+  
+  // Save preference
+  localStorage.setItem('scheduler_language', langCode);
+  
+  // Update flag
+  const flag = document.getElementById('login-lang-flag');
+  if (flag) flag.textContent = langCode === 'el' ? '🇬🇷' : '🇬🇧';
+  
+  // Initialize/update i18n
+  if (window.i18n) {
+    await window.i18n.setLanguage(langCode);
+  }
+}
+
+// Initialize language on page load (for login screen)
+async function initLoginLanguage() {
+  const savedLang = localStorage.getItem('scheduler_language') || 'en';
+  
+  // Update login page flag
+  const flag = document.getElementById('login-lang-flag');
+  if (flag) flag.textContent = savedLang === 'el' ? '🇬🇷' : '🇬🇧';
+  
+  // Initialize i18n
+  if (window.i18n) {
+    await window.i18n.init();
+    window.i18n.applyTranslations();
+  }
+  
+  // Close menu when clicking outside
+  document.addEventListener('click', (e) => {
+    const switcher = document.querySelector('.login-lang-switcher');
+    const menu = document.getElementById('login-lang-menu');
+    if (switcher && menu && !switcher.contains(e.target)) {
+      menu.classList.remove('open');
+    }
+  });
+}
+
 // ===== Event Listeners =====
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize language for login page
+  initLoginLanguage();
+  
   // Load public branding immediately (for login page)
   loadBranding(true);
   

@@ -116,10 +116,192 @@ const i18n = {
     localStorage.setItem('scheduler_language', langCode);
     this.updateDocumentLanguage();
     
+    // Apply translations to UI
+    this.applyTranslations();
+    
     // Trigger UI update
     document.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: langCode } }));
     
     return true;
+  },
+  
+  /**
+   * Apply translations to all UI elements
+   */
+  applyTranslations() {
+    // Translate elements with data-i18n attribute
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      const translated = this.t(key);
+      if (translated && translated !== key) {
+        el.textContent = translated;
+      }
+    });
+    
+    // Translate placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.dataset.i18nPlaceholder;
+      const translated = this.t(key);
+      if (translated && translated !== key) {
+        el.placeholder = translated;
+      }
+    });
+    
+    // Translate titles
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+      const key = el.dataset.i18nTitle;
+      const translated = this.t(key);
+      if (translated && translated !== key) {
+        el.title = translated;
+      }
+    });
+    
+    // Update navigation items
+    this.translateNavigation();
+    
+    // Update common buttons
+    this.translateButtons();
+    
+    // Update page titles
+    this.translatePageElements();
+  },
+  
+  /**
+   * Translate navigation menu items
+   */
+  translateNavigation() {
+    const navMappings = {
+      'dashboard': 'nav.dashboard',
+      'schedule': 'nav.schedule',
+      'people': 'nav.people',
+      'projects': 'nav.projects',
+      'skills': 'nav.skills',
+      'reports': 'nav.reports',
+      'settings': 'nav.settings',
+      'users': 'nav.users',
+      'ai-scheduler': 'nav.aiScheduler'
+    };
+    
+    document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+      const view = item.dataset.view;
+      if (navMappings[view]) {
+        const textSpan = item.querySelector('.nav-text') || item;
+        const translated = this.t(navMappings[view]);
+        if (translated) {
+          if (item.querySelector('.nav-text')) {
+            item.querySelector('.nav-text').textContent = translated;
+          } else {
+            // Keep the icon, update text
+            const icon = item.querySelector('i');
+            if (icon) {
+              item.innerHTML = '';
+              item.appendChild(icon);
+              item.appendChild(document.createTextNode(' ' + translated));
+            }
+          }
+        }
+      }
+    });
+    
+    // Mobile navigation
+    document.querySelectorAll('.mobile-bottom-nav .nav-item[data-view]').forEach(item => {
+      const view = item.dataset.view;
+      if (navMappings[view]) {
+        const label = item.querySelector('.nav-label');
+        if (label) {
+          label.textContent = this.t(navMappings[view]);
+        }
+      }
+    });
+  },
+  
+  /**
+   * Translate common buttons
+   */
+  translateButtons() {
+    // Save buttons
+    document.querySelectorAll('button[type="submit"], .btn-save').forEach(btn => {
+      if (btn.textContent.includes('Save') || btn.textContent.includes('Αποθήκευση')) {
+        const icon = btn.querySelector('i');
+        btn.innerHTML = icon ? icon.outerHTML + ' ' + this.t('common.save') : this.t('common.save');
+      }
+    });
+    
+    // Cancel buttons
+    document.querySelectorAll('.btn-cancel, .close-btn').forEach(btn => {
+      if (btn.textContent.trim() === 'Cancel' || btn.textContent.trim() === 'Ακύρωση') {
+        btn.textContent = this.t('common.cancel');
+      }
+    });
+    
+    // Delete buttons
+    document.querySelectorAll('.btn-danger').forEach(btn => {
+      if (btn.textContent.includes('Delete') || btn.textContent.includes('Διαγραφή')) {
+        const icon = btn.querySelector('i');
+        btn.innerHTML = icon ? icon.outerHTML + ' ' + this.t('common.delete') : this.t('common.delete');
+      }
+    });
+    
+    // Add buttons
+    document.querySelectorAll('.btn-primary').forEach(btn => {
+      const text = btn.textContent.trim();
+      if (text.startsWith('Add ') || text.startsWith('Προσθήκη')) {
+        // Keep specific add text, don't generalize
+      }
+    });
+  },
+  
+  /**
+   * Translate page-specific elements
+   */
+  translatePageElements() {
+    // Login page
+    const loginTitle = document.querySelector('.login-title');
+    if (loginTitle) loginTitle.textContent = this.t('auth.loginTitle');
+    
+    const loginSubtitle = document.querySelector('.login-subtitle');
+    if (loginSubtitle) loginSubtitle.textContent = this.t('auth.loginSubtitle');
+    
+    const loginBtn = document.querySelector('#login-form button[type="submit"]');
+    if (loginBtn) loginBtn.textContent = this.t('auth.login');
+    
+    // Login form labels
+    const usernameLabel = document.querySelector('label[for="login-username"]');
+    if (usernameLabel) usernameLabel.textContent = this.t('auth.username');
+    
+    const passwordLabel = document.querySelector('label[for="login-password"]');
+    if (passwordLabel) passwordLabel.textContent = this.t('auth.password');
+    
+    // Dashboard metrics
+    const metricLabels = {
+      'Total People': 'dashboard.totalPeople',
+      'Active Projects': 'dashboard.activeProjects',
+      'Today\'s Assignments': 'dashboard.todayAssignments',
+      'Pending Conflicts': 'dashboard.pendingConflicts'
+    };
+    
+    document.querySelectorAll('.metric-card .metric-label').forEach(label => {
+      const text = label.textContent.trim();
+      if (metricLabels[text]) {
+        label.textContent = this.t(metricLabels[text]);
+      }
+    });
+    
+    // Common labels
+    document.querySelectorAll('.card-header h2, .card-header h3').forEach(header => {
+      const text = header.textContent.trim();
+      const icon = header.querySelector('i');
+      
+      const mappings = {
+        'Branding': 'settings.branding',
+        'System Settings': 'settings.title',
+        'Language & Translations': 'settings.translations'
+      };
+      
+      if (mappings[text]) {
+        header.innerHTML = icon ? icon.outerHTML + ' ' + this.t(mappings[text]) : this.t(mappings[text]);
+      }
+    });
   },
   
   /**
