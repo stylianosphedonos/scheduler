@@ -1172,20 +1172,22 @@ function switchView(viewName) {
     view.classList.toggle('active', view.id === `${viewName}-view`);
   });
   
-  // Update title
-  const titles = {
-    dashboard: 'Dashboard',
-    schedule: 'Schedule',
-    people: 'People',
-    projects: 'Projects',
-    skills: 'Skills',
-    conflicts: 'Conflicts',
-    'ai-scheduler': 'AI Schedule Optimizer',
-    reports: 'Reports',
-    users: 'User Management',
-    settings: 'System Settings'
+  // Update title with translation
+  const titleKeys = {
+    dashboard: 'nav.dashboard',
+    schedule: 'nav.schedule',
+    people: 'nav.people',
+    projects: 'nav.projects',
+    skills: 'nav.skills',
+    conflicts: 'nav.conflicts',
+    'ai-scheduler': 'aiScheduler.title',
+    reports: 'nav.reports',
+    users: 'users.title',
+    settings: 'settings.title'
   };
-  document.getElementById('page-title').textContent = titles[viewName] || viewName;
+  const titleKey = titleKeys[viewName];
+  const translatedTitle = window.t ? window.t(titleKey) : viewName;
+  document.getElementById('page-title').textContent = translatedTitle || viewName;
   
   // Load view data
   switch (viewName) {

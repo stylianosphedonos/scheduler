@@ -4220,20 +4220,29 @@ body {
   }
   
   .view-header h1 {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
   
   .view-header .view-actions {
     width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
   
   .view-header .btn {
-    flex: 1;
-    min-width: 100px;
     justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .view-header .search-bar {
+    grid-column: 1 / -1;
+  }
+  
+  .view-header .select {
+    min-width: 0;
   }
   
   /* Search bar full width on mobile */
@@ -4249,10 +4258,11 @@ body {
     border-radius: 14px;
   }
   
-  /* Filter dropdowns */
-  .view-header .select {
-    flex: 1;
-    min-width: calc(50% - 5px);
+  /* Filter dropdowns - compact */
+  .select {
+    padding: 10px 32px 10px 12px;
+    font-size: 13px;
+    border-radius: 10px;
   }
   
   /* Content padding */
@@ -4290,25 +4300,30 @@ body {
     resize: vertical;
   }
   
-  /* Buttons - touch friendly */
+  /* Buttons - compact for mobile */
   .btn {
-    padding: 14px 22px;
-    font-size: 15px;
-    min-height: 48px; /* Apple touch target */
-    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    min-height: 40px;
+    border-radius: 10px;
     -webkit-tap-highlight-color: transparent;
+    gap: 6px;
+  }
+  
+  .btn i {
+    font-size: 12px;
   }
   
   .btn-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
   }
   
   .btn-sm {
-    padding: 10px 16px;
-    font-size: 13px;
-    min-height: 40px;
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 36px;
   }
   
   /* Tables - horizontal scroll with momentum */
