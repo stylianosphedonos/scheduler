@@ -24,7 +24,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const params = [];
 
     if (category) { whereClause += ' AND category = ?'; params.push(category); }
-    if (active !== undefined) { whereClause += ' AND is_active = ?'; params.push(active === 'true'); }
+    if (active !== undefined) { whereClause += ' AND is_active = ?'; params.push(active === 'true' ? 1 : 0); }
     if (search) {
       whereClause += ' AND (name LIKE ? OR category LIKE ? OR description LIKE ?)';
       const searchPattern = `%${search}%`;

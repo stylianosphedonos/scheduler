@@ -2349,7 +2349,9 @@ async function editProject(id) {
     
     // Create a map of project's current skills
     const projectSkillsMap = new Map();
-    project.skills.forEach(s => projectSkillsMap.set(s.id, s));
+    if (project.skills && Array.isArray(project.skills)) {
+      project.skills.forEach(s => projectSkillsMap.set(s.id, s));
+    }
     
     showModal(`Edit ${project.name}`, `
       <form id="edit-project-form" class="modal-form">
