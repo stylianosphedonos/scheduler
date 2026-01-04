@@ -78,10 +78,17 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;
+    const projectId = parseInt(req.params.id);
+    
+    // Validate ID is a number
+    if (isNaN(projectId)) {
+      return res.status(400).json({ error: 'Invalid project ID' });
+    }
+    
     const project = await db.prepare(`
       SELECT p.*, m.first_name || ' ' || m.last_name as manager_name
       FROM projects p LEFT JOIN people m ON p.manager_id = m.id WHERE p.id = ?
-    `).get(req.params.id);
+    `).get(projectId);
 
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
@@ -89,13 +96,13 @@ router.get('/:id', authenticateToken, async (req, res) => {
       SELECT s.id, s.name, s.category, s.color, ps.required_proficiency, ps.is_mandatory, ps.people_needed, ps.hours_needed
       FROM skills s JOIN project_skills ps ON s.id = ps.skill_id WHERE ps.project_id = ?
       ORDER BY ps.is_mandatory DESC, s.name
-    `).all(req.params.id);
+    `).all(projectId);
 
     const stats = await db.prepare(`
       SELECT COUNT(*) as total_assignments, COUNT(DISTINCT person_id) as unique_people,
         SUM(end_hour - start_hour) as total_hours, COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count
       FROM assignments WHERE project_id = ?
-    `).get(req.params.id);
+    `).get(projectId);
 
     res.json({
       id: project.id, name: project.name, code: project.code, client: project.client,
@@ -167,7 +174,10 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
 router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
+    const projectId = parseInt(req.params.id);
+    if (isNaN(projectId)) return res.status(400).json({ error: 'Invalid project ID' });
+    
+    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
     const { name, code, client, description, status, priority, color, startDate, endDate, budgetHours, managerId, isBillable, notes } = req.body;
@@ -192,7 +202,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
 
     updates.push('updated_at = CURRENT_TIMESTAMP');
-    values.push(req.params.id);
+    values.push(projectId);
 
     await db.prepare(`UPDATE projects SET ${updates.join(', ')} WHERE id = ?`).run(...values);
     res.json({ message: 'Project updated successfully' });
@@ -206,19 +216,22 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
 router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
+    const projectId = parseInt(req.params.id);
+    if (isNaN(projectId)) return res.status(400).json({ error: 'Invalid project ID' });
+    
+    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
     const dateNow = getDateNow();
     const activeAssignments = await db.prepare(`
       SELECT COUNT(*) as count FROM assignments WHERE project_id = ? AND date >= ${dateNow} AND status NOT IN ('completed', 'cancelled')
-    `).get(req.params.id);
+    `).get(projectId);
 
     if (activeAssignments?.count > 0) {
       return res.status(400).json({ error: 'Cannot delete project with active future assignments', assignmentCount: activeAssignments.count });
     }
 
-    await db.prepare('DELETE FROM projects WHERE id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM projects WHERE id = ?').run(projectId);
     res.json({ message: 'Project deleted successfully' });
   } catch (error) {
     console.error('Delete project error:', error);
@@ -230,18 +243,21 @@ router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) 
 router.put('/:id/skills', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
+    const projectId = parseInt(req.params.id);
+    if (isNaN(projectId)) return res.status(400).json({ error: 'Invalid project ID' });
+    
     const { skills } = req.body;
 
-    const project = await db.prepare('SELECT id FROM projects WHERE id = ?').get(req.params.id);
+    const project = await db.prepare('SELECT id FROM projects WHERE id = ?').get(projectId);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
-    await db.prepare('DELETE FROM project_skills WHERE project_id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM project_skills WHERE project_id = ?').run(projectId);
 
     if (skills && Array.isArray(skills)) {
       for (const skill of skills) {
         if (skill.skillId) {
           await db.prepare(`INSERT INTO project_skills (project_id, skill_id, required_proficiency, is_mandatory, people_needed, hours_needed) VALUES (?, ?, ?, ?, ?, ?)`)
-            .run(req.params.id, skill.skillId, skill.requiredProficiency || 3, skill.isMandatory !== false, skill.peopleNeeded || 1, skill.hoursNeeded || null);
+            .run(projectId, skill.skillId, skill.requiredProficiency || 3, skill.isMandatory !== false, skill.peopleNeeded || 1, skill.hoursNeeded || null);
         }
       }
     }
