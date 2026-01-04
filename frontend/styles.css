@@ -4483,6 +4483,7 @@ body {
   
   .modal-footer {
     padding: 16px;
+    padding-bottom: calc(16px + 70px + env(safe-area-inset-bottom));
     position: sticky;
     bottom: 0;
     background: linear-gradient(0deg, var(--bg-card) 0%, rgba(26, 26, 46, 0.98) 100%);
@@ -4490,10 +4491,12 @@ body {
     border-top: 1px solid var(--border-color);
     display: flex;
     gap: 10px;
+    z-index: 100;
   }
   
   .modal-footer .btn {
     flex: 1;
+    min-height: 44px;
   }
   
   /* AI Scheduler mobile */
@@ -4883,7 +4886,7 @@ body {
   }
   
   .modal-footer {
-    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    padding-bottom: calc(16px + 70px + env(safe-area-inset-bottom));
   }
   
   .mobile-more-menu {
@@ -5748,6 +5751,7 @@ body {
   
   .modal-footer {
     padding: 16px;
+    padding-bottom: calc(16px + 70px + env(safe-area-inset-bottom));
     position: sticky;
     bottom: 0;
     background: var(--bg-card);
@@ -5760,6 +5764,7 @@ body {
   .modal-footer .btn {
     flex: 1;
     justify-content: center;
+    min-height: 44px;
   }
   
   /* Form fixes */
