@@ -16,8 +16,12 @@ const {
   invalidateToken,
   createAuditLog
 } = require('../middleware/security');
+const { getBooleanCondition } = require('../database');
 
 const router = express.Router();
+
+// Helper for active condition
+const getActiveCondition = (column = 'is_active') => getBooleanCondition(column, true);
 
 /**
  * AUTHENTICATION ROUTES
@@ -417,7 +421,8 @@ router.post('/forgot-password', async (req, res) => {
     // Always return success to prevent email enumeration
     const successMessage = 'If an account exists with this email, a password reset link has been sent.';
 
-    const user = await db.prepare('SELECT id, email FROM users WHERE email = ? AND is_active = true').get(email);
+    const activeCondition = getActiveCondition('is_active');
+    const user = await db.prepare(`SELECT id, email FROM users WHERE email = ? AND ${activeCondition}`).get(email);
 
     if (!user) {
       // Return same message to prevent enumeration

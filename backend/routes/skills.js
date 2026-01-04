@@ -1,7 +1,11 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const { getBooleanCondition } = require('../database');
 
 const router = express.Router();
+
+// Helper for active condition
+const getActiveCondition = (column = 'is_active') => getBooleanCondition(column, true);
 
 /**
  * SKILLS MANAGEMENT
@@ -57,9 +61,10 @@ router.get('/:id', authenticateToken, async (req, res) => {
     const skill = await db.prepare('SELECT * FROM skills WHERE id = ?').get(req.params.id);
     if (!skill) return res.status(404).json({ error: 'Skill not found' });
 
+    const activeCondition = getActiveCondition('p.is_active');
     const people = await db.prepare(`
       SELECT p.id, p.first_name, p.last_name, p.department, ps.proficiency_level, ps.years_experience, ps.certified
-      FROM people p JOIN person_skills ps ON p.id = ps.person_id WHERE ps.skill_id = ? AND p.is_active = true
+      FROM people p JOIN person_skills ps ON p.id = ps.person_id WHERE ps.skill_id = ? AND ${activeCondition}
       ORDER BY ps.proficiency_level DESC, p.last_name
     `).all(req.params.id);
 

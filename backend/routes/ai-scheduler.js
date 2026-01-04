@@ -1,7 +1,12 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const { getDatabaseType, getBooleanCondition } = require('../database');
 
 const router = express.Router();
+
+// Helper for active condition
+const getActiveCondition = (column = 'is_active') => getBooleanCondition(column, true);
+const getMandatoryCondition = (column = 'is_mandatory') => getBooleanCondition(column, true);
 
 /**
  * AI SCHEDULING MODULE
@@ -179,7 +184,8 @@ router.get('/available', authenticateToken, async (req, res) => {
       query += ` LEFT JOIN person_skills ps ON p.id = ps.person_id`;
     }
 
-    query += ` WHERE p.is_active = true`;
+    const activeCondition = getActiveCondition('p.is_active');
+    query += ` WHERE ${activeCondition}`;
 
     if (excludePersonId) {
       query += ` AND p.id != ?`;
@@ -303,13 +309,14 @@ router.get('/analytics', authenticateToken, async (req, res) => {
     const end = endDate || start;
 
     // Skill coverage analysis
+    const activeCondSkill = getActiveCondition('per.is_active');
     const skillCoverage = await db.prepare(`
       SELECT s.id, s.name, s.color,
         ps.people_needed as needed,
         (SELECT COUNT(DISTINCT per.id) 
          FROM people per 
          JOIN person_skills psk ON per.id = psk.person_id 
-         WHERE psk.skill_id = s.id AND per.is_active = true) as available_people,
+         WHERE psk.skill_id = s.id AND ${activeCondSkill}) as available_people,
         (SELECT COUNT(DISTINCT a.person_id) 
          FROM assignments a 
          JOIN person_skills psk ON a.person_id = psk.person_id AND psk.skill_id = s.id
@@ -323,6 +330,7 @@ router.get('/analytics', authenticateToken, async (req, res) => {
     `).all(start, end);
 
     // Utilization by person
+    const activeCondUtil = getActiveCondition('p.is_active');
     const utilization = await db.prepare(`
       SELECT p.id, p.first_name || ' ' || p.last_name as name, p.department,
         p.max_hours_per_day,
@@ -331,12 +339,14 @@ router.get('/analytics', authenticateToken, async (req, res) => {
       FROM people p
       LEFT JOIN assignments a ON p.id = a.person_id 
         AND a.date >= ? AND a.date <= ? AND a.status != 'cancelled'
-      WHERE p.is_active = true
+      WHERE ${activeCondUtil}
       GROUP BY p.id
       ORDER BY hours_scheduled DESC
     `).all(start, end);
 
     // Unmet skill requirements
+    const activeCondUnmet = getActiveCondition('per.is_active');
+    const mandatoryCond = getMandatoryCondition('ps.is_mandatory');
     const unmetRequirements = await db.prepare(`
       SELECT p.id as project_id, p.name as project_name, p.priority,
         s.id as skill_id, s.name as skill_name, s.color,
@@ -347,11 +357,11 @@ router.get('/analytics', authenticateToken, async (req, res) => {
          JOIN person_skills psk ON per.id = psk.person_id 
          WHERE psk.skill_id = s.id 
          AND psk.proficiency_level >= ps.required_proficiency
-         AND per.is_active = true) as qualified_people
+         AND ${activeCondUnmet}) as qualified_people
       FROM project_skills ps
       JOIN projects p ON ps.project_id = p.id
       JOIN skills s ON ps.skill_id = s.id
-      WHERE p.status = 'active' AND ps.is_mandatory = true
+      WHERE p.status = 'active' AND ${mandatoryCond}
       HAVING qualified_people < ps.people_needed
       ORDER BY p.priority, p.name
     `).all();
@@ -389,6 +399,7 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
   const coverage = {};
 
   // Get all available people for this date
+  const activeCondAvail = getActiveCondition('p.is_active');
   const availablePeople = await db.prepare(`
     SELECT p.id, p.first_name, p.last_name, p.department, p.max_hours_per_day, p.max_projects_per_day,
       (SELECT SUM(end_hour - start_hour) FROM assignments 
@@ -396,7 +407,7 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
       (SELECT COUNT(DISTINCT project_id) FROM assignments 
        WHERE person_id = p.id AND date = ? AND status != 'cancelled') as projects_assigned
     FROM people p
-    WHERE p.is_active = true
+    WHERE ${activeCondAvail}
     AND p.id NOT IN (
       SELECT person_id FROM availability_windows 
       WHERE ? >= start_date AND ? <= end_date AND status = 'approved'

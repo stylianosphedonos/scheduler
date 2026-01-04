@@ -856,7 +856,25 @@ function getDatabaseType() {
   return dbType;
 }
 
+// Helper function to get the correct boolean value for SQL queries
+function getBooleanValue(value) {
+  if (dbType === 'postgres') {
+    return value ? 'true' : 'false';
+  }
+  return value ? '1' : '0';
+}
+
+// Helper function to get the correct boolean condition for SQL queries
+function getBooleanCondition(column, value) {
+  if (dbType === 'postgres') {
+    return `${column} = ${value ? 'true' : 'false'}`;
+  }
+  return `${column} = ${value ? '1' : '0'}`;
+}
+
 module.exports = {
   getDatabase,
-  getDatabaseType
+  getDatabaseType,
+  getBooleanValue,
+  getBooleanCondition
 };
