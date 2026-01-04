@@ -301,6 +301,77 @@ TEST_URL=http://localhost:3000  # Default test server
 
 ---
 
+## 18. Internationalization (i18n) Tests
+
+| Test ID | Description | Steps | Expected Result | Priority |
+|---------|-------------|-------|-----------------|----------|
+| TC-I18N-001 | Load English translation file | GET /i18n/en.json | 200 OK, JSON with meta.code='en' | Critical |
+| TC-I18N-002 | Load Greek translation file | GET /i18n/el.json | 200 OK, JSON with meta.code='el' | Critical |
+| TC-I18N-003 | Request non-existent language | GET /i18n/xx.json | 404 Not Found | Medium |
+| TC-I18N-004 | English file has required sections | GET /i18n/en.json | Contains common, auth, nav, dashboard, etc. | High |
+| TC-I18N-005 | Greek file has required sections | GET /i18n/el.json | Contains common, auth, nav, dashboard, etc. | High |
+| TC-I18N-006 | English and Greek have matching keys | Compare both files | All major sections match | High |
+| TC-I18N-007 | Common translations exist in English | GET /i18n/en.json | save='Save', cancel='Cancel', etc. | High |
+| TC-I18N-008 | Common translations exist in Greek | GET /i18n/el.json | save='Αποθήκευση', cancel='Ακύρωση', etc. | High |
+| TC-I18N-009 | Navigation translations exist | GET /i18n/el.json | nav.dashboard='Πίνακας Ελέγχου' | High |
+| TC-I18N-010 | Empty state messages in both languages | Compare both files | All empty states have translations | High |
+| TC-I18N-011 | Help content exists in both languages | Compare both files | help.dashboard, help.schedule exist | High |
+| TC-I18N-012 | Proficiency levels are translated | Compare both files | 1=Beginner/Αρχάριος, 5=Expert/Ειδικός | Medium |
+| TC-I18N-013 | Get custom translations (admin) | GET /api/translations with admin token | 200 OK, translations object | High |
+| TC-I18N-014 | Get translations for language | GET /api/translations/en | 200 OK, translations object | High |
+| TC-I18N-015 | Admin updates custom translation | PUT /api/translations/en/test.key | 200 OK | High |
+| TC-I18N-016 | Non-admin cannot update translations | PUT /api/translations/en/test.key as viewer | 403 Forbidden | Critical |
+| TC-I18N-017 | Bulk update translations | POST /api/translations/bulk as admin | 200 OK | Medium |
+| TC-I18N-018 | Delete custom translation | DELETE /api/translations/en/test.key as admin | 200 OK | Medium |
+| TC-I18N-019 | Reject invalid translation key | PUT /api/translations/en/ with invalid key | 400 or 404 | Low |
+| TC-I18N-020 | Get public settings with language | GET /api/settings/public | 200 OK, includes default_language | High |
+| TC-I18N-021 | Admin updates default language | PUT /api/settings with default_language | 200 OK | High |
+
+---
+
+## 19. UI Translation Integration Tests
+
+| Test ID | Description | Steps | Expected Result | Priority |
+|---------|-------------|-------|-----------------|----------|
+| TC-UI-I18N-001 | HTML has i18n data attributes | GET / (main page) | Contains data-i18n attributes | High |
+| TC-UI-I18N-002 | Dashboard metrics have i18n | GET / | data-i18n="dashboard.activePeople" exists | High |
+| TC-UI-I18N-003 | Form labels have i18n | GET / | data-i18n="auth.username" exists | High |
+| TC-UI-I18N-004 | Settings page has i18n | GET / | data-i18n="settings.branding" exists | High |
+| TC-UI-I18N-005 | Loading messages have i18n | GET / | data-i18n="common.loading" exists | Medium |
+| TC-UI-I18N-006 | Language switcher exists | GET / | language-switcher element exists | High |
+
+---
+
+## 20. Help System Tests
+
+| Test ID | Description | Steps | Expected Result | Priority |
+|---------|-------------|-------|-----------------|----------|
+| TC-HELP-001 | English help has all pages | GET /i18n/en.json | help.dashboard, schedule, people, etc. | High |
+| TC-HELP-002 | Greek help has all pages | GET /i18n/el.json | help.dashboard, schedule, people, etc. | High |
+| TC-HELP-003 | Dashboard help has overview | GET translations | English and Greek overview exists | High |
+| TC-HELP-004 | Schedule help has steps | GET translations | step1, step2, etc. in both languages | High |
+| TC-HELP-005 | People help explains proficiency | GET translations | proficiencyLevels section exists | Medium |
+| TC-HELP-006 | AI Scheduler help explains considerations | GET translations | consideration1-4 exist | Medium |
+| TC-HELP-007 | Conflicts help explains types | GET translations | overlapDesc exists in both languages | High |
+| TC-HELP-008 | Help button exists in header | GET / | help-btn and fa-question-circle exist | High |
+
+---
+
+## 21. Empty State Translation Tests
+
+| Test ID | Description | Steps | Expected Result | Priority |
+|---------|-------------|-------|-----------------|----------|
+| TC-EMPTY-001 | Dashboard empty states translated | Check el.json | noAssignmentsToday is Greek | High |
+| TC-EMPTY-002 | People empty states translated | Check el.json | noPeopleFound is Greek | High |
+| TC-EMPTY-003 | Project empty states translated | Check el.json | noProjectsFound is Greek | High |
+| TC-EMPTY-004 | Schedule empty states translated | Check el.json | noAssignments is Greek | High |
+| TC-EMPTY-005 | Skill empty states translated | Check el.json | noSkillsFound is Greek | High |
+| TC-EMPTY-006 | Conflict empty states translated | Check el.json | noConflicts is Greek | High |
+| TC-EMPTY-007 | AI Scheduler empty state translated | Check el.json | noQualifiedPeople is Greek | Medium |
+| TC-EMPTY-008 | User empty state translated | Check el.json | noUsersFound is Greek | Medium |
+
+---
+
 ## Test Data Setup
 
 Before running tests, ensure the database has:
@@ -309,4 +380,17 @@ Before running tests, ensure the database has:
 - At least one person, project, and skill
 
 The test suite will create additional test data as needed.
+
+---
+
+## i18n Test Coverage Summary
+
+| Category | Tests | Status |
+|----------|-------|--------|
+| Translation Files | 12 | ✅ |
+| Translation API | 9 | ✅ |
+| UI Integration | 6 | ✅ |
+| Help System | 8 | ✅ |
+| Empty States | 8 | ✅ |
+| **Total i18n Tests** | **43** | ✅ |
 

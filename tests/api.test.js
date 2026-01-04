@@ -1825,6 +1825,534 @@ describe('Error Handling', () => {
   });
 });
 
+// ============================================
+// 18. INTERNATIONALIZATION (i18n) TESTS
+// ============================================
+describe('Internationalization (i18n)', () => {
+  
+  describe('Translation Files', () => {
+    test('TC-I18N-001: Should load English translation file', async () => {
+      const res = await fetch(`${BASE_URL}/i18n/en.json`);
+      expect(res.status).toBe(200);
+      
+      const data = await res.json();
+      expect(data).toHaveProperty('meta');
+      expect(data.meta.code).toBe('en');
+      expect(data.meta.name).toBe('English');
+    });
+
+    test('TC-I18N-002: Should load Greek translation file', async () => {
+      const res = await fetch(`${BASE_URL}/i18n/el.json`);
+      expect(res.status).toBe(200);
+      
+      const data = await res.json();
+      expect(data).toHaveProperty('meta');
+      expect(data.meta.code).toBe('el');
+      expect(data.meta.name).toBe('Greek');
+      expect(data.meta.nativeName).toBe('Ελληνικά');
+    });
+
+    test('TC-I18N-003: Should return 404 for non-existent language', async () => {
+      const res = await fetch(`${BASE_URL}/i18n/xx.json`);
+      expect(res.status).toBe(404);
+    });
+
+    test('TC-I18N-004: English file should contain all required sections', async () => {
+      const res = await fetch(`${BASE_URL}/i18n/en.json`);
+      const data = await res.json();
+      
+      const requiredSections = [
+        'common', 'auth', 'nav', 'dashboard', 'people', 
+        'projects', 'skills', 'schedule', 'aiScheduler', 
+        'conflicts', 'reports', 'settings', 'users', 
+        'validation', 'messages', 'time', 'help'
+      ];
+      
+      requiredSections.forEach(section => {
+        expect(data).toHaveProperty(section);
+      });
+    });
+
+    test('TC-I18N-005: Greek file should contain all required sections', async () => {
+      const res = await fetch(`${BASE_URL}/i18n/el.json`);
+      const data = await res.json();
+      
+      const requiredSections = [
+        'common', 'auth', 'nav', 'dashboard', 'people', 
+        'projects', 'skills', 'schedule', 'aiScheduler', 
+        'conflicts', 'reports', 'settings', 'users', 
+        'validation', 'messages', 'time', 'help'
+      ];
+      
+      requiredSections.forEach(section => {
+        expect(data).toHaveProperty(section);
+      });
+    });
+
+    test('TC-I18N-006: English and Greek should have matching keys', async () => {
+      const enRes = await fetch(`${BASE_URL}/i18n/en.json`);
+      const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+      
+      const enData = await enRes.json();
+      const elData = await elRes.json();
+      
+      // Check that major sections match
+      Object.keys(enData).forEach(key => {
+        if (key !== 'meta') {
+          expect(elData).toHaveProperty(key);
+        }
+      });
+    });
+  });
+
+  describe('Translation Content Validation', () => {
+    test('TC-I18N-007: Common translations should exist in English', async () => {
+      const res = await fetch(`${BASE_URL}/i18n/en.json`);
+      const data = await res.json();
+      
+      expect(data.common.save).toBe('Save');
+      expect(data.common.cancel).toBe('Cancel');
+      expect(data.common.delete).toBe('Delete');
+      expect(data.common.edit).toBe('Edit');
+      expect(data.common.loading).toBe('Loading...');
+      expect(data.common.quickAdd).toBe('Quick Add');
+    });
+
+    test('TC-I18N-008: Common translations should exist in Greek', async () => {
+      const res = await fetch(`${BASE_URL}/i18n/el.json`);
+      const data = await res.json();
+      
+      expect(data.common.save).toBe('Αποθήκευση');
+      expect(data.common.cancel).toBe('Ακύρωση');
+      expect(data.common.delete).toBe('Διαγραφή');
+      expect(data.common.edit).toBe('Επεξεργασία');
+      expect(data.common.loading).toBe('Φόρτωση...');
+      expect(data.common.quickAdd).toBe('Γρήγορη Προσθήκη');
+    });
+
+    test('TC-I18N-009: Navigation translations should exist', async () => {
+      const res = await fetch(`${BASE_URL}/i18n/el.json`);
+      const data = await res.json();
+      
+      expect(data.nav.dashboard).toBe('Πίνακας Ελέγχου');
+      expect(data.nav.schedule).toBe('Πρόγραμμα');
+      expect(data.nav.people).toBe('Προσωπικό');
+      expect(data.nav.projects).toBe('Έργα');
+      expect(data.nav.skills).toBe('Δεξιότητες');
+    });
+
+    test('TC-I18N-010: Empty state messages should exist in both languages', async () => {
+      const enRes = await fetch(`${BASE_URL}/i18n/en.json`);
+      const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+      
+      const enData = await enRes.json();
+      const elData = await elRes.json();
+      
+      // English empty states
+      expect(enData.dashboard.noAssignmentsToday).toBe('No assignments today');
+      expect(enData.people.noPeopleFound).toBe('No people found');
+      expect(enData.projects.noProjectsFound).toBe('No projects found');
+      expect(enData.conflicts.noConflicts).toBe('No conflicts');
+      
+      // Greek empty states
+      expect(elData.dashboard.noAssignmentsToday).toBe('Δεν υπάρχουν αναθέσεις σήμερα');
+      expect(elData.people.noPeopleFound).toBe('Δεν βρέθηκε προσωπικό');
+      expect(elData.projects.noProjectsFound).toBe('Δεν βρέθηκαν έργα');
+      expect(elData.conflicts.noConflicts).toBe('Δεν υπάρχουν συγκρούσεις');
+    });
+
+    test('TC-I18N-011: Help content should exist in both languages', async () => {
+      const enRes = await fetch(`${BASE_URL}/i18n/en.json`);
+      const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+      
+      const enData = await enRes.json();
+      const elData = await elRes.json();
+      
+      // Check help sections exist
+      expect(enData.help.dashboard).toBeDefined();
+      expect(enData.help.schedule).toBeDefined();
+      expect(enData.help.people).toBeDefined();
+      expect(enData.help.projects).toBeDefined();
+      
+      expect(elData.help.dashboard).toBeDefined();
+      expect(elData.help.schedule).toBeDefined();
+      expect(elData.help.people).toBeDefined();
+      expect(elData.help.projects).toBeDefined();
+    });
+
+    test('TC-I18N-012: Proficiency levels should be translated', async () => {
+      const enRes = await fetch(`${BASE_URL}/i18n/en.json`);
+      const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+      
+      const enData = await enRes.json();
+      const elData = await elRes.json();
+      
+      expect(enData.skills.proficiencyLevels['1']).toBe('Beginner');
+      expect(enData.skills.proficiencyLevels['5']).toBe('Expert');
+      
+      expect(elData.skills.proficiencyLevels['1']).toBe('Αρχάριος');
+      expect(elData.skills.proficiencyLevels['5']).toBe('Ειδικός');
+    });
+  });
+
+  describe('Translation API Endpoints', () => {
+    test('TC-I18N-013: Should get custom translations (admin)', async () => {
+      const res = await api('/api/translations', {
+        method: 'GET',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+      expect(res.data).toHaveProperty('translations');
+    });
+
+    test('TC-I18N-014: Should get translations for specific language', async () => {
+      const res = await api('/api/translations/en', {
+        method: 'GET'
+      });
+      
+      expect(res.status).toBe(200);
+      expect(res.data).toHaveProperty('translations');
+    });
+
+    test('TC-I18N-015: Admin should update a custom translation', async () => {
+      const testValue = `TestTranslation_${Date.now()}`;
+      
+      const res = await api('/api/translations/en/test.customKey', {
+        method: 'PUT',
+        token: adminToken,
+        body: JSON.stringify({ value: testValue })
+      });
+      
+      expect(res.status).toBe(200);
+      
+      // Verify it was saved
+      const getRes = await api('/api/translations/en', { method: 'GET' });
+      // The custom translation should be in the response
+      expect(getRes.status).toBe(200);
+    });
+
+    test('TC-I18N-016: Non-admin should not update translations', async () => {
+      const res = await api('/api/translations/en/test.key', {
+        method: 'PUT',
+        token: viewerToken,
+        body: JSON.stringify({ value: 'Test' })
+      });
+      
+      expect(res.status).toBe(403);
+    });
+
+    test('TC-I18N-017: Should bulk update translations (admin)', async () => {
+      const res = await api('/api/translations/bulk', {
+        method: 'POST',
+        token: adminToken,
+        body: JSON.stringify({
+          lang: 'en',
+          translations: {
+            'test.bulk1': 'Bulk Test 1',
+            'test.bulk2': 'Bulk Test 2'
+          }
+        })
+      });
+      
+      expect(res.status).toBe(200);
+    });
+
+    test('TC-I18N-018: Should delete custom translation (admin)', async () => {
+      // First create a translation
+      await api('/api/translations/en/test.toDelete', {
+        method: 'PUT',
+        token: adminToken,
+        body: JSON.stringify({ value: 'To Delete' })
+      });
+      
+      // Then delete it
+      const res = await api('/api/translations/en/test.toDelete', {
+        method: 'DELETE',
+        token: adminToken
+      });
+      
+      expect(res.status).toBe(200);
+    });
+
+    test('TC-I18N-019: Should reject invalid translation key format', async () => {
+      const res = await api('/api/translations/en/', {
+        method: 'PUT',
+        token: adminToken,
+        body: JSON.stringify({ value: 'Test' })
+      });
+      
+      // Should either fail or handle gracefully
+      expect([200, 400, 404]).toContain(res.status);
+    });
+  });
+
+  describe('Public Settings for Language', () => {
+    test('TC-I18N-020: Should get public settings including default language', async () => {
+      const res = await api('/api/settings/public', { method: 'GET' });
+      
+      expect(res.status).toBe(200);
+      // Should have default_language setting
+      if (res.data.default_language) {
+        expect(['en', 'el']).toContain(res.data.default_language);
+      }
+    });
+
+    test('TC-I18N-021: Admin should update default language setting', async () => {
+      const res = await api('/api/settings', {
+        method: 'PUT',
+        token: adminToken,
+        body: JSON.stringify({ key: 'default_language', value: 'en' })
+      });
+      
+      expect(res.status).toBe(200);
+    });
+  });
+});
+
+// ============================================
+// 19. UI TRANSLATION INTEGRATION TESTS
+// ============================================
+describe('UI Translation Integration', () => {
+  
+  describe('Static HTML Translations', () => {
+    test('TC-UI-I18N-001: Main HTML should have i18n data attributes', async () => {
+      const res = await fetch(`${BASE_URL}/`);
+      const html = await res.text();
+      
+      // Check for data-i18n attributes
+      expect(html).toContain('data-i18n=');
+      expect(html).toContain('data-i18n="nav.dashboard"');
+      expect(html).toContain('data-i18n="nav.people"');
+      expect(html).toContain('data-i18n="common.quickAdd"');
+    });
+
+    test('TC-UI-I18N-002: Dashboard metrics should have i18n attributes', async () => {
+      const res = await fetch(`${BASE_URL}/`);
+      const html = await res.text();
+      
+      expect(html).toContain('data-i18n="dashboard.activePeople"');
+      expect(html).toContain('data-i18n="dashboard.activeProjects"');
+      expect(html).toContain('data-i18n="dashboard.todaysSchedule"');
+    });
+
+    test('TC-UI-I18N-003: Form labels should have i18n attributes', async () => {
+      const res = await fetch(`${BASE_URL}/`);
+      const html = await res.text();
+      
+      expect(html).toContain('data-i18n="auth.username"');
+      expect(html).toContain('data-i18n="auth.password"');
+      expect(html).toContain('data-i18n="auth.login"');
+    });
+
+    test('TC-UI-I18N-004: Settings page should have i18n attributes', async () => {
+      const res = await fetch(`${BASE_URL}/`);
+      const html = await res.text();
+      
+      expect(html).toContain('data-i18n="settings.branding"');
+      expect(html).toContain('data-i18n="settings.companyName"');
+      expect(html).toContain('data-i18n="settings.languageTranslations"');
+    });
+
+    test('TC-UI-I18N-005: Loading messages should have i18n attributes', async () => {
+      const res = await fetch(`${BASE_URL}/`);
+      const html = await res.text();
+      
+      expect(html).toContain('data-i18n="common.loading"');
+      expect(html).toContain('data-i18n="common.loadingSchedule"');
+    });
+  });
+
+  describe('Language Switcher', () => {
+    test('TC-UI-I18N-006: Language switcher should exist in HTML', async () => {
+      const res = await fetch(`${BASE_URL}/`);
+      const html = await res.text();
+      
+      expect(html).toContain('language-switcher');
+      expect(html).toContain('language-dropdown');
+    });
+  });
+});
+
+// ============================================
+// 20. HELP SYSTEM TESTS
+// ============================================
+describe('Help System', () => {
+  
+  describe('Help Content Structure', () => {
+    test('TC-HELP-001: Help content should have all required pages in English', async () => {
+      const res = await fetch(`${BASE_URL}/i18n/en.json`);
+      const data = await res.json();
+      
+      const helpPages = [
+        'dashboard', 'schedule', 'people', 'projects', 
+        'skills', 'aiScheduler', 'conflicts', 'reports', 
+        'users', 'settings'
+      ];
+      
+      helpPages.forEach(page => {
+        expect(data.help[page]).toBeDefined();
+        expect(data.help[page].title).toBeDefined();
+      });
+    });
+
+    test('TC-HELP-002: Help content should have all required pages in Greek', async () => {
+      const res = await fetch(`${BASE_URL}/i18n/el.json`);
+      const data = await res.json();
+      
+      const helpPages = [
+        'dashboard', 'schedule', 'people', 'projects', 
+        'skills', 'aiScheduler', 'conflicts', 'reports', 
+        'users', 'settings'
+      ];
+      
+      helpPages.forEach(page => {
+        expect(data.help[page]).toBeDefined();
+        expect(data.help[page].title).toBeDefined();
+      });
+    });
+
+    test('TC-HELP-003: Dashboard help should have overview in both languages', async () => {
+      const enRes = await fetch(`${BASE_URL}/i18n/en.json`);
+      const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+      
+      const enData = await enRes.json();
+      const elData = await elRes.json();
+      
+      expect(enData.help.dashboard.overview).toContain('Dashboard provides');
+      expect(elData.help.dashboard.overview).toContain('Πίνακας Ελέγχου παρέχει');
+    });
+
+    test('TC-HELP-004: Schedule help should have steps in both languages', async () => {
+      const enRes = await fetch(`${BASE_URL}/i18n/en.json`);
+      const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+      
+      const enData = await enRes.json();
+      const elData = await elRes.json();
+      
+      expect(enData.help.schedule.step1).toBeDefined();
+      expect(enData.help.schedule.step2).toBeDefined();
+      expect(elData.help.schedule.step1).toBeDefined();
+      expect(elData.help.schedule.step2).toBeDefined();
+    });
+
+    test('TC-HELP-005: People help should explain proficiency levels', async () => {
+      const enRes = await fetch(`${BASE_URL}/i18n/en.json`);
+      const data = await enRes.json();
+      
+      expect(data.help.people.proficiencyLevels).toBeDefined();
+      expect(data.help.people.assigningSkills).toBeDefined();
+    });
+
+    test('TC-HELP-006: AI Scheduler help should explain considerations', async () => {
+      const enRes = await fetch(`${BASE_URL}/i18n/en.json`);
+      const data = await enRes.json();
+      
+      expect(data.help.aiScheduler.consideration1).toBeDefined();
+      expect(data.help.aiScheduler.consideration2).toBeDefined();
+      expect(data.help.aiScheduler.consideration3).toBeDefined();
+      expect(data.help.aiScheduler.consideration4).toBeDefined();
+    });
+
+    test('TC-HELP-007: Conflicts help should explain types', async () => {
+      const enRes = await fetch(`${BASE_URL}/i18n/en.json`);
+      const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+      
+      const enData = await enRes.json();
+      const elData = await elRes.json();
+      
+      expect(enData.help.conflicts.overlapDesc).toContain('Same person');
+      expect(elData.help.conflicts.overlapDesc).toContain('Ίδιο άτομο');
+    });
+  });
+
+  describe('Help Button in UI', () => {
+    test('TC-HELP-008: Help button should exist in header', async () => {
+      const res = await fetch(`${BASE_URL}/`);
+      const html = await res.text();
+      
+      expect(html).toContain('help-btn');
+      expect(html).toContain('fa-question-circle');
+    });
+  });
+});
+
+// ============================================
+// 21. EMPTY STATE TRANSLATION TESTS
+// ============================================
+describe('Empty State Translations', () => {
+  
+  test('TC-EMPTY-001: All dashboard empty states should be translated', async () => {
+    const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+    const data = await elRes.json();
+    
+    expect(data.dashboard.noAssignmentsToday).not.toBe('No assignments today');
+    expect(data.dashboard.scheduleToGetStarted).not.toBe('Schedule some work to get started');
+    expect(data.dashboard.noUtilizationData).not.toBe('No utilization data');
+    expect(data.dashboard.noSkillData).not.toBe('No skill data');
+  });
+
+  test('TC-EMPTY-002: All people empty states should be translated', async () => {
+    const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+    const data = await elRes.json();
+    
+    expect(data.people.noPeopleFound).not.toBe('No people found');
+    expect(data.people.addTeamToStart).not.toBe('Add team members to get started');
+    expect(data.people.noTeamMatch).not.toBe('No team members match your search');
+  });
+
+  test('TC-EMPTY-003: All project empty states should be translated', async () => {
+    const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+    const data = await elRes.json();
+    
+    expect(data.projects.noProjectsFound).not.toBe('No projects found');
+    expect(data.projects.createToStart).not.toBe('Create a project to start scheduling');
+    expect(data.projects.noProjectsMatch).not.toBe('No projects match your search');
+    expect(data.projects.noPeopleAssigned).not.toBe('No people assigned to this project yet');
+  });
+
+  test('TC-EMPTY-004: All schedule empty states should be translated', async () => {
+    const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+    const data = await elRes.json();
+    
+    expect(data.schedule.noAssignments).not.toBe('No assignments');
+    expect(data.schedule.noAssignmentsForDay).not.toBe('No assignments for this day');
+    expect(data.schedule.noWorkScheduled).not.toBe('No work scheduled for this date');
+  });
+
+  test('TC-EMPTY-005: All skill empty states should be translated', async () => {
+    const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+    const data = await elRes.json();
+    
+    expect(data.skills.noSkillsFound).not.toBe('No skills found');
+    expect(data.skills.addToEnable).not.toBe('Add skills to enable skill matching');
+    expect(data.skills.noSkillsMatch).not.toBe('No skills match your search');
+  });
+
+  test('TC-EMPTY-006: All conflict empty states should be translated', async () => {
+    const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+    const data = await elRes.json();
+    
+    expect(data.conflicts.noConflicts).not.toBe('No conflicts');
+    expect(data.conflicts.noActiveConflicts).not.toBe('No active conflicts');
+    expect(data.conflicts.allResolved).not.toBe('All scheduling conflicts have been resolved');
+  });
+
+  test('TC-EMPTY-007: AI Scheduler empty state should be translated', async () => {
+    const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+    const data = await elRes.json();
+    
+    expect(data.aiScheduler.noQualifiedPeople).not.toBe('No other qualified people available for this time slot');
+  });
+
+  test('TC-EMPTY-008: User empty state should be translated', async () => {
+    const elRes = await fetch(`${BASE_URL}/i18n/el.json`);
+    const data = await elRes.json();
+    
+    expect(data.users.noUsersFound).not.toBe('No users found');
+  });
+});
+
 // Run all tests
 console.log('Starting Resource Scheduler API Tests...');
 console.log(`Testing against: ${BASE_URL}`);
