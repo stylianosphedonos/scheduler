@@ -305,6 +305,8 @@ function getSQLiteSchema() {
       end_hour INTEGER NOT NULL CHECK(end_hour BETWEEN 1 AND 24),
       status TEXT DEFAULT 'scheduled' CHECK(status IN ('scheduled', 'in-progress', 'completed', 'cancelled')),
       task_description TEXT,
+      location TEXT,
+      is_remote INTEGER DEFAULT 0,
       notes TEXT,
       created_by INTEGER,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -532,6 +534,8 @@ function getPostgresSchema() {
       end_hour INTEGER NOT NULL CHECK(end_hour BETWEEN 1 AND 24),
       status VARCHAR(20) DEFAULT 'scheduled' CHECK(status IN ('scheduled', 'in-progress', 'completed', 'cancelled')),
       task_description TEXT,
+      location TEXT,
+      is_remote BOOLEAN DEFAULT false,
       notes TEXT,
       created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -693,11 +697,61 @@ async function initializePostgres() {
     }
   }
 
+  // Run migrations to add missing columns
+  await runPostgresMigrations(pool);
+
   // Seed default data
   await seedDefaultData(db, true);
 
   console.log('PostgreSQL database initialized');
   return db;
+}
+
+// PostgreSQL migrations for existing databases
+async function runPostgresMigrations(pool) {
+  const migrations = [
+    // Add location and is_remote columns to assignments if they don't exist
+    `ALTER TABLE assignments ADD COLUMN IF NOT EXISTS location TEXT`,
+    `ALTER TABLE assignments ADD COLUMN IF NOT EXISTS is_remote BOOLEAN DEFAULT false`
+  ];
+
+  for (const migration of migrations) {
+    try {
+      await pool.query(migration);
+    } catch (e) {
+      // Ignore errors (column might already exist)
+      if (!e.message.includes('already exists')) {
+        console.log('Migration note:', e.message);
+      }
+    }
+  }
+  console.log('PostgreSQL migrations completed');
+}
+
+// SQLite migrations for existing databases
+function runSQLiteMigrations(database) {
+  const migrations = [
+    // Add location column to assignments if it doesn't exist
+    { check: `PRAGMA table_info(assignments)`, column: 'location', sql: `ALTER TABLE assignments ADD COLUMN location TEXT` },
+    { check: `PRAGMA table_info(assignments)`, column: 'is_remote', sql: `ALTER TABLE assignments ADD COLUMN is_remote INTEGER DEFAULT 0` }
+  ];
+
+  for (const migration of migrations) {
+    try {
+      // Check if column exists
+      const result = database.exec(migration.check);
+      if (result.length > 0) {
+        const columns = result[0].values.map(row => row[1]); // column name is at index 1
+        if (!columns.includes(migration.column)) {
+          database.exec(migration.sql);
+          console.log(`Added column ${migration.column} to assignments table`);
+        }
+      }
+    } catch (e) {
+      console.log('Migration note:', e.message);
+    }
+  }
+  console.log('SQLite migrations completed');
 }
 
 async function initializeSQLite() {
@@ -742,6 +796,9 @@ async function initializeSQLite() {
       }
     }
   }
+
+  // Run migrations to add missing columns
+  runSQLiteMigrations(db);
 
   // Create indexes
   try {
