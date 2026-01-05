@@ -822,6 +822,10 @@ body {
   grid-column: span 4;
 }
 
+.available-employees {
+  grid-column: span 4;
+}
+
 .active-conflicts {
   grid-column: span 4;
 }
@@ -1803,6 +1807,7 @@ body {
   .today-schedule { grid-column: span 12; }
   .utilization-card { grid-column: span 6; }
   .top-utilized { grid-column: span 6; }
+  .available-employees { grid-column: span 6; }
   .active-conflicts { grid-column: span 6; }
   .skill-demand { grid-column: span 6; }
   .reports-container { grid-template-columns: 1fr; }
@@ -1836,6 +1841,7 @@ body {
   .today-schedule,
   .utilization-card,
   .top-utilized,
+  .available-employees,
   .active-conflicts,
   .skill-demand {
     grid-column: span 12;
