@@ -1517,6 +1517,50 @@ async function loadDashboard() {
       `).join('');
     }
     
+    // Available employees
+    const availableList = document.getElementById('available-employees-list');
+    try {
+      const availableData = await api(`/analytics/available-employees?date=${today}`);
+      
+      if (!availableData.employees || availableData.employees.length === 0) {
+        availableList.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-calendar-check"></i>
+            <p>${t('dashboard.allEmployeesBusy')}</p>
+          </div>
+        `;
+      } else {
+        availableList.innerHTML = availableData.employees.slice(0, 8).map(emp => `
+          <div class="list-item available-employee-item">
+            <div class="list-item-left">
+              <div class="list-item-avatar" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                ${emp.firstName.charAt(0)}${emp.lastName.charAt(0)}
+              </div>
+              <div class="employee-info">
+                <span class="list-item-name">${emp.firstName} ${emp.lastName}</span>
+                <div class="employee-skills">
+                  ${emp.skills && emp.skills.length > 0 
+                    ? emp.skills.slice(0, 3).map(s => `
+                        <span class="skill-mini-tag" style="background: ${s.color}20; color: ${s.color}; border: 1px solid ${s.color}40;">
+                          ${s.name}
+                        </span>
+                      `).join('') + (emp.skills.length > 3 ? `<span class="skill-more">+${emp.skills.length - 3}</span>` : '')
+                    : `<span class="no-skills">${t('common.noSkills')}</span>`
+                  }
+                </div>
+              </div>
+            </div>
+            <div class="availability-badge">
+              <span class="hours-available">${emp.hoursAvailable}h</span>
+              <span class="hours-label">${t('dashboard.available')}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+    } catch (err) {
+      availableList.innerHTML = `<div class="empty-state"><p>${t('common.loadError')}</p></div>`;
+    }
+    
     // Skill demand
     const skillList = document.getElementById('skill-demand-list');
     if (data.skillDemand.length === 0) {

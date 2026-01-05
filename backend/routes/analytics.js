@@ -64,6 +64,93 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
   }
 });
 
+// Get employees with available hours for a specific date
+router.get('/available-employees', authenticateToken, async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { date } = req.query;
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    
+    const activeCondition = getActiveCondition('p.is_active');
+    
+    // Get all active employees with their scheduled hours for the date
+    const employees = await db.prepare(`
+      SELECT 
+        p.id,
+        p.first_name,
+        p.last_name,
+        p.department,
+        p.job_title,
+        p.max_hours_per_day,
+        COALESCE(
+          (SELECT SUM(end_hour - start_hour) 
+           FROM assignments 
+           WHERE person_id = p.id 
+           AND date = ? 
+           AND status != 'cancelled'), 0
+        ) as hours_scheduled
+      FROM people p
+      WHERE ${activeCondition}
+      AND p.id NOT IN (
+        SELECT person_id FROM availability_windows 
+        WHERE ? >= start_date AND ? <= end_date AND status = 'approved'
+      )
+      ORDER BY p.first_name, p.last_name
+    `).all(targetDate, targetDate, targetDate);
+    
+    // Get skills for each employee
+    const employeesWithAvailability = [];
+    
+    for (const emp of employees) {
+      const hoursAvailable = emp.max_hours_per_day - (emp.hours_scheduled || 0);
+      
+      // Only include employees with available hours
+      if (hoursAvailable > 0) {
+        // Get employee's skills
+        const skills = await db.prepare(`
+          SELECT s.id, s.name, s.color, ps.proficiency_level
+          FROM skills s
+          JOIN person_skills ps ON s.id = ps.skill_id
+          WHERE ps.person_id = ?
+          ORDER BY ps.proficiency_level DESC, s.name
+        `).all(emp.id);
+        
+        employeesWithAvailability.push({
+          id: emp.id,
+          firstName: emp.first_name,
+          lastName: emp.last_name,
+          department: emp.department,
+          jobTitle: emp.job_title,
+          maxHoursPerDay: emp.max_hours_per_day,
+          hoursScheduled: emp.hours_scheduled || 0,
+          hoursAvailable: hoursAvailable,
+          skills: skills.map(s => ({
+            id: s.id,
+            name: s.name,
+            color: s.color,
+            proficiency: s.proficiency_level
+          }))
+        });
+      }
+    }
+    
+    // Sort by hours available (most available first)
+    employeesWithAvailability.sort((a, b) => b.hoursAvailable - a.hoursAvailable);
+    
+    res.json({
+      date: targetDate,
+      totalEmployees: employees.length,
+      availableCount: employeesWithAvailability.length,
+      totalAvailableHours: employeesWithAvailability.reduce((sum, e) => sum + e.hoursAvailable, 0),
+      employees: employeesWithAvailability
+    });
+    
+  } catch (error) {
+    console.error('Available employees error:', error);
+    res.status(500).json({ error: 'Failed to get available employees' });
+  }
+});
+
 router.get('/utilization', authenticateToken, async (req, res) => {
   try {
     const db = req.app.locals.db;

@@ -55,6 +55,8 @@
     "error": "Error",
     "warning": "Warning",
     "info": "Information",
+    "noSkills": "No skills",
+    "loadError": "Failed to load data",
     "startDate": "Start Date",
     "endDate": "End Date",
     "saveChanges": "Save Changes",
@@ -120,7 +122,10 @@
     "noAssignmentsToday": "No assignments today",
     "scheduleToGetStarted": "Schedule some work to get started",
     "noUtilizationData": "No utilization data",
-    "noSkillData": "No skill data"
+    "noSkillData": "No skill data",
+    "availableEmployees": "Available Employees",
+    "allEmployeesBusy": "All employees are fully scheduled today",
+    "available": "available"
   },
   "people": {
     "title": "People Management",
