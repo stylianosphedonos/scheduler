@@ -810,6 +810,12 @@ body {
   background: rgba(0, 0, 0, 0.1);
 }
 
+/* Dashboard card layout - 12 column grid */
+.quick-actions-card {
+  grid-column: span 4;
+  align-self: start;
+}
+
 .today-schedule {
   grid-column: span 8;
 }
@@ -827,11 +833,11 @@ body {
 }
 
 .active-conflicts {
-  grid-column: span 4;
+  grid-column: span 6;
 }
 
 .skill-demand {
-  grid-column: span 4;
+  grid-column: span 6;
 }
 
 /* ===== Timeline ===== */
@@ -1804,6 +1810,7 @@ body {
 
 /* ===== Responsive ===== */
 @media (max-width: 1200px) {
+  .quick-actions-card { grid-column: span 12; }
   .today-schedule { grid-column: span 12; }
   .utilization-card { grid-column: span 6; }
   .top-utilized { grid-column: span 6; }
@@ -1838,6 +1845,7 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
   
+  .quick-actions-card,
   .today-schedule,
   .utilization-card,
   .top-utilized,
@@ -6318,29 +6326,18 @@ body {
   padding: 12px;
 }
 
-/* ===== Quick Actions Card ===== */
-.quick-actions-card {
-  grid-column: span 2;
-}
-
-@media (max-width: 991px) {
-  .quick-actions-card {
-    grid-column: span 1;
-  }
-}
-
 /* ===== Quick Action Buttons ===== */
 .quick-actions {
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .quick-action-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 10px;
+  padding: 10px 14px;
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -6348,6 +6345,8 @@ body {
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
+  text-align: left;
+  width: 100%;
 }
 
 .quick-action-btn:hover {
@@ -6357,7 +6356,18 @@ body {
 }
 
 .quick-action-btn i {
-  font-size: 12px;
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+}
+
+.quick-action-btn kbd {
+  margin-left: auto;
+  background: var(--bg-dark);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  opacity: 0.7;
 }
 
 /* ===== Keyboard Shortcut Hint ===== */
