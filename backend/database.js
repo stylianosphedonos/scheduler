@@ -224,6 +224,7 @@ function getSQLiteSchema() {
       max_projects_per_day INTEGER DEFAULT 3,
       work_start_hour INTEGER DEFAULT 9,
       work_end_hour INTEGER DEFAULT 17,
+      has_transportation INTEGER DEFAULT 0,
       hourly_rate REAL,
       employment_type TEXT DEFAULT 'full-time',
       start_date TEXT,
@@ -280,6 +281,8 @@ function getSQLiteSchema() {
       location_url TEXT,
       location_lat REAL,
       location_lng REAL,
+      time_slot_start INTEGER,
+      time_slot_end INTEGER,
       notes TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -501,6 +504,7 @@ function getPostgresSchema() {
       max_projects_per_day INTEGER DEFAULT 3,
       work_start_hour INTEGER DEFAULT 9,
       work_end_hour INTEGER DEFAULT 17,
+      has_transportation BOOLEAN DEFAULT false,
       hourly_rate DECIMAL(10,2),
       employment_type VARCHAR(20) DEFAULT 'full-time',
       start_date DATE,
@@ -555,6 +559,8 @@ function getPostgresSchema() {
       location_url TEXT,
       location_lat DECIMAL(10,7),
       location_lng DECIMAL(10,7),
+      time_slot_start INTEGER,
+      time_slot_end INTEGER,
       notes TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -803,7 +809,12 @@ async function runPostgresMigrations(pool) {
     `ALTER TABLE projects ADD COLUMN IF NOT EXISTS location_name VARCHAR(500)`,
     `ALTER TABLE projects ADD COLUMN IF NOT EXISTS location_url TEXT`,
     `ALTER TABLE projects ADD COLUMN IF NOT EXISTS location_lat DECIMAL(10,7)`,
-    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS location_lng DECIMAL(10,7)`
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS location_lng DECIMAL(10,7)`,
+    // Add transportation to people
+    `ALTER TABLE people ADD COLUMN IF NOT EXISTS has_transportation BOOLEAN DEFAULT false`,
+    // Add time slot fields to projects
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS time_slot_start INTEGER`,
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS time_slot_end INTEGER`
   ];
 
   for (const migration of columnMigrations) {
@@ -875,7 +886,12 @@ function runSQLiteMigrations(database) {
     { check: `PRAGMA table_info(projects)`, column: 'location_name', sql: `ALTER TABLE projects ADD COLUMN location_name TEXT` },
     { check: `PRAGMA table_info(projects)`, column: 'location_url', sql: `ALTER TABLE projects ADD COLUMN location_url TEXT` },
     { check: `PRAGMA table_info(projects)`, column: 'location_lat', sql: `ALTER TABLE projects ADD COLUMN location_lat REAL` },
-    { check: `PRAGMA table_info(projects)`, column: 'location_lng', sql: `ALTER TABLE projects ADD COLUMN location_lng REAL` }
+    { check: `PRAGMA table_info(projects)`, column: 'location_lng', sql: `ALTER TABLE projects ADD COLUMN location_lng REAL` },
+    // Add transportation to people
+    { check: `PRAGMA table_info(people)`, column: 'has_transportation', sql: `ALTER TABLE people ADD COLUMN has_transportation INTEGER DEFAULT 0` },
+    // Add time slot fields to projects
+    { check: `PRAGMA table_info(projects)`, column: 'time_slot_start', sql: `ALTER TABLE projects ADD COLUMN time_slot_start INTEGER` },
+    { check: `PRAGMA table_info(projects)`, column: 'time_slot_end', sql: `ALTER TABLE projects ADD COLUMN time_slot_end INTEGER` }
   ];
 
   for (const migration of columnMigrations) {

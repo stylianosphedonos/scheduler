@@ -26,10 +26,11 @@ router.post('/suggest', authenticateToken, requireRole('admin', 'scheduler'), as
     const targetEndDate = endDate || startDate;
     const suggestions = [];
 
-    // Get active projects with their skill requirements and location
+    // Get active projects with their skill requirements, location, and time slot restrictions
     let projectQuery = `
       SELECT p.id, p.name, p.code, p.priority, p.color, p.budget_hours,
         p.location_name, p.location_url, p.location_lat, p.location_lng,
+        p.time_slot_start, p.time_slot_end,
         (SELECT SUM(end_hour - start_hour) FROM assignments WHERE project_id = p.id AND status != 'cancelled') as hours_used
       FROM projects p 
       WHERE p.status = 'active'
@@ -431,6 +432,7 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
   const activeCondAvail = getActiveCondition('p.is_active');
   const availablePeople = await db.prepare(`
     SELECT p.id, p.first_name, p.last_name, p.department, p.max_hours_per_day, p.max_projects_per_day,
+      p.work_start_hour, p.work_end_hour, p.has_transportation,
       (SELECT SUM(end_hour - start_hour) FROM assignments 
        WHERE person_id = p.id AND date = ? AND status != 'cancelled') as hours_scheduled,
       (SELECT COUNT(DISTINCT project_id) FROM assignments 
@@ -569,8 +571,15 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
         }
         if (hoursToSchedule < 1) continue;
 
-        // Find available time slot
-        const slot = findAvailableSlot(person.assignedHours, hoursToSchedule);
+        // Find available time slot (considering person's work hours and project's time slot restriction)
+        const slot = findAvailableSlot(
+          person.assignedHours, 
+          hoursToSchedule,
+          person.work_start_hour || 9,
+          person.work_end_hour || 17,
+          project.time_slot_start,
+          project.time_slot_end
+        );
         if (!slot) continue;
 
         const duration = slot.end - slot.start;
@@ -669,7 +678,7 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
 
 /**
  * Calculate match score for a person-skill-project combination
- * Considers proficiency, availability, project diversity, and location proximity
+ * Considers proficiency, availability, project diversity, location proximity, and transportation
  */
 function calculateMatchScore(person, skillReq, proficiency, projectLocation) {
   let score = 0;
@@ -684,6 +693,12 @@ function calculateMatchScore(person, skillReq, proficiency, projectLocation) {
   // Project diversity bonus (0-15 points) - prefer people with fewer projects
   score += (person.max_projects_per_day - person.projects_assigned) * 5;
   score = Math.min(score, 15);
+  
+  // Transportation bonus (0-15 points)
+  // Valuable for replacement assignments and multi-location projects
+  if (person.has_transportation) {
+    score += 15;
+  }
   
   // Location proximity bonus (0-20 points)
   // Strongly prefer people already assigned to nearby locations
@@ -704,7 +719,7 @@ function calculateMatchScore(person, skillReq, proficiency, projectLocation) {
     // Very close (< 2 km): 15 points  
     // Close (< 5 km): 10 points
     // Moderate (< 15 km): 5 points
-    // Far: 0 points
+    // Far: 0 points (but if has transportation, already got 15 points)
     if (minDistance < 0.5) {
       score += 20;
     } else if (minDistance < 2) {
@@ -740,11 +755,30 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
 
 /**
  * Find an available time slot for a person
+ * @param {Array} assignedHours - Array of existing assignments {start, end}
+ * @param {number} duration - Hours needed
+ * @param {number} personWorkStart - Person's work start hour (default 9)
+ * @param {number} personWorkEnd - Person's work end hour (default 17)
+ * @param {number|null} projectSlotStart - Project's earliest allowed start (null = any)
+ * @param {number|null} projectSlotEnd - Project's latest allowed end (null = any)
  */
-function findAvailableSlot(assignedHours, duration) {
-  // Work hours 9 AM to 6 PM
-  const workStart = 9;
-  const workEnd = 18;
+function findAvailableSlot(assignedHours, duration, personWorkStart = 9, personWorkEnd = 17, projectSlotStart = null, projectSlotEnd = null) {
+  // Determine effective work window
+  let workStart = personWorkStart || 9;
+  let workEnd = personWorkEnd || 17;
+  
+  // Apply project time slot restrictions if specified
+  if (projectSlotStart !== null && projectSlotStart !== undefined) {
+    workStart = Math.max(workStart, projectSlotStart);
+  }
+  if (projectSlotEnd !== null && projectSlotEnd !== undefined) {
+    workEnd = Math.min(workEnd, projectSlotEnd);
+  }
+  
+  // If the restricted window is too small, return null
+  if (workEnd - workStart < duration) {
+    return null;
+  }
   
   // Sort existing assignments
   const sorted = [...assignedHours].sort((a, b) => a.start - b.start);
@@ -753,8 +787,11 @@ function findAvailableSlot(assignedHours, duration) {
   let currentHour = workStart;
   
   for (const slot of sorted) {
-    if (slot.start - currentHour >= duration) {
-      return { start: currentHour, end: currentHour + duration };
+    if (slot.start - currentHour >= duration && slot.start >= workStart) {
+      const proposedEnd = currentHour + duration;
+      if (proposedEnd <= workEnd) {
+        return { start: currentHour, end: proposedEnd };
+      }
     }
     currentHour = Math.max(currentHour, slot.end);
   }

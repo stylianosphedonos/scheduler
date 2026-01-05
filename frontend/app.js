@@ -2130,6 +2130,13 @@ async function showAddPersonModal() {
           </select>
         </div>
       </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" name="hasTransportation">
+          <i class="fas fa-car"></i> ${t('people.hasTransportation') || 'Has Transportation (Car)'}
+        </label>
+        <small class="text-muted">${t('people.transportationHint') || 'Check if this person has their own transportation for traveling between project sites'}</small>
+      </div>
       
       ${allSkills.length > 0 ? `
         <div class="form-section">
@@ -2192,6 +2199,7 @@ async function showAddPersonModal() {
       maxHoursPerDay: parseInt(formData.get('maxHoursPerDay')) || 8,
       workStartHour: parseInt(formData.get('workStartHour')) || 9,
       workEndHour: parseInt(formData.get('workEndHour')) || 17,
+      hasTransportation: formData.get('hasTransportation') === 'on',
       employmentType: formData.get('employmentType')
     };
     
@@ -2302,13 +2310,20 @@ async function editPerson(id) {
           </div>
         </div>
         <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" name="hasTransportation" ${person.has_transportation ? 'checked' : ''}>
+            <i class="fas fa-car"></i> ${t('people.hasTransportation') || 'Has Transportation (Car)'}
+          </label>
+          <small class="text-muted">${t('people.transportationHint') || 'Check if this person has their own transportation'}</small>
+        </div>
+        <div class="form-group">
           <label>${t('people.phone') || 'Phone'}</label>
           <input type="tel" name="phone" value="${person.phone || ''}">
         </div>
         <div class="form-group">
           <label class="checkbox-label">
             <input type="checkbox" name="isActive" ${person.isActive ? 'checked' : ''}>
-            Active Employee
+            ${t('people.activeEmployee') || 'Active Employee'}
           </label>
         </div>
         
@@ -2383,6 +2398,7 @@ async function editPerson(id) {
         maxHoursPerDay: parseInt(formData.get('maxHoursPerDay')) || 8,
         workStartHour: parseInt(formData.get('workStartHour')) || 9,
         workEndHour: parseInt(formData.get('workEndHour')) || 17,
+        hasTransportation: formData.get('hasTransportation') === 'on',
         employmentType: formData.get('employmentType'),
         phone: formData.get('phone'),
         isActive: formData.get('isActive') === 'on'
@@ -2677,6 +2693,29 @@ async function showAddProjectModal() {
         </div>
         
         <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+          <i class="fas fa-clock"></i> ${t('projects.timeSlot') || 'Time Slot Restriction'}
+        </h4>
+        <p class="text-muted" style="margin-bottom: 15px; font-size: 0.85rem;">
+          ${t('projects.timeSlotHint') || 'If this project can only be worked during specific hours, set the allowed time window'}
+        </p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>${t('projects.timeSlotStart') || 'Earliest Start'}</label>
+            <select name="timeSlotStart">
+              <option value="">${t('projects.anyTime') || 'Any time'}</option>
+              ${Array.from({length: 24}, (_, i) => `<option value="${i}">${String(i).padStart(2, '0')}:00</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>${t('projects.timeSlotEnd') || 'Latest End'}</label>
+            <select name="timeSlotEnd">
+              <option value="">${t('projects.anyTime') || 'Any time'}</option>
+              ${Array.from({length: 24}, (_, i) => `<option value="${i}">${String(i).padStart(2, '0')}:00</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        
+        <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
           <i class="fas fa-users"></i> ${t('projects.skillRequirements') || 'Skill Requirements'}
         </h4>
         <p class="text-muted" style="margin-bottom: 15px; font-size: 0.85rem;">
@@ -2760,6 +2799,8 @@ async function showAddProjectModal() {
         locationUrl: formData.get('locationUrl'),
         locationLat: formData.get('locationLat') ? parseFloat(formData.get('locationLat')) : null,
         locationLng: formData.get('locationLng') ? parseFloat(formData.get('locationLng')) : null,
+        timeSlotStart: formData.get('timeSlotStart') ? parseInt(formData.get('timeSlotStart')) : null,
+        timeSlotEnd: formData.get('timeSlotEnd') ? parseInt(formData.get('timeSlotEnd')) : null,
         skills
       };
       
@@ -2880,6 +2921,29 @@ async function editProject(id) {
         ` : ''}
         
         <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+          <i class="fas fa-clock"></i> ${t('projects.timeSlot') || 'Time Slot Restriction'}
+        </h4>
+        <p class="text-muted" style="margin-bottom: 15px; font-size: 0.85rem;">
+          ${t('projects.timeSlotHint') || 'If this project can only be worked during specific hours, set the allowed time window'}
+        </p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>${t('projects.timeSlotStart') || 'Earliest Start'}</label>
+            <select name="timeSlotStart">
+              <option value="">${t('projects.anyTime') || 'Any time'}</option>
+              ${Array.from({length: 24}, (_, i) => `<option value="${i}" ${project.time_slot_start === i ? 'selected' : ''}>${String(i).padStart(2, '0')}:00</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>${t('projects.timeSlotEnd') || 'Latest End'}</label>
+            <select name="timeSlotEnd">
+              <option value="">${t('projects.anyTime') || 'Any time'}</option>
+              ${Array.from({length: 24}, (_, i) => `<option value="${i}" ${project.time_slot_end === i ? 'selected' : ''}>${String(i).padStart(2, '0')}:00</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        
+        <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
           <i class="fas fa-users"></i> ${t('projects.skillRequirements') || 'Skill Requirements'}
         </h4>
         <p class="text-muted" style="margin-bottom: 15px; font-size: 0.85rem;">
@@ -2966,7 +3030,9 @@ async function editProject(id) {
         locationName: formData.get('locationName') || null,
         locationUrl: formData.get('locationUrl') || null,
         locationLat: formData.get('locationLat') ? parseFloat(formData.get('locationLat')) : null,
-        locationLng: formData.get('locationLng') ? parseFloat(formData.get('locationLng')) : null
+        locationLng: formData.get('locationLng') ? parseFloat(formData.get('locationLng')) : null,
+        timeSlotStart: formData.get('timeSlotStart') ? parseInt(formData.get('timeSlotStart')) : null,
+        timeSlotEnd: formData.get('timeSlotEnd') ? parseInt(formData.get('timeSlotEnd')) : null
       };
       
       try {

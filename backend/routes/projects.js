@@ -128,7 +128,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const { name, code, client, description, status, priority, color, startDate, endDate, budgetHours, managerId, isBillable, locationName, locationUrl, locationLat, locationLng, notes, skills } = req.body;
+    const { name, code, client, description, status, priority, color, startDate, endDate, budgetHours, managerId, isBillable, locationName, locationUrl, locationLat, locationLng, timeSlotStart, timeSlotEnd, notes, skills } = req.body;
 
     if (!name) return res.status(400).json({ error: 'Project name is required' });
 
@@ -143,15 +143,15 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
     
     if (isPostgres) {
       const result = await db.prepare(`
-        INSERT INTO projects (name, code, client, description, status, priority, color, start_date, end_date, budget_hours, manager_id, is_billable, location_name, location_url, location_lat, location_lng, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
-      `).get(name, code || null, client || null, description || null, status || 'planning', priority || 'medium', color || '#8b5cf6', startDate || null, endDate || null, budgetHours || null, managerId || null, isBillableValue, locationName || null, locationUrl || null, locationLat || null, locationLng || null, notes || null);
+        INSERT INTO projects (name, code, client, description, status, priority, color, start_date, end_date, budget_hours, manager_id, is_billable, location_name, location_url, location_lat, location_lng, time_slot_start, time_slot_end, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+      `).get(name, code || null, client || null, description || null, status || 'planning', priority || 'medium', color || '#8b5cf6', startDate || null, endDate || null, budgetHours || null, managerId || null, isBillableValue, locationName || null, locationUrl || null, locationLat || null, locationLng || null, timeSlotStart || null, timeSlotEnd || null, notes || null);
       projectId = result?.id;
     } else {
       const result = await db.prepare(`
-        INSERT INTO projects (name, code, client, description, status, priority, color, start_date, end_date, budget_hours, manager_id, is_billable, location_name, location_url, location_lat, location_lng, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(name, code || null, client || null, description || null, status || 'planning', priority || 'medium', color || '#8b5cf6', startDate || null, endDate || null, budgetHours || null, managerId || null, isBillableValue, locationName || null, locationUrl || null, locationLat || null, locationLng || null, notes || null);
+        INSERT INTO projects (name, code, client, description, status, priority, color, start_date, end_date, budget_hours, manager_id, is_billable, location_name, location_url, location_lat, location_lng, time_slot_start, time_slot_end, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(name, code || null, client || null, description || null, status || 'planning', priority || 'medium', color || '#8b5cf6', startDate || null, endDate || null, budgetHours || null, managerId || null, isBillableValue, locationName || null, locationUrl || null, locationLat || null, locationLng || null, timeSlotStart || null, timeSlotEnd || null, notes || null);
       projectId = result.lastInsertRowid;
     }
 
@@ -183,7 +183,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
-    const { name, code, client, description, status, priority, color, startDate, endDate, budgetHours, managerId, isBillable, locationName, locationUrl, locationLat, locationLng, notes } = req.body;
+    const { name, code, client, description, status, priority, color, startDate, endDate, budgetHours, managerId, isBillable, locationName, locationUrl, locationLat, locationLng, timeSlotStart, timeSlotEnd, notes } = req.body;
 
     const updates = [];
     const values = [];
@@ -205,6 +205,8 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     if (locationUrl !== undefined) { updates.push('location_url = ?'); values.push(locationUrl || null); }
     if (locationLat !== undefined) { updates.push('location_lat = ?'); values.push(locationLat || null); }
     if (locationLng !== undefined) { updates.push('location_lng = ?'); values.push(locationLng || null); }
+    if (timeSlotStart !== undefined) { updates.push('time_slot_start = ?'); values.push(timeSlotStart || null); }
+    if (timeSlotEnd !== undefined) { updates.push('time_slot_end = ?'); values.push(timeSlotEnd || null); }
 
     if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
 
