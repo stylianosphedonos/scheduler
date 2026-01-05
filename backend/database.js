@@ -222,6 +222,8 @@ function getSQLiteSchema() {
       avatar_url TEXT,
       max_hours_per_day INTEGER DEFAULT 8,
       max_projects_per_day INTEGER DEFAULT 3,
+      work_start_hour INTEGER DEFAULT 9,
+      work_end_hour INTEGER DEFAULT 17,
       hourly_rate REAL,
       employment_type TEXT DEFAULT 'full-time',
       start_date TEXT,
@@ -493,6 +495,8 @@ function getPostgresSchema() {
       avatar_url TEXT,
       max_hours_per_day INTEGER DEFAULT 8,
       max_projects_per_day INTEGER DEFAULT 3,
+      work_start_hour INTEGER DEFAULT 9,
+      work_end_hour INTEGER DEFAULT 17,
       hourly_rate DECIMAL(10,2),
       employment_type VARCHAR(20) DEFAULT 'full-time',
       start_date DATE,
@@ -783,7 +787,10 @@ async function runPostgresMigrations(pool) {
     `ALTER TABLE assignments ADD COLUMN IF NOT EXISTS location TEXT`,
     `ALTER TABLE assignments ADD COLUMN IF NOT EXISTS is_remote BOOLEAN DEFAULT false`,
     // Add updated_at column to skills if it doesn't exist
-    `ALTER TABLE skills ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
+    `ALTER TABLE skills ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
+    // Add work hours to people if they don't exist
+    `ALTER TABLE people ADD COLUMN IF NOT EXISTS work_start_hour INTEGER DEFAULT 9`,
+    `ALTER TABLE people ADD COLUMN IF NOT EXISTS work_end_hour INTEGER DEFAULT 17`
   ];
 
   for (const migration of columnMigrations) {
@@ -847,7 +854,10 @@ function runSQLiteMigrations(database) {
     { check: `PRAGMA table_info(assignments)`, column: 'location', sql: `ALTER TABLE assignments ADD COLUMN location TEXT` },
     { check: `PRAGMA table_info(assignments)`, column: 'is_remote', sql: `ALTER TABLE assignments ADD COLUMN is_remote INTEGER DEFAULT 0` },
     // Add updated_at column to skills if it doesn't exist
-    { check: `PRAGMA table_info(skills)`, column: 'updated_at', sql: `ALTER TABLE skills ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP` }
+    { check: `PRAGMA table_info(skills)`, column: 'updated_at', sql: `ALTER TABLE skills ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP` },
+    // Add work hours to people if they don't exist
+    { check: `PRAGMA table_info(people)`, column: 'work_start_hour', sql: `ALTER TABLE people ADD COLUMN work_start_hour INTEGER DEFAULT 9` },
+    { check: `PRAGMA table_info(people)`, column: 'work_end_hour', sql: `ALTER TABLE people ADD COLUMN work_end_hour INTEGER DEFAULT 17` }
   ];
 
   for (const migration of columnMigrations) {

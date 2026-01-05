@@ -1845,12 +1845,12 @@ async function loadPeople() {
         </div>
         <div class="grid-card-footer">
           <div class="grid-card-stat">
-            <span class="grid-card-stat-value">${p.maxHoursPerDay}</span>
-            <span class="grid-card-stat-label">Max Hours</span>
+            <span class="grid-card-stat-value">${String(p.work_start_hour || 9).padStart(2, '0')}:00 - ${String(p.work_end_hour || 17).padStart(2, '0')}:00</span>
+            <span class="grid-card-stat-label">${t('people.workHours') || 'Work Hours'}</span>
           </div>
           <div class="grid-card-stat">
-            <span class="grid-card-stat-value">${p.employmentType}</span>
-            <span class="grid-card-stat-label">Type</span>
+            <span class="grid-card-stat-value">${p.employmentType || 'full-time'}</span>
+            <span class="grid-card-stat-label">${t('people.type') || 'Type'}</span>
           </div>
         </div>
       </div>
@@ -1880,14 +1880,18 @@ async function showPersonDetails(id) {
           <span class="detail-value">${person.jobTitle || '-'}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Employment Type</span>
-          <span class="detail-value">${person.employmentType}</span>
+          <span class="detail-label">${t('people.employmentType') || 'Employment Type'}</span>
+          <span class="detail-value">${person.employmentType || 'full-time'}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Max Hours/Day</span>
-          <span class="detail-value">${person.maxHoursPerDay}</span>
+          <span class="detail-label">${t('people.maxHoursPerDay') || 'Max Hours/Day'}</span>
+          <span class="detail-value">${person.maxHoursPerDay || 8}</span>
         </div>
-        <h4 style="margin: 20px 0 10px;">Skills</h4>
+        <div class="detail-row">
+          <span class="detail-label">${t('people.workHours') || 'Work Hours'}</span>
+          <span class="detail-value">${String(person.work_start_hour || 9).padStart(2, '0')}:00 - ${String(person.work_end_hour || 17).padStart(2, '0')}:00</span>
+        </div>
+        <h4 style="margin: 20px 0 10px;">${t('people.skills') || 'Skills'}</h4>
         <div class="grid-card-tags">
           ${person.skills.map(s => `
             <span class="tag tag-primary">
@@ -1978,6 +1982,20 @@ async function showAddPersonModal() {
           </select>
         </div>
       </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>${t('people.workStartTime') || 'Work Start Time'}</label>
+          <select name="workStartHour">
+            ${Array.from({length: 24}, (_, i) => `<option value="${i}" ${i === 9 ? 'selected' : ''}>${String(i).padStart(2, '0')}:00</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>${t('people.workEndTime') || 'Work End Time'}</label>
+          <select name="workEndHour">
+            ${Array.from({length: 24}, (_, i) => `<option value="${i}" ${i === 17 ? 'selected' : ''}>${String(i).padStart(2, '0')}:00</option>`).join('')}
+          </select>
+        </div>
+      </div>
       
       ${allSkills.length > 0 ? `
         <div class="form-section">
@@ -2037,7 +2055,9 @@ async function showAddPersonModal() {
       email: formData.get('email'),
       department: formData.get('department'),
       jobTitle: formData.get('jobTitle'),
-      maxHoursPerDay: formData.get('maxHoursPerDay'),
+      maxHoursPerDay: parseInt(formData.get('maxHoursPerDay')) || 8,
+      workStartHour: parseInt(formData.get('workStartHour')) || 9,
+      workEndHour: parseInt(formData.get('workEndHour')) || 17,
       employmentType: formData.get('employmentType')
     };
     
@@ -2120,21 +2140,35 @@ async function editPerson(id) {
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Max Hours/Day</label>
-            <input type="number" name="maxHoursPerDay" value="${person.maxHoursPerDay}" min="1" max="24">
+            <label>${t('people.maxHoursPerDay') || 'Max Hours/Day'}</label>
+            <input type="number" name="maxHoursPerDay" value="${person.maxHoursPerDay || 8}" min="1" max="24">
           </div>
           <div class="form-group">
-            <label>Employment Type</label>
+            <label>${t('people.employmentType') || 'Employment Type'}</label>
             <select name="employmentType">
-              <option value="full-time" ${person.employmentType === 'full-time' ? 'selected' : ''}>Full Time</option>
-              <option value="part-time" ${person.employmentType === 'part-time' ? 'selected' : ''}>Part Time</option>
-              <option value="contractor" ${person.employmentType === 'contractor' ? 'selected' : ''}>Contractor</option>
-              <option value="intern" ${person.employmentType === 'intern' ? 'selected' : ''}>Intern</option>
+              <option value="full-time" ${person.employmentType === 'full-time' ? 'selected' : ''}>${t('people.fullTime') || 'Full Time'}</option>
+              <option value="part-time" ${person.employmentType === 'part-time' ? 'selected' : ''}>${t('people.partTime') || 'Part Time'}</option>
+              <option value="contractor" ${person.employmentType === 'contractor' ? 'selected' : ''}>${t('people.contractor') || 'Contractor'}</option>
+              <option value="intern" ${person.employmentType === 'intern' ? 'selected' : ''}>${t('people.intern') || 'Intern'}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>${t('people.workStartTime') || 'Work Start Time'}</label>
+            <select name="workStartHour">
+              ${Array.from({length: 24}, (_, i) => `<option value="${i}" ${i === (person.work_start_hour || 9) ? 'selected' : ''}>${String(i).padStart(2, '0')}:00</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>${t('people.workEndTime') || 'Work End Time'}</label>
+            <select name="workEndHour">
+              ${Array.from({length: 24}, (_, i) => `<option value="${i}" ${i === (person.work_end_hour || 17) ? 'selected' : ''}>${String(i).padStart(2, '0')}:00</option>`).join('')}
             </select>
           </div>
         </div>
         <div class="form-group">
-          <label>Phone</label>
+          <label>${t('people.phone') || 'Phone'}</label>
           <input type="tel" name="phone" value="${person.phone || ''}">
         </div>
         <div class="form-group">
@@ -2212,7 +2246,9 @@ async function editPerson(id) {
         email: formData.get('email'),
         department: formData.get('department'),
         jobTitle: formData.get('jobTitle'),
-        maxHoursPerDay: parseInt(formData.get('maxHoursPerDay')),
+        maxHoursPerDay: parseInt(formData.get('maxHoursPerDay')) || 8,
+        workStartHour: parseInt(formData.get('workStartHour')) || 9,
+        workEndHour: parseInt(formData.get('workEndHour')) || 17,
         employmentType: formData.get('employmentType'),
         phone: formData.get('phone'),
         isActive: formData.get('isActive') === 'on'

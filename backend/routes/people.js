@@ -115,7 +115,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const { employeeId, firstName, lastName, email, phone, department, jobTitle, maxHoursPerDay, maxProjectsPerDay, hourlyRate, employmentType, startDate, notes, skills } = req.body;
+    const { employeeId, firstName, lastName, email, phone, department, jobTitle, maxHoursPerDay, maxProjectsPerDay, workStartHour, workEndHour, hourlyRate, employmentType, startDate, notes, skills } = req.body;
 
     if (!firstName || !lastName || !email) {
       return res.status(400).json({ error: 'First name, last name, and email are required' });
@@ -129,15 +129,15 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
     
     if (isPostgres) {
       const result = await db.prepare(`
-        INSERT INTO people (employee_id, first_name, last_name, email, phone, department, job_title, max_hours_per_day, max_projects_per_day, hourly_rate, employment_type, start_date, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
-      `).get(employeeId || null, firstName, lastName, email, phone || null, department || null, jobTitle || null, maxHoursPerDay || 8, maxProjectsPerDay || 3, hourlyRate || null, employmentType || 'full-time', startDate || null, notes || null);
+        INSERT INTO people (employee_id, first_name, last_name, email, phone, department, job_title, max_hours_per_day, max_projects_per_day, work_start_hour, work_end_hour, hourly_rate, employment_type, start_date, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+      `).get(employeeId || null, firstName, lastName, email, phone || null, department || null, jobTitle || null, maxHoursPerDay || 8, maxProjectsPerDay || 3, workStartHour || 9, workEndHour || 17, hourlyRate || null, employmentType || 'full-time', startDate || null, notes || null);
       personId = result?.id;
     } else {
       const result = await db.prepare(`
-        INSERT INTO people (employee_id, first_name, last_name, email, phone, department, job_title, max_hours_per_day, max_projects_per_day, hourly_rate, employment_type, start_date, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(employeeId || null, firstName, lastName, email, phone || null, department || null, jobTitle || null, maxHoursPerDay || 8, maxProjectsPerDay || 3, hourlyRate || null, employmentType || 'full-time', startDate || null, notes || null);
+        INSERT INTO people (employee_id, first_name, last_name, email, phone, department, job_title, max_hours_per_day, max_projects_per_day, work_start_hour, work_end_hour, hourly_rate, employment_type, start_date, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(employeeId || null, firstName, lastName, email, phone || null, department || null, jobTitle || null, maxHoursPerDay || 8, maxProjectsPerDay || 3, workStartHour || 9, workEndHour || 17, hourlyRate || null, employmentType || 'full-time', startDate || null, notes || null);
       personId = result.lastInsertRowid;
     }
 
@@ -164,7 +164,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     const person = await db.prepare('SELECT * FROM people WHERE id = ?').get(req.params.id);
     if (!person) return res.status(404).json({ error: 'Person not found' });
 
-    const { employeeId, firstName, lastName, email, phone, department, jobTitle, maxHoursPerDay, maxProjectsPerDay, hourlyRate, employmentType, startDate, isActive, notes } = req.body;
+    const { employeeId, firstName, lastName, email, phone, department, jobTitle, maxHoursPerDay, maxProjectsPerDay, workStartHour, workEndHour, hourlyRate, employmentType, startDate, isActive, notes } = req.body;
 
     const updates = [];
     const values = [];
@@ -178,6 +178,8 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     if (jobTitle !== undefined) { updates.push('job_title = ?'); values.push(jobTitle); }
     if (maxHoursPerDay !== undefined) { updates.push('max_hours_per_day = ?'); values.push(maxHoursPerDay); }
     if (maxProjectsPerDay !== undefined) { updates.push('max_projects_per_day = ?'); values.push(maxProjectsPerDay); }
+    if (workStartHour !== undefined) { updates.push('work_start_hour = ?'); values.push(workStartHour); }
+    if (workEndHour !== undefined) { updates.push('work_end_hour = ?'); values.push(workEndHour); }
     if (hourlyRate !== undefined) { updates.push('hourly_rate = ?'); values.push(hourlyRate); }
     if (employmentType !== undefined) { updates.push('employment_type = ?'); values.push(employmentType); }
     if (startDate !== undefined) { updates.push('start_date = ?'); values.push(startDate); }
