@@ -1,0 +1,7 @@
+{
+  "name": "Resource Scheduler",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom"
+}

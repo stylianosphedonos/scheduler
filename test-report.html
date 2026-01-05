@@ -1,0 +1,1020 @@
+<html><head><meta charset="utf-8"/><title>Resource Scheduler - Test Report</title><style type="text/css">html,
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+body {
+  padding: 2rem 1rem;
+  font-size: 0.85rem;
+}
+.jesthtml-content {
+  margin: 0 auto;
+  max-width: 70rem;
+}
+header {
+  display: flex;
+  align-items: center;
+}
+#title {
+  margin: 0;
+  flex-grow: 1;
+}
+#logo {
+  height: 4rem;
+}
+#timestamp {
+  color: #777;
+  margin-top: 0.5rem;
+}
+
+/** SUMMARY */
+#summary {
+  color: #333;
+  margin: 2rem 0;
+  display: flex;
+  font-family: monospace;
+  font-size: 1rem;
+}
+#summary > div {
+  margin-right: 2rem;
+  background: #eee;
+  padding: 1rem;
+  min-width: 15rem;
+}
+#summary > div:last-child {
+  margin-right: 0;
+}
+@media only screen and (max-width: 720px) {
+  #summary {
+    flex-direction: column;
+  }
+  #summary > div {
+    margin-right: 0;
+    margin-top: 2rem;
+  }
+  #summary > div:first-child {
+    margin-top: 0;
+  }
+}
+
+.summary-total {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.summary-passed {
+  color: #4f8a10;
+  border-left: 0.4rem solid #4f8a10;
+  padding-left: 0.5rem;
+}
+.summary-failed,
+.summary-obsolete-snapshots {
+  color: #d8000c;
+  border-left: 0.4rem solid #d8000c;
+  padding-left: 0.5rem;
+}
+.summary-pending {
+  color: #9f6000;
+  border-left: 0.4rem solid #9f6000;
+  padding-left: 0.5rem;
+}
+.summary-empty {
+  color: #999;
+  border-left: 0.4rem solid #999;
+}
+
+.test-result {
+  padding: 1rem;
+  margin-bottom: 0.25rem;
+}
+.test-result:last-child {
+  border: 0;
+}
+.test-result.passed {
+  background-color: #dff2bf;
+  color: #4f8a10;
+}
+.test-result.failed {
+  background-color: #ffbaba;
+  color: #d8000c;
+}
+.test-result.pending {
+  background-color: #ffdf61;
+  color: #9f6000;
+}
+
+.test-info {
+  display: flex;
+  justify-content: space-between;
+}
+.test-suitename {
+  width: 20%;
+  text-align: left;
+  font-weight: bold;
+  word-break: break-word;
+}
+.test-title {
+  width: 40%;
+  text-align: left;
+  font-style: italic;
+}
+.test-status {
+  width: 20%;
+  text-align: right;
+}
+.test-duration {
+  width: 10%;
+  text-align: right;
+  font-size: 0.75rem;
+}
+
+.failureMessages {
+  padding: 0 1rem;
+  margin-top: 1rem;
+  border-top: 1px dashed #d8000c;
+}
+.failureMessages.suiteFailure {
+  border-top: none;
+}
+.failureMsg {
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+
+.suite-container {
+  margin-bottom: 2rem;
+}
+.suite-container > input[type="checkbox"] {
+  position: absolute;
+  left: -100vw;
+}
+.suite-container label {
+  display: block;
+}
+.suite-container .suite-tests {
+  overflow-y: hidden;
+  height: 0;
+}
+.suite-container > input[type="checkbox"]:checked ~ .suite-tests {
+  height: auto;
+  overflow: visible;
+}
+.suite-info {
+  padding: 1rem;
+  background-color: #eee;
+  color: #777;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+.suite-info:hover {
+  background-color: #ddd;
+  cursor: pointer;
+}
+.suite-info .suite-path {
+  word-break: break-all;
+  flex-grow: 1;
+  font-family: monospace;
+  font-size: 1rem;
+}
+.suite-info .suite-time {
+  margin-left: 0.5rem;
+  padding: 0.2rem 0.3rem;
+  font-size: 0.75rem;
+}
+.suite-info .suite-time.warn {
+  background-color: #d8000c;
+  color: #fff;
+}
+.suite-info:before {
+  content: "\2303";
+  display: inline-block;
+  margin-right: 0.5rem;
+  transform: rotate(0deg);
+}
+.suite-container > input[type="checkbox"]:checked ~ label .suite-info:before {
+  transform: rotate(180deg);
+}
+
+/* CONSOLE LOGS */
+.suite-consolelog {
+  margin-bottom: 0.25rem;
+  padding: 1rem;
+  background-color: #efefef;
+}
+.suite-consolelog-header {
+  font-weight: bold;
+}
+.suite-consolelog-item {
+  padding: 0.5rem;
+}
+.suite-consolelog-item pre {
+  margin: 0.5rem 0;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+.suite-consolelog-item-origin {
+  color: #777;
+  font-weight: bold;
+}
+.suite-consolelog-item-message {
+  color: #000;
+  font-size: 1rem;
+  padding: 0 0.5rem;
+}
+
+/* OBSOLETE SNAPSHOTS */
+.suite-obsolete-snapshots {
+  margin-bottom: 0.25rem;
+  padding: 1rem;
+  background-color: #ffbaba;
+  color: #d8000c;
+}
+.suite-obsolete-snapshots-header {
+  font-weight: bold;
+}
+.suite-obsolete-snapshots-item {
+  padding: 0.5rem;
+}
+.suite-obsolete-snapshots-item pre {
+  margin: 0.5rem 0;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+.suite-obsolete-snapshots-item-message {
+  color: #000;
+  font-size: 1rem;
+  padding: 0 0.5rem;
+}
+</style></head><body><div class="jesthtml-content"><header><h1 id="title">Resource Scheduler - Test Report</h1></header><div id="metadata-container"><div id="timestamp">Started: 2026-01-05 16:51:28</div><div id="summary"><div id="suite-summary"><div class="summary-total">Suites (1)</div><div class="summary-passed  summary-empty">0 passed</div><div class="summary-failed ">1 failed</div><div class="summary-pending  summary-empty">0 pending</div></div><div id="test-summary"><div class="summary-total">Tests (217)</div><div class="summary-passed ">17 passed</div><div class="summary-failed ">200 failed</div><div class="summary-pending  summary-empty">0 pending</div></div></div></div><div id="suite-1" class="suite-container"><input id="collapsible-0" type="checkbox" class="toggle" checked="checked"/><label for="collapsible-0"><div class="suite-info"><div class="suite-path">C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js</div><div class="suite-time">2.902s</div></div></label><div class="suite-tests"><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; POST /api/auth/login</div><div class="test-title">TC-AUTH-001: Should login with valid admin credentials</div><div class="test-status">failed</div><div class="test-duration">0.032s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:52:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; POST /api/auth/login</div><div class="test-title">TC-AUTH-002: Should reject invalid password</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:64:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; POST /api/auth/login</div><div class="test-title">TC-AUTH-003: Should reject non-existent user</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:74:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; POST /api/auth/login</div><div class="test-title">TC-AUTH-004: Should reject empty credentials</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:83:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; POST /api/auth/login</div><div class="test-title">TC-AUTH-005: Should login with email instead of username</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:92:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; POST /api/auth/register</div><div class="test-title">TC-AUTH-006: Should register new user with valid data</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:104:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; POST /api/auth/register</div><div class="test-title">TC-AUTH-007: Should reject weak password</div><div class="test-status">failed</div><div class="test-duration">0.005s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:118:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; POST /api/auth/register</div><div class="test-title">TC-AUTH-008: Should reject duplicate username</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:132:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; POST /api/auth/register</div><div class="test-title">TC-AUTH-009: Should reject invalid email format</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:145:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; GET /api/auth/me</div><div class="test-title">TC-AUTH-010: Should return current user info with valid token</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:160:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; GET /api/auth/me</div><div class="test-title">TC-AUTH-011: Should reject request without token</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:171:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; GET /api/auth/me</div><div class="test-title">TC-AUTH-012: Should reject invalid token</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:179:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; POST /api/auth/logout</div><div class="test-title">TC-AUTH-013: Should logout and invalidate token</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:191:24)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; POST /api/auth/change-password</div><div class="test-title">TC-AUTH-014: Should change password with correct current password</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:211:22)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Authentication &gt; POST /api/auth/change-password</div><div class="test-title">TC-AUTH-015: Should reject wrong current password</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:233:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">User Management &gt; GET /api/users</div><div class="test-title">TC-USER-001: Admin should list all users</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:254:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">User Management &gt; GET /api/users</div><div class="test-title">TC-USER-002: Should filter users by role</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:266:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">User Management &gt; GET /api/users</div><div class="test-title">TC-USER-003: Should search users by username</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:278:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">User Management &gt; GET /api/users</div><div class="test-title">TC-USER-004: Should paginate results</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:288:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">User Management &gt; POST /api/users</div><div class="test-title">TC-USER-005: Admin should create new user</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:302:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">User Management &gt; POST /api/users</div><div class="test-title">TC-USER-006: Should reject duplicate email</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:321:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">User Management &gt; GET /api/users/:id</div><div class="test-title">TC-USER-007: Should get user by ID</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:338:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">User Management &gt; GET /api/users/:id</div><div class="test-title">TC-USER-008: Should return 404 for non-existent user</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:349:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">User Management &gt; PUT /api/users/:id</div><div class="test-title">TC-USER-009: Should update user details</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:360:19)</pre></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">User Management &gt; PUT /api/users/:id</div><div class="test-title">TC-USER-010: Should update user role</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">User Management &gt; PUT /api/users/:id</div><div class="test-title">TC-USER-011: Should deactivate user</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">User Management &gt; PUT /api/users/:id</div><div class="test-title">TC-USER-012: Admin cannot deactivate themselves</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:398:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">User Management &gt; DELETE /api/users/:id</div><div class="test-title">TC-USER-013: Should delete user</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:413:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">User Management &gt; DELETE /api/users/:id</div><div class="test-title">TC-USER-014: Admin cannot delete themselves</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:433:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skills Management &gt; GET /api/skills</div><div class="test-title">TC-SKILL-001: Should list all skills</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:452:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skills Management &gt; GET /api/skills</div><div class="test-title">TC-SKILL-002: Should filter skills by category</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:463:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skills Management &gt; GET /api/skills</div><div class="test-title">TC-SKILL-003: Should search skills by name</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:472:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skills Management &gt; POST /api/skills</div><div class="test-title">TC-SKILL-004: Should create new skill</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:483:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skills Management &gt; POST /api/skills</div><div class="test-title">TC-SKILL-005: Should reject duplicate skill name</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:502:7)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skills Management &gt; POST /api/skills</div><div class="test-title">TC-SKILL-006: Should require skill name</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:519:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skills Management &gt; GET /api/skills/:id</div><div class="test-title">TC-SKILL-007: Should get skill by ID</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:531:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skills Management &gt; PUT /api/skills/:id</div><div class="test-title">TC-SKILL-008: Should update skill</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:544:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skills Management &gt; DELETE /api/skills/:id</div><div class="test-title">TC-SKILL-009: Should delete skill</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:560:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">People Management &gt; GET /api/people</div><div class="test-title">TC-PEOPLE-001: Should list all people</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:586:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">People Management &gt; GET /api/people</div><div class="test-title">TC-PEOPLE-002: Should filter by department</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:597:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">People Management &gt; GET /api/people</div><div class="test-title">TC-PEOPLE-003: Should filter active people only</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:606:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">People Management &gt; GET /api/people</div><div class="test-title">TC-PEOPLE-004: Should search by name</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:618:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">People Management &gt; POST /api/people</div><div class="test-title">TC-PEOPLE-005: Should create new person</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:629:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">People Management &gt; POST /api/people</div><div class="test-title">TC-PEOPLE-006: Should reject duplicate email</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:651:7)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">People Management &gt; POST /api/people</div><div class="test-title">TC-PEOPLE-007: Should require first and last name</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:675:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">People Management &gt; GET /api/people/:id</div><div class="test-title">TC-PEOPLE-008: Should get person by ID with skills</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:689:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">People Management &gt; PUT /api/people/:id</div><div class="test-title">TC-PEOPLE-009: Should update person details</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:703:19)</pre></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">People Management &gt; PUT /api/people/:id</div><div class="test-title">TC-PEOPLE-010: Should deactivate person</div><div class="test-status">passed</div><div class="test-duration">0.001s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">People Management &gt; POST /api/people/:id/skills</div><div class="test-title">TC-PEOPLE-011: Should assign skill to person</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">People Management &gt; POST /api/people/:id/skills</div><div class="test-title">TC-PEOPLE-012: Should prevent duplicate skill assignment</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">People Management &gt; DELETE /api/people/:id/skills/:skillId</div><div class="test-title">TC-PEOPLE-013: Should remove skill from person</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Project Management &gt; GET /api/projects</div><div class="test-title">TC-PROJECT-001: Should list all projects</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:783:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Project Management &gt; GET /api/projects</div><div class="test-title">TC-PROJECT-002: Should filter by status</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:794:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Project Management &gt; GET /api/projects</div><div class="test-title">TC-PROJECT-003: Should filter by priority</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:806:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Project Management &gt; GET /api/projects</div><div class="test-title">TC-PROJECT-004: Should search by name</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:815:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Project Management &gt; POST /api/projects</div><div class="test-title">TC-PROJECT-005: Should create new project</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:826:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Project Management &gt; POST /api/projects</div><div class="test-title">TC-PROJECT-006: Should require project name</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:847:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Project Management &gt; GET /api/projects/:id</div><div class="test-title">TC-PROJECT-007: Should get project by ID with skills</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:861:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Project Management &gt; PUT /api/projects/:id</div><div class="test-title">TC-PROJECT-008: Should update project details</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:875:19)</pre></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">Project Management &gt; POST /api/projects/:id/skills</div><div class="test-title">TC-PROJECT-009: Should add skill requirement to project</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Assignments/Scheduling &gt; GET /api/assignments</div><div class="test-title">TC-ASSIGN-001: Should list assignments</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:915:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Assignments/Scheduling &gt; GET /api/assignments</div><div class="test-title">TC-ASSIGN-002: Should filter by date range</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:925:19)</pre></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">Assignments/Scheduling &gt; GET /api/assignments</div><div class="test-title">TC-ASSIGN-003: Should filter by person</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">Assignments/Scheduling &gt; GET /api/assignments</div><div class="test-title">TC-ASSIGN-004: Should filter by project</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Assignments/Scheduling &gt; POST /api/assignments</div><div class="test-title">TC-ASSIGN-005: Should create new assignment</div><div class="test-status">failed</div><div class="test-duration">0.004s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:959:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Assignments/Scheduling &gt; POST /api/assignments</div><div class="test-title">TC-ASSIGN-006: Should detect time overlap conflict</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:984:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Assignments/Scheduling &gt; POST /api/assignments</div><div class="test-title">TC-ASSIGN-007: Should validate hour range</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1022:25)</pre></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">Assignments/Scheduling &gt; PUT /api/assignments/:id</div><div class="test-title">TC-ASSIGN-008: Should update assignment</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">Assignments/Scheduling &gt; DELETE /api/assignments/:id</div><div class="test-title">TC-ASSIGN-009: Should delete assignment</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Assignments/Scheduling &gt; GET /api/assignments/daily/:date</div><div class="test-title">TC-ASSIGN-010: Should get daily schedule</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1075:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Availability Management &gt; GET /api/availability</div><div class="test-title">TC-AVAIL-001: Should list availability windows</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1092:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Availability Management &gt; POST /api/availability</div><div class="test-title">TC-AVAIL-002: Should create time-off window</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1103:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Availability Management &gt; GET /api/availability/person/:personId</div><div class="test-title">TC-AVAIL-003: Should get person availability for date range</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1124:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Conflict Detection &gt; GET /api/conflicts</div><div class="test-title">TC-CONFLICT-001: Should list conflicts</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1144:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Conflict Detection &gt; GET /api/conflicts</div><div class="test-title">TC-CONFLICT-002: Should filter by type</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1154:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Conflict Detection &gt; GET /api/conflicts</div><div class="test-title">TC-CONFLICT-003: Should filter by severity</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1163:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Conflict Detection &gt; GET /api/conflicts</div><div class="test-title">TC-CONFLICT-004: Should filter unresolved only</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1172:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Conflict Detection &gt; POST /api/conflicts/detect</div><div class="test-title">TC-CONFLICT-005: Should run conflict detection</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1186:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Conflict Detection &gt; PUT /api/conflicts/:id/resolve</div><div class="test-title">TC-CONFLICT-006: Should resolve conflict</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1203:28)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">AI Scheduler &gt; POST /api/ai-scheduler/suggest</div><div class="test-title">TC-AI-001: Should generate schedule suggestions</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1230:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">AI Scheduler &gt; POST /api/ai-scheduler/suggest</div><div class="test-title">TC-AI-002: Should generate suggestions for date range</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1244:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">AI Scheduler &gt; POST /api/ai-scheduler/suggest</div><div class="test-title">TC-AI-003: Should exclude specified people</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1257:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">AI Scheduler &gt; POST /api/ai-scheduler/apply</div><div class="test-title">TC-AI-004: Should apply suggestions</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1276:26)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skill Matching &gt; GET /api/matching/candidates</div><div class="test-title">TC-MATCH-001: Should find candidates for project</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1304:27)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skill Matching &gt; GET /api/matching/candidates</div><div class="test-title">TC-MATCH-002: Should find candidates for specific skill</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1317:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skill Matching &gt; GET /api/matching/candidates</div><div class="test-title">TC-MATCH-003: Should filter by minimum proficiency</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1329:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Skill Matching &gt; GET /api/matching/gaps</div><div class="test-title">TC-MATCH-004: Should identify skill gaps</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1343:27)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Analytics &amp; Reports &gt; GET /api/analytics/dashboard</div><div class="test-title">TC-ANALYTICS-001: Should get dashboard metrics</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1364:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Analytics &amp; Reports &gt; GET /api/analytics/utilization</div><div class="test-title">TC-ANALYTICS-002: Should get utilization report</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1378:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Analytics &amp; Reports &gt; GET /api/analytics/project-summary</div><div class="test-title">TC-ANALYTICS-003: Should get project summary report</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1389:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Analytics &amp; Reports &gt; GET /api/analytics/daily-report</div><div class="test-title">TC-ANALYTICS-004: Should get daily report</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1400:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Exports &gt; GET /api/exports/excel</div><div class="test-title">TC-EXPORT-001: Should generate Excel export</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1417:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Exports &gt; GET /api/exports/pdf</div><div class="test-title">TC-EXPORT-002: Should generate PDF export</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1428:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Exports &gt; GET /api/exports/logs</div><div class="test-title">TC-EXPORT-003: Should get export history</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1439:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Settings &gt; GET /api/settings</div><div class="test-title">TC-SETTINGS-001: Should get all settings (admin only)</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1458:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Settings &gt; GET /api/settings/public</div><div class="test-title">TC-SETTINGS-002: Should get public branding settings without auth</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1469:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Settings &gt; PUT /api/settings</div><div class="test-title">TC-SETTINGS-003: Should update branding settings</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1479:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Settings &gt; PUT /api/settings</div><div class="test-title">TC-SETTINGS-004: Should reject non-whitelisted keys</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1492:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Role-Based Access Control &gt; Admin-only endpoints</div><div class="test-title">TC-RBAC-001: Viewer cannot access user management</div><div class="test-status">failed</div><div class="test-duration">0s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1513:22)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Role-Based Access Control &gt; Admin-only endpoints</div><div class="test-title">TC-RBAC-002: Viewer cannot create users</div><div class="test-status">failed</div><div class="test-duration">0s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1513:22)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Role-Based Access Control &gt; Admin-only endpoints</div><div class="test-title">TC-RBAC-003: Viewer cannot delete users</div><div class="test-status">failed</div><div class="test-duration">0s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1513:22)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Role-Based Access Control &gt; Scheduler permissions</div><div class="test-title">TC-RBAC-004: Scheduler can create assignments</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1513:22)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Role-Based Access Control &gt; Scheduler permissions</div><div class="test-title">TC-RBAC-005: Scheduler can export data</div><div class="test-status">failed</div><div class="test-duration">0s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1513:22)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Role-Based Access Control &gt; Viewer permissions</div><div class="test-title">TC-RBAC-006: Viewer can read people</div><div class="test-status">failed</div><div class="test-duration">0s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1513:22)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Role-Based Access Control &gt; Viewer permissions</div><div class="test-title">TC-RBAC-007: Viewer can read projects</div><div class="test-status">failed</div><div class="test-duration">0s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1513:22)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Role-Based Access Control &gt; Viewer permissions</div><div class="test-title">TC-RBAC-008: Viewer cannot create assignments</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1513:22)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Role-Based Access Control &gt; Viewer permissions</div><div class="test-title">TC-RBAC-009: Viewer cannot export data</div><div class="test-status">failed</div><div class="test-duration">0s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1513:22)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Data Import &gt; GET /api/import/templates</div><div class="test-title">TC-IMPORT-001: Should download people template</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1667:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Data Import &gt; GET /api/import/templates</div><div class="test-title">TC-IMPORT-002: Should download projects template</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1676:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Data Import &gt; GET /api/import/templates</div><div class="test-title">TC-IMPORT-003: Should download skills template</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1684:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Security &gt; Rate Limiting</div><div class="test-title">TC-SEC-001: Should rate limit login attempts</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1704:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Security &gt; Input Validation</div><div class="test-title">TC-SEC-002: Should sanitize XSS in input</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1718:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Security &gt; Input Validation</div><div class="test-title">TC-SEC-003: Should reject SQL injection attempts</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1740:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Security &gt; Authentication Security</div><div class="test-title">TC-SEC-004: Should not expose password in responses</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1762:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Security &gt; Authentication Security</div><div class="test-title">TC-SEC-005: Should require authentication for protected endpoints</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1785:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Error Handling</div><div class="test-title">TC-ERR-001: Should return 404 for non-existent endpoints</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1798:17)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Error Handling</div><div class="test-title">TC-ERR-002: Should return 400 for malformed JSON</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1807:17)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Error Handling</div><div class="test-title">TC-ERR-003: Should handle missing required fields</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1817:17)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation Files</div><div class="test-title">TC-I18N-001: Should load English translation file</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1835:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation Files</div><div class="test-title">TC-I18N-002: Should load Greek translation file</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1845:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation Files</div><div class="test-title">TC-I18N-003: Should return 404 for non-existent language</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1856:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation Files</div><div class="test-title">TC-I18N-004: English file should contain all required sections</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1861:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation Files</div><div class="test-title">TC-I18N-005: Greek file should contain all required sections</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1877:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation Files</div><div class="test-title">TC-I18N-006: English and Greek should have matching keys</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1893:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation Content Validation</div><div class="test-title">TC-I18N-007: Common translations should exist in English</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1910:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation Content Validation</div><div class="test-title">TC-I18N-008: Common translations should exist in Greek</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1922:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation Content Validation</div><div class="test-title">TC-I18N-009: Navigation translations should exist</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1934:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation Content Validation</div><div class="test-title">TC-I18N-010: Empty state messages should exist in both languages</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1945:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation Content Validation</div><div class="test-title">TC-I18N-011: Help content should exist in both languages</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1965:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation Content Validation</div><div class="test-title">TC-I18N-012: Proficiency levels should be translated</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:1984:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation API Endpoints</div><div class="test-title">TC-I18N-013: Should get custom translations (admin)</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2000:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation API Endpoints</div><div class="test-title">TC-I18N-014: Should get translations for specific language</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2010:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation API Endpoints</div><div class="test-title">TC-I18N-015: Admin should update a custom translation</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2021:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation API Endpoints</div><div class="test-title">TC-I18N-016: Non-admin should not update translations</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2036:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation API Endpoints</div><div class="test-title">TC-I18N-017: Should bulk update translations (admin)</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2046:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation API Endpoints</div><div class="test-title">TC-I18N-018: Should delete custom translation (admin)</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2063:7)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Translation API Endpoints</div><div class="test-title">TC-I18N-019: Should reject invalid translation key format</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2079:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Public Settings for Language</div><div class="test-title">TC-I18N-020: Should get public settings including default language</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2092:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Internationalization (i18n) &gt; Public Settings for Language</div><div class="test-title">TC-I18N-021: Admin should update default language setting</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2102:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">UI Translation Integration &gt; Static HTML Translations</div><div class="test-title">TC-UI-I18N-001: Main HTML should have i18n data attributes</div><div class="test-status">failed</div><div class="test-duration">0.004s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2120:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">UI Translation Integration &gt; Static HTML Translations</div><div class="test-title">TC-UI-I18N-002: Dashboard metrics should have i18n attributes</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2131:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">UI Translation Integration &gt; Static HTML Translations</div><div class="test-title">TC-UI-I18N-003: Form labels should have i18n attributes</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2140:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">UI Translation Integration &gt; Static HTML Translations</div><div class="test-title">TC-UI-I18N-004: Settings page should have i18n attributes</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2149:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">UI Translation Integration &gt; Static HTML Translations</div><div class="test-title">TC-UI-I18N-005: Loading messages should have i18n attributes</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2158:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">UI Translation Integration &gt; Language Switcher</div><div class="test-title">TC-UI-I18N-006: Language switcher should exist in HTML</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2168:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Help System &gt; Help Content Structure</div><div class="test-title">TC-HELP-001: Help content should have all required pages in English</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2184:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Help System &gt; Help Content Structure</div><div class="test-title">TC-HELP-002: Help content should have all required pages in Greek</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2200:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Help System &gt; Help Content Structure</div><div class="test-title">TC-HELP-003: Dashboard help should have overview in both languages</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2216:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Help System &gt; Help Content Structure</div><div class="test-title">TC-HELP-004: Schedule help should have steps in both languages</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2227:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Help System &gt; Help Content Structure</div><div class="test-title">TC-HELP-005: People help should explain proficiency levels</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2240:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Help System &gt; Help Content Structure</div><div class="test-title">TC-HELP-006: AI Scheduler help should explain considerations</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2248:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Help System &gt; Help Content Structure</div><div class="test-title">TC-HELP-007: Conflicts help should explain types</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2258:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Help System &gt; Help Button in UI</div><div class="test-title">TC-HELP-008: Help button should exist in header</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2271:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Empty State Translations</div><div class="test-title">TC-EMPTY-001: All dashboard empty states should be translated</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2286:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Empty State Translations</div><div class="test-title">TC-EMPTY-002: All people empty states should be translated</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2296:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Empty State Translations</div><div class="test-title">TC-EMPTY-003: All project empty states should be translated</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2305:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Empty State Translations</div><div class="test-title">TC-EMPTY-004: All schedule empty states should be translated</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2315:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Empty State Translations</div><div class="test-title">TC-EMPTY-005: All skill empty states should be translated</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2324:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Empty State Translations</div><div class="test-title">TC-EMPTY-006: All conflict empty states should be translated</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2333:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Empty State Translations</div><div class="test-title">TC-EMPTY-007: AI Scheduler empty state should be translated</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2342:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Empty State Translations</div><div class="test-title">TC-EMPTY-008: User empty state should be translated</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2349:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; GET /api/database/info</div><div class="test-title">TC-DB-001: Admin should get database info</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2363:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; GET /api/database/info</div><div class="test-title">TC-DB-002: Database info should include table counts</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2376:19)</pre></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">Database Management &gt; GET /api/database/info</div><div class="test-title">TC-DB-003: Non-admin should not access database info</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">Database Management &gt; GET /api/database/info</div><div class="test-title">TC-DB-004: Scheduler should not access database info</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; GET /api/database/info</div><div class="test-title">TC-DB-005: Unauthenticated user should not access database info</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2412:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; POST /api/database/backup</div><div class="test-title">TC-DB-006: Admin should create database backup</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2422:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; POST /api/database/backup</div><div class="test-title">TC-DB-007: Backup should include all tables</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2435:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; POST /api/database/backup</div><div class="test-title">TC-DB-008: Backup should exclude password hashes</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2450:19)</pre></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">Database Management &gt; POST /api/database/backup</div><div class="test-title">TC-DB-009: Non-admin should not create backup</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; GET /api/database/export</div><div class="test-title">TC-DB-010: Admin should export database as JSON</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2479:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; GET /api/database/export</div><div class="test-title">TC-DB-011: Export should contain export metadata</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2490:19)</pre></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">Database Management &gt; GET /api/database/export</div><div class="test-title">TC-DB-012: Non-admin should not export database</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; POST /api/database/clean</div><div class="test-title">TC-DB-013: Admin should clean old data with default options</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2515:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; POST /api/database/clean</div><div class="test-title">TC-DB-014: Clean should respect olderThanDays parameter</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2537:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; POST /api/database/clean</div><div class="test-title">TC-DB-015: Clean with no options should clean nothing</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2551:19)</pre></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">Database Management &gt; POST /api/database/clean</div><div class="test-title">TC-DB-016: Non-admin should not clean database</div><div class="test-status">passed</div><div class="test-duration">0.001s</div></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; POST /api/database/reset</div><div class="test-title">TC-DB-017: Reset should require confirmation</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2585:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; POST /api/database/reset</div><div class="test-title">TC-DB-018: Reset should reject wrong confirmation text</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2597:19)</pre></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">Database Management &gt; POST /api/database/reset</div><div class="test-title">TC-DB-019: Non-admin should not reset database</div><div class="test-status">passed</div><div class="test-duration">0s</div></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Database Management &gt; POST /api/database/reset</div><div class="test-title">TC-DB-020: Reset endpoint should exist and be protected</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2624:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Data Integrity &gt; Foreign Key Relationships</div><div class="test-title">TC-INT-001: Cannot delete person with active assignments</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2641:30)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Data Integrity &gt; Foreign Key Relationships</div><div class="test-title">TC-INT-002: Cannot delete project with active assignments</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2661:30)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Data Integrity &gt; Foreign Key Relationships</div><div class="test-title">TC-INT-003: Cannot delete skill used by people</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2680:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Data Integrity &gt; Data Validation</div><div class="test-title">TC-INT-004: Assignment hours must be valid</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2706:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Data Integrity &gt; Data Validation</div><div class="test-title">TC-INT-005: Assignment hours must not exceed 24</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2728:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Data Integrity &gt; Data Validation</div><div class="test-title">TC-INT-006: Proficiency level must be 1-5</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2749:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Data Integrity &gt; Data Validation</div><div class="test-title">TC-INT-007: Project dates must be valid</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2767:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Data Integrity &gt; Data Validation</div><div class="test-title">TC-INT-008: Email format must be valid</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2782:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Concurrent Access</div><div class="test-title">TC-CONC-001: Multiple simultaneous reads should succeed</div><div class="test-status">failed</div><div class="test-duration">0.007s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at async Promise.all (index 0)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2807:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Concurrent Access</div><div class="test-title">TC-CONC-002: Multiple simultaneous logins should succeed</div><div class="test-status">failed</div><div class="test-duration">0.006s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at async Promise.all (index 0)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2822:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Concurrent Access</div><div class="test-title">TC-CONC-003: Concurrent dashboard requests should succeed</div><div class="test-status">failed</div><div class="test-duration">0.004s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at async Promise.all (index 0)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2835:21)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Empty Data Handling</div><div class="test-title">TC-EDGE-001: Should handle search with no results gracefully</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2850:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Empty Data Handling</div><div class="test-title">TC-EDGE-002: Should handle AI suggestions for date with no active projects</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2860:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Empty Data Handling</div><div class="test-title">TC-EDGE-003: Should handle conflict detection for date range with no assignments</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2873:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Boundary Values</div><div class="test-title">TC-EDGE-004: Should handle very long names</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2890:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Boundary Values</div><div class="test-title">TC-EDGE-005: Should handle pagination beyond available data</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2905:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Boundary Values</div><div class="test-title">TC-EDGE-006: Should handle zero limit</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2915:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Boundary Values</div><div class="test-title">TC-EDGE-007: Should handle negative page number</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2925:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Special Characters</div><div class="test-title">TC-EDGE-008: Should handle unicode in names</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2937:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Special Characters</div><div class="test-title">TC-EDGE-009: Should handle emoji in project names</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2959:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Special Characters</div><div class="test-title">TC-EDGE-010: Should handle special characters in search</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2972:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Date Edge Cases</div><div class="test-title">TC-EDGE-011: Should handle leap year date</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2983:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Date Edge Cases</div><div class="test-title">TC-EDGE-012: Should reject invalid date</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:2992:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Edge Cases &gt; Date Edge Cases</div><div class="test-title">TC-EDGE-013: Should handle very old date</div><div class="test-status">failed</div><div class="test-duration">0.001s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3002:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Mobile API Compatibility</div><div class="test-title">TC-MOBILE-001: API should return consistent JSON structure</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3026:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Mobile API Compatibility</div><div class="test-title">TC-MOBILE-002: API should support Accept-Language header</div><div class="test-status">failed</div><div class="test-duration">0.005s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3036:17)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Mobile API Compatibility</div><div class="test-title">TC-MOBILE-003: API should handle missing optional headers</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3047:17)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Performance Baseline</div><div class="test-title">TC-PERF-001: Dashboard should respond within 2 seconds</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3068:17)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Performance Baseline</div><div class="test-title">TC-PERF-002: People list should respond within 1 second</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3082:17)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Performance Baseline</div><div class="test-title">TC-PERF-003: Project list should respond within 1 second</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3096:17)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Performance Baseline</div><div class="test-title">TC-PERF-004: Authentication should respond within 500ms</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3110:17)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Performance Baseline</div><div class="test-title">TC-PERF-005: Skill matching should respond within 2 seconds</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3122:25)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Session Management</div><div class="test-title">TC-SESSION-001: Token should work after login</div><div class="test-status">failed</div><div class="test-duration">0.003s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3145:22)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Session Management</div><div class="test-title">TC-SESSION-002: Expired token should be rejected</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3167:17)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Session Management</div><div class="test-title">TC-SESSION-003: Malformed token should be rejected</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at api (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:26:20)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3185:19)</pre></div></div><div class="test-result failed"><div class="test-info"><div class="test-suitename">Session Management</div><div class="test-title">TC-SESSION-004: Token in wrong format should be rejected</div><div class="test-status">failed</div><div class="test-duration">0.002s</div></div><div class="failureMessages"> <pre class="failureMsg">TypeError: fetch failed
+    at node:internal/deps/undici/undici:14900:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (C:\Users\stylianos_p\OneDrive - Playtech\Current Desktop\Cursor\OPS_Versions\Scheduler\tests\api.test.js:3195:17)</pre></div></div></div></div></div></body></html>
