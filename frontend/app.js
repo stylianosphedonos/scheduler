@@ -2410,68 +2410,68 @@ async function findCandidates(projectId) {
 
 async function showAddProjectModal() {
   if (!canEdit()) {
-    showToast('You do not have permission to add projects', 'error');
+    showToast(t('common.noPermission') || 'You do not have permission to add projects', 'error');
     return;
   }
   
   try {
     const allSkills = await api('/skills?active=true');
     
-    showModal('Add Project', `
+    showModal(t('projects.addProject') || 'Add Project', `
       <form id="add-project-form" class="modal-form">
         <div class="form-group">
-          <label>Project Name *</label>
+          <label>${t('projects.projectName') || 'Project Name'} *</label>
           <input type="text" name="name" required>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Code</label>
-            <input type="text" name="code" placeholder="e.g., PRJ-001">
+            <label>${t('projects.projectCode') || 'Code'}</label>
+            <input type="text" name="code" placeholder="${t('projects.codePlaceholder') || 'e.g., PRJ-001'}">
           </div>
           <div class="form-group">
-            <label>Client</label>
+            <label>${t('projects.client') || 'Client'}</label>
             <input type="text" name="client">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Status</label>
+            <label>${t('projects.status') || 'Status'}</label>
             <select name="status">
-              <option value="planning">Planning</option>
-              <option value="active" selected>Active</option>
-              <option value="on-hold">On Hold</option>
+              <option value="planning">${t('projects.planning') || 'Planning'}</option>
+              <option value="active" selected>${t('projects.active') || 'Active'}</option>
+              <option value="on-hold">${t('projects.onHold') || 'On Hold'}</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Priority</label>
+            <label>${t('projects.priority') || 'Priority'}</label>
             <select name="priority">
-              <option value="low">Low</option>
-              <option value="medium" selected>Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
+              <option value="low">${t('projects.low') || 'Low'}</option>
+              <option value="medium" selected>${t('projects.medium') || 'Medium'}</option>
+              <option value="high">${t('projects.high') || 'High'}</option>
+              <option value="critical">${t('projects.critical') || 'Critical'}</option>
             </select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Start Date</label>
+            <label>${t('common.startDate') || 'Start Date'}</label>
             <input type="date" name="startDate">
           </div>
           <div class="form-group">
-            <label>End Date</label>
+            <label>${t('common.endDate') || 'End Date'}</label>
             <input type="date" name="endDate">
           </div>
         </div>
         <div class="form-group">
-          <label>Budget Hours</label>
+          <label>${t('projects.budgetHours') || 'Budget Hours'}</label>
           <input type="number" name="budgetHours" min="0">
         </div>
         
         <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-          <i class="fas fa-users"></i> Skill Requirements
+          <i class="fas fa-users"></i> ${t('projects.skillRequirements') || 'Skill Requirements'}
         </h4>
         <p class="text-muted" style="margin-bottom: 15px; font-size: 0.85rem;">
-          Specify which skills are needed and how many people with each skill
+          ${t('projects.skillRequirementsHint') || 'Specify which skills are needed and how many people with each skill'}
         </p>
         
         <div id="project-skills-list" class="project-skills-list">
@@ -2484,11 +2484,11 @@ async function showAddProjectModal() {
               </label>
               <div class="skill-requirements-inputs">
                 <div class="skill-input-group">
-                  <label>People:</label>
+                  <label>${t('projects.peopleNeeded') || 'People'}:</label>
                   <input type="number" class="skill-people-needed" min="1" value="1" disabled>
                 </div>
                 <div class="skill-input-group">
-                  <label>Min Level:</label>
+                  <label>${t('projects.minLevel') || 'Min Level'}:</label>
                   <select class="skill-level" disabled>
                     ${[1,2,3,4,5].map(l => `<option value="${l}" ${l === 3 ? 'selected' : ''}>${l}</option>`).join('')}
                   </select>
@@ -2496,7 +2496,7 @@ async function showAddProjectModal() {
                 <div class="skill-input-group">
                   <label class="checkbox-label">
                     <input type="checkbox" class="skill-mandatory" disabled checked>
-                    Required
+                    ${t('projects.required') || 'Required'}
                   </label>
                 </div>
               </div>
@@ -2505,8 +2505,8 @@ async function showAddProjectModal() {
         </div>
         
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create Project</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">${t('common.cancel') || 'Cancel'}</button>
+          <button type="submit" class="btn btn-primary">${t('projects.createProject') || 'Create Project'}</button>
         </div>
       </form>
     `);
@@ -2968,31 +2968,31 @@ async function deletePerson(id) {
 
 function showAddSkillModal() {
   if (!canEdit()) {
-    showToast('You do not have permission to add skills', 'error');
+    showToast(t('common.noPermission') || 'You do not have permission to add skills', 'error');
     return;
   }
   
-  showModal('Add Skill', `
+  showModal(t('skills.addSkill') || 'Add Skill', `
     <form id="add-skill-form" class="modal-form">
       <div class="form-group">
-        <label>Skill Name *</label>
+        <label>${t('skills.skillName') || 'Skill Name'} *</label>
         <input type="text" name="name" required>
       </div>
       <div class="form-group">
-        <label>Category</label>
-        <input type="text" name="category" placeholder="e.g., Programming, Design, Management">
+        <label>${t('skills.category') || 'Category'}</label>
+        <input type="text" name="category" placeholder="${t('skills.categoryPlaceholder') || 'e.g., Programming, Design, Management'}">
       </div>
       <div class="form-group">
-        <label>Description</label>
+        <label>${t('skills.description') || 'Description'}</label>
         <textarea name="description" rows="3"></textarea>
       </div>
       <div class="form-group">
-        <label>Color</label>
+        <label>${t('skills.color') || 'Color'}</label>
         <input type="color" name="color" value="#6366f1">
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary">Add Skill</button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">${t('common.cancel') || 'Cancel'}</button>
+        <button type="submit" class="btn btn-primary">${t('skills.addSkill') || 'Add Skill'}</button>
       </div>
     </form>
   `);
@@ -3008,7 +3008,7 @@ function showAddSkillModal() {
         body: JSON.stringify(data)
       });
       closeModal();
-      showToast('Skill added successfully');
+      showToast(t('skills.skillAdded') || 'Skill added successfully');
       loadSkills();
     } catch (error) {
       showToast(error.message, 'error');
@@ -4254,7 +4254,7 @@ async function deleteUser(id) {
 // ===== Add Assignment Modal =====
 async function showAddAssignmentModal() {
   if (!canEdit()) {
-    showToast('You do not have permission to create assignments', 'error');
+    showToast(t('common.noPermission') || 'You do not have permission to create assignments', 'error');
     return;
   }
   
@@ -4264,53 +4264,53 @@ async function showAddAssignmentModal() {
       api('/projects?status=active')
     ]);
     
-    showModal('Add Assignment', `
+    showModal(t('schedule.addAssignment') || 'Add Assignment', `
       <form id="add-assignment-form" class="modal-form">
         <div class="form-group">
-          <label>Person *</label>
+          <label>${t('common.person') || 'Person'} *</label>
           <select name="personId" required>
-            <option value="">Select person...</option>
+            <option value="">${t('schedule.selectPerson') || 'Select person...'}</option>
             ${people.data.map(p => `<option value="${p.id}">${p.firstName} ${p.lastName}</option>`).join('')}
           </select>
         </div>
         <div class="form-group">
-          <label>Project *</label>
+          <label>${t('common.project') || 'Project'} *</label>
           <select name="projectId" required>
-            <option value="">Select project...</option>
+            <option value="">${t('schedule.selectProject') || 'Select project...'}</option>
             ${projects.data.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
           </select>
         </div>
         <div class="form-group">
-          <label>Date *</label>
+          <label>${t('common.date') || 'Date'} *</label>
           <input type="date" name="date" value="${state.scheduleDate}" required>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Start Hour *</label>
+            <label>${t('schedule.startHour') || 'Start Hour'} *</label>
             <select name="startHour" required>
               ${Array.from({length: 24}, (_, i) => `<option value="${i}" ${i === 9 ? 'selected' : ''}>${i}:00</option>`).join('')}
             </select>
           </div>
           <div class="form-group">
-            <label>End Hour *</label>
+            <label>${t('schedule.endHour') || 'End Hour'} *</label>
             <select name="endHour" required>
               ${Array.from({length: 24}, (_, i) => `<option value="${i + 1}" ${i === 16 ? 'selected' : ''}>${i + 1}:00</option>`).join('')}
             </select>
           </div>
         </div>
         <div class="form-group">
-          <label>Task Description</label>
+          <label>${t('schedule.taskDescription') || 'Task Description'}</label>
           <textarea name="taskDescription" rows="2"></textarea>
         </div>
         <div class="form-group">
           <label class="checkbox-label">
             <input type="checkbox" name="isRemote">
-            Remote Work
+            ${t('schedule.remoteWork') || 'Remote Work'}
           </label>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create Assignment</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">${t('common.cancel') || 'Cancel'}</button>
+          <button type="submit" class="btn btn-primary">${t('schedule.createAssignment') || 'Create Assignment'}</button>
         </div>
       </form>
     `);

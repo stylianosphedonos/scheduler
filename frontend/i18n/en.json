@@ -211,7 +211,13 @@
     "noProjectsMatch": "No projects match your search",
     "noSkillRequirements": "No skill requirements defined",
     "noCandidatesFound": "No candidates found matching the required skills.",
-    "noPeopleAssigned": "No people assigned to this project yet"
+    "noPeopleAssigned": "No people assigned to this project yet",
+    "codePlaceholder": "e.g., PRJ-001",
+    "skillRequirements": "Skill Requirements",
+    "skillRequirementsHint": "Specify which skills are needed and how many people with each skill",
+    "minLevel": "Min Level",
+    "required": "Required",
+    "createProject": "Create Project"
   },
   "skills": {
     "title": "Skills Management",
@@ -237,7 +243,9 @@
     "confirmDelete": "Are you sure you want to delete this skill?",
     "noSkillsFound": "No skills found",
     "addToEnable": "Add skills to enable skill matching",
-    "noSkillsMatch": "No skills match your search"
+    "noSkillsMatch": "No skills match your search",
+    "categoryPlaceholder": "e.g., Programming, Design, Management",
+    "skillAdded": "Skill added successfully"
   },
   "schedule": {
     "title": "Schedule",
@@ -267,7 +275,13 @@
     "noAssignmentsForDay": "No assignments for this day",
     "clickAddAssignment": "Click \"Add Assignment\" to schedule work",
     "noWorkScheduled": "No work scheduled for this date",
-    "noAssignmentsScheduled": "No assignments scheduled for this day"
+    "noAssignmentsScheduled": "No assignments scheduled for this day",
+    "selectPerson": "Select person...",
+    "selectProject": "Select project...",
+    "startHour": "Start Hour",
+    "endHour": "End Hour",
+    "remoteWork": "Remote Work",
+    "createAssignment": "Create Assignment"
   },
   "aiScheduler": {
     "title": "AI Schedule Optimizer",
