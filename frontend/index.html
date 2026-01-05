@@ -947,6 +947,29 @@
               </div>
             </div>
             
+            <!-- Dashboard Configuration -->
+            <div class="card settings-card" id="dashboard-config-card">
+              <div class="card-header">
+                <h2><i class="fas fa-th-large"></i> <span data-i18n="settings.dashboardConfig">Dashboard Configuration</span></h2>
+              </div>
+              <div class="card-body">
+                <p class="text-muted mb-3" data-i18n="settings.dashboardConfigDesc">Customize which cards appear on your dashboard, their order, and size. Drag to reorder.</p>
+                
+                <div class="dashboard-config-list" id="dashboard-config-list">
+                  <!-- Cards will be populated by JavaScript -->
+                </div>
+                
+                <div class="form-actions mt-3">
+                  <button type="button" class="btn btn-secondary" onclick="resetDashboardConfig()">
+                    <i class="fas fa-undo"></i> <span data-i18n="settings.resetToDefault">Reset to Default</span>
+                  </button>
+                  <button type="button" class="btn btn-primary" onclick="saveDashboardConfig()">
+                    <i class="fas fa-save"></i> <span data-i18n="common.save">Save</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
             <!-- Database Management - Admin Only -->
             <div class="card settings-card" id="database-management-card">
               <div class="card-header">

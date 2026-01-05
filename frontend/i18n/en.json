@@ -144,7 +144,17 @@
     "exportPdf": "Export to PDF",
     "pdfPreviewDesc": "Preview your schedule before exporting",
     "scheduleByProjects": "Today's Schedule by Projects",
-    "scheduleByEmployees": "Today's Schedule by Employees"
+    "scheduleByEmployees": "Today's Schedule by Employees",
+    "dashboardConfig": "Dashboard Configuration",
+    "dashboardConfigDesc": "Customize which cards appear on your dashboard, their order, and size. Drag to reorder.",
+    "dashboardSaved": "Dashboard configuration saved",
+    "dashboardReset": "Dashboard reset to default",
+    "resetToDefault": "Reset to Default",
+    "size": "Size",
+    "sizeSmall": "Small (4 cols)",
+    "sizeMedium": "Medium (6 cols)",
+    "sizeLarge": "Large (8 cols)",
+    "sizeFull": "Full Width (12 cols)"
   },
   "people": {
     "title": "People Management",

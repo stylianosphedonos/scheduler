@@ -422,6 +422,9 @@ function loadSettings() {
   if (canManageUsers()) {
     loadDatabaseInfo(false);
   }
+  
+  // Load dashboard configuration UI
+  loadDashboardConfigUI();
 }
 
 async function loadSystemSettings() {
@@ -5323,6 +5326,174 @@ function updateSidebarLangValue() {
 // Update sidebar language value on load and language change
 document.addEventListener('DOMContentLoaded', updateSidebarLangValue);
 document.addEventListener('languageChanged', updateSidebarLangValue);
+
+// ===== Dashboard Configuration =====
+const DEFAULT_DASHBOARD_CONFIG = [
+  { id: 'schedule-by-projects', name: 'Schedule by Projects', icon: 'fa-folder-open', color: '#10b981', visible: true, size: 'full' },
+  { id: 'schedule-by-employees', name: 'Schedule by Employees', icon: 'fa-users', color: '#6366f1', visible: true, size: 'large' },
+  { id: 'quick-actions-card', name: 'Quick Actions', icon: 'fa-bolt', color: '#f59e0b', visible: true, size: 'small' },
+  { id: 'utilization-card', name: 'Weekly Utilization', icon: 'fa-chart-bar', color: '#8b5cf6', visible: true, size: 'small' },
+  { id: 'top-utilized', name: 'Top Utilized', icon: 'fa-trophy', color: '#ec4899', visible: true, size: 'small' },
+  { id: 'available-employees', name: 'Available Employees', icon: 'fa-user-clock', color: '#14b8a6', visible: true, size: 'small' },
+  { id: 'active-conflicts', name: 'Active Conflicts', icon: 'fa-exclamation-circle', color: '#ef4444', visible: true, size: 'medium' },
+  { id: 'skill-demand', name: 'Skill Demand', icon: 'fa-star', color: '#f97316', visible: true, size: 'medium' }
+];
+
+function getDashboardConfig() {
+  const saved = localStorage.getItem('dashboard_config');
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return [...DEFAULT_DASHBOARD_CONFIG];
+    }
+  }
+  return [...DEFAULT_DASHBOARD_CONFIG];
+}
+
+function saveDashboardConfig() {
+  const items = document.querySelectorAll('.dashboard-config-item');
+  const config = [];
+  
+  items.forEach(item => {
+    config.push({
+      id: item.dataset.cardId,
+      name: item.querySelector('.config-card-name').textContent,
+      icon: item.dataset.icon,
+      color: item.dataset.color,
+      visible: item.querySelector('.config-visibility input').checked,
+      size: item.querySelector('.config-size-select').value
+    });
+  });
+  
+  localStorage.setItem('dashboard_config', JSON.stringify(config));
+  applyDashboardConfig();
+  showToast(t('settings.dashboardSaved') || 'Dashboard configuration saved');
+}
+
+function resetDashboardConfig() {
+  localStorage.removeItem('dashboard_config');
+  loadDashboardConfigUI();
+  applyDashboardConfig();
+  showToast(t('settings.dashboardReset') || 'Dashboard reset to default');
+}
+
+function loadDashboardConfigUI() {
+  const container = document.getElementById('dashboard-config-list');
+  if (!container) return;
+  
+  const config = getDashboardConfig();
+  
+  container.innerHTML = config.map(card => `
+    <div class="dashboard-config-item ${card.visible ? '' : 'disabled'}" 
+         data-card-id="${card.id}" 
+         data-icon="${card.icon}"
+         data-color="${card.color}"
+         draggable="true">
+      <div class="config-drag-handle">
+        <i class="fas fa-grip-vertical"></i>
+      </div>
+      <div class="config-visibility">
+        <input type="checkbox" ${card.visible ? 'checked' : ''} onchange="this.closest('.dashboard-config-item').classList.toggle('disabled', !this.checked)">
+      </div>
+      <div class="config-card-icon" style="background: ${card.color}">
+        <i class="fas ${card.icon}"></i>
+      </div>
+      <div class="config-card-info">
+        <span class="config-card-name">${card.name}</span>
+        <span class="config-card-desc">${t('settings.size')}: ${card.size}</span>
+      </div>
+      <select class="config-size-select" onchange="this.closest('.dashboard-config-item').querySelector('.config-card-desc').textContent = '${t('settings.size')}: ' + this.value">
+        <option value="small" ${card.size === 'small' ? 'selected' : ''}>${t('settings.sizeSmall') || 'Small (4 cols)'}</option>
+        <option value="medium" ${card.size === 'medium' ? 'selected' : ''}>${t('settings.sizeMedium') || 'Medium (6 cols)'}</option>
+        <option value="large" ${card.size === 'large' ? 'selected' : ''}>${t('settings.sizeLarge') || 'Large (8 cols)'}</option>
+        <option value="full" ${card.size === 'full' ? 'selected' : ''}>${t('settings.sizeFull') || 'Full (12 cols)'}</option>
+      </select>
+    </div>
+  `).join('');
+  
+  // Add drag and drop handlers
+  initDashboardConfigDragDrop();
+}
+
+function initDashboardConfigDragDrop() {
+  const container = document.getElementById('dashboard-config-list');
+  const items = container.querySelectorAll('.dashboard-config-item');
+  
+  items.forEach(item => {
+    item.addEventListener('dragstart', (e) => {
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      items.forEach(i => i.classList.remove('drag-over'));
+    });
+    
+    item.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const dragging = container.querySelector('.dragging');
+      if (dragging !== item) {
+        item.classList.add('drag-over');
+      }
+    });
+    
+    item.addEventListener('dragleave', () => {
+      item.classList.remove('drag-over');
+    });
+    
+    item.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const dragging = container.querySelector('.dragging');
+      if (dragging !== item) {
+        const allItems = [...container.querySelectorAll('.dashboard-config-item')];
+        const dragIdx = allItems.indexOf(dragging);
+        const dropIdx = allItems.indexOf(item);
+        
+        if (dragIdx < dropIdx) {
+          item.after(dragging);
+        } else {
+          item.before(dragging);
+        }
+      }
+      item.classList.remove('drag-over');
+    });
+  });
+}
+
+function applyDashboardConfig() {
+  const config = getDashboardConfig();
+  const grid = document.querySelector('.dashboard-grid');
+  if (!grid) return;
+  
+  // Size mapping
+  const sizeMap = {
+    'small': 'span 4',
+    'medium': 'span 6',
+    'large': 'span 8',
+    'full': 'span 12'
+  };
+  
+  config.forEach((card, index) => {
+    const element = document.getElementById(card.id) || document.querySelector(`.${card.id}`);
+    if (element) {
+      // Apply visibility
+      element.style.display = card.visible ? '' : 'none';
+      
+      // Apply size
+      element.style.gridColumn = sizeMap[card.size] || 'span 4';
+      
+      // Apply order
+      element.style.order = index;
+    }
+  });
+}
+
+// Apply config on page load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(applyDashboardConfig, 100);
+});
 
 // Help button click
 document.getElementById('help-btn')?.addEventListener('click', showHelp);
