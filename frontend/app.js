@@ -2900,13 +2900,11 @@ async function resolveConflict(id) {
 let aiSuggestions = [];
 
 function loadAIScheduler() {
-  // Set default dates
-  const today = new Date();
-  const nextWeek = new Date(today);
-  nextWeek.setDate(nextWeek.getDate() + 7);
+  // Set default dates to current day
+  const today = new Date().toISOString().split('T')[0];
   
-  document.getElementById('ai-start-date').value = today.toISOString().split('T')[0];
-  document.getElementById('ai-end-date').value = nextWeek.toISOString().split('T')[0];
+  document.getElementById('ai-start-date').value = today;
+  document.getElementById('ai-end-date').value = today;
 }
 
 async function generateAISuggestions() {
