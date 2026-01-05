@@ -4302,19 +4302,22 @@ body {
     display: block;
   }
   
-  /* Mobile sidebar - full menu accessible */
+  /* Mobile sidebar - Quick Actions only (navigation is in bottom bar) */
   .sidebar {
-    width: 85%;
-    max-width: 320px;
-    height: 100vh;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 85vh;
     position: fixed;
     top: 0;
     left: 0;
-    bottom: 0;
-    transform: translateX(-100%);
-    border-right: 1px solid var(--border-color);
-    border-radius: 0;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+    right: 0;
+    bottom: auto;
+    transform: translateY(-100%);
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     z-index: 1001;
@@ -4323,14 +4326,12 @@ body {
   }
   
   .sidebar.open {
-    transform: translateX(0);
+    transform: translateY(0);
   }
   
-  /* Show sidebar nav on mobile */
+  /* Hide navigation menu on mobile - use bottom nav instead */
   .sidebar-nav {
-    display: block;
-    flex: 1;
-    overflow-y: auto;
+    display: none;
   }
   
   .sidebar-header {
@@ -4338,18 +4339,33 @@ body {
     border-bottom: 1px solid var(--border-color);
   }
   
+  /* Hide footer on mobile sidebar */
   .sidebar-footer {
-    display: flex;
-    padding: 12px 16px;
-    border-top: 1px solid var(--border-color);
+    display: none;
   }
   
-  /* Show quick actions in sidebar on mobile */
+  /* Show quick actions in sidebar on mobile - this is the main content */
   .sidebar-quick-actions {
     display: block;
-    border-top: 1px solid var(--border-color);
-    padding: 12px;
-    background: var(--bg-elevated);
+    padding: 16px;
+    background: var(--bg-card);
+    flex: 1;
+  }
+  
+  .sidebar-quick-actions .sidebar-section-title {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  
+  .sidebar-action-item {
+    padding: 14px 16px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+  
+  .sidebar-action-item i:first-child {
+    font-size: 16px;
+    width: 24px;
   }
   
   /* Main content adjustments */
