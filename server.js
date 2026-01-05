@@ -198,6 +198,49 @@ async function startServer() {
     app.use('/api/translations', translationsRoutes);
     app.use('/api/database', databaseRoutes);
 
+    // Health check endpoint (no auth required)
+    const serverStartTime = Date.now();
+    app.get('/api/health', async (req, res) => {
+      try {
+        // Check database connectivity
+        const dbCheck = await db.prepare('SELECT 1 as ok').get();
+        const dbStatus = dbCheck?.ok === 1 ? 'healthy' : 'unhealthy';
+        
+        // Get system stats
+        const stats = await db.prepare(`
+          SELECT 
+            (SELECT COUNT(*) FROM people WHERE is_active = 1) as activePeople,
+            (SELECT COUNT(*) FROM projects WHERE status = 'active') as activeProjects,
+            (SELECT COUNT(*) FROM assignments WHERE date = date('now')) as todayAssignments,
+            (SELECT COUNT(*) FROM schedule_conflicts WHERE is_resolved = 0) as unresolvedConflicts
+        `).get();
+        
+        res.json({
+          status: 'healthy',
+          timestamp: new Date().toISOString(),
+          uptime: Math.floor((Date.now() - serverStartTime) / 1000),
+          version: '1.0.0',
+          environment: NODE_ENV,
+          database: {
+            status: dbStatus,
+            type: process.env.DATABASE_URL ? 'postgresql' : 'sqlite'
+          },
+          stats: {
+            activePeople: stats?.activePeople || 0,
+            activeProjects: stats?.activeProjects || 0,
+            todayAssignments: stats?.todayAssignments || 0,
+            unresolvedConflicts: stats?.unresolvedConflicts || 0
+          }
+        });
+      } catch (error) {
+        res.status(503).json({
+          status: 'unhealthy',
+          timestamp: new Date().toISOString(),
+          error: error.message
+        });
+      }
+    });
+
     // Settings endpoints
     const { authenticateToken, requireRole } = require('./backend/middleware/auth');
     

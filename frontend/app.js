@@ -4483,17 +4483,421 @@ document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
 });
 
-// Keyboard shortcuts
+// ===== Enhanced Keyboard Shortcuts =====
 document.addEventListener('keydown', (e) => {
-  // Escape to close modal
-  if (e.key === 'Escape') closeModal();
+  const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName);
+  const isModalOpen = document.getElementById('modal-overlay')?.classList.contains('active');
   
-  // ? to show help (but not when typing in an input)
-  if (e.key === '?' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+  // Escape to close modal or search
+  if (e.key === 'Escape') {
+    if (document.getElementById('global-search-modal')?.classList.contains('active')) {
+      closeGlobalSearch();
+    } else {
+      closeModal();
+    }
+    return;
+  }
+  
+  // Don't trigger shortcuts when typing
+  if (isTyping) return;
+  
+  // ? to show help
+  if (e.key === '?') {
     e.preventDefault();
     showHelp();
+    return;
+  }
+  
+  // Ctrl/Cmd + K for global search
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    openGlobalSearch();
+    return;
+  }
+  
+  // Navigation shortcuts (when not in modal)
+  if (!isModalOpen) {
+    // G then key for "Go to" navigation
+    if (e.key === 'g') {
+      window.pendingGoTo = true;
+      setTimeout(() => { window.pendingGoTo = false; }, 1000);
+      return;
+    }
+    
+    if (window.pendingGoTo) {
+      window.pendingGoTo = false;
+      e.preventDefault();
+      switch (e.key) {
+        case 'd': switchView('dashboard'); break;
+        case 's': switchView('schedule'); break;
+        case 'p': switchView('people'); break;
+        case 'j': switchView('projects'); break;
+        case 'k': switchView('skills'); break;
+        case 'r': switchView('reports'); break;
+        case 'a': switchView('ai-scheduler'); break;
+        case 'c': switchView('conflicts'); break;
+      }
+      return;
+    }
+    
+    // N for new (context-aware)
+    if (e.key === 'n' && canEdit()) {
+      e.preventDefault();
+      switch (state.currentView) {
+        case 'schedule': showAddAssignmentModal(); break;
+        case 'people': showAddPersonModal(); break;
+        case 'projects': showAddProjectModal(); break;
+        case 'skills': showAddSkillModal(); break;
+      }
+      return;
+    }
+    
+    // Arrow keys for date navigation in schedule
+    if (state.currentView === 'schedule') {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        document.getElementById('prev-date')?.click();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        document.getElementById('next-date')?.click();
+      } else if (e.key === 't') {
+        e.preventDefault();
+        document.getElementById('today-btn')?.click();
+      }
+    }
   }
 });
+
+// ===== Global Search =====
+function openGlobalSearch() {
+  let modal = document.getElementById('global-search-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'global-search-modal';
+    modal.className = 'global-search-modal';
+    modal.innerHTML = `
+      <div class="global-search-content">
+        <div class="global-search-header">
+          <i class="fas fa-search"></i>
+          <input type="text" id="global-search-input" placeholder="${t('common.search')}... (${t('common.people')}, ${t('common.projects')}, ${t('common.skills')})" autocomplete="off">
+          <kbd>ESC</kbd>
+        </div>
+        <div id="global-search-results" class="global-search-results">
+          <div class="search-hint">
+            <p><kbd>↑</kbd><kbd>↓</kbd> ${t('common.navigate')} • <kbd>Enter</kbd> ${t('common.select')} • <kbd>ESC</kbd> ${t('common.close')}</p>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeGlobalSearch();
+    });
+    
+    // Search input handler
+    const input = document.getElementById('global-search-input');
+    let debounceTimer;
+    input.addEventListener('input', (e) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => performGlobalSearch(e.target.value), 300);
+    });
+    
+    // Keyboard navigation in results
+    input.addEventListener('keydown', (e) => {
+      const results = document.querySelectorAll('.search-result-item');
+      const active = document.querySelector('.search-result-item.active');
+      let index = Array.from(results).indexOf(active);
+      
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (index < results.length - 1) {
+          active?.classList.remove('active');
+          results[index + 1].classList.add('active');
+          results[index + 1].scrollIntoView({ block: 'nearest' });
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (index > 0) {
+          active?.classList.remove('active');
+          results[index - 1].classList.add('active');
+          results[index - 1].scrollIntoView({ block: 'nearest' });
+        }
+      } else if (e.key === 'Enter' && active) {
+        e.preventDefault();
+        active.click();
+      }
+    });
+  }
+  
+  modal.classList.add('active');
+  document.getElementById('global-search-input').value = '';
+  document.getElementById('global-search-input').focus();
+  document.getElementById('global-search-results').innerHTML = `
+    <div class="search-hint">
+      <p><kbd>↑</kbd><kbd>↓</kbd> to navigate • <kbd>Enter</kbd> to select • <kbd>ESC</kbd> to close</p>
+      <div class="search-shortcuts">
+        <span><kbd>G</kbd> then <kbd>D</kbd> Dashboard</span>
+        <span><kbd>G</kbd> then <kbd>S</kbd> Schedule</span>
+        <span><kbd>G</kbd> then <kbd>P</kbd> People</span>
+        <span><kbd>G</kbd> then <kbd>J</kbd> Projects</span>
+        <span><kbd>N</kbd> New item</span>
+      </div>
+    </div>
+  `;
+}
+
+function closeGlobalSearch() {
+  document.getElementById('global-search-modal')?.classList.remove('active');
+}
+
+async function performGlobalSearch(query) {
+  const resultsDiv = document.getElementById('global-search-results');
+  
+  if (!query || query.length < 2) {
+    resultsDiv.innerHTML = `
+      <div class="search-hint">
+        <p>Type at least 2 characters to search...</p>
+      </div>
+    `;
+    return;
+  }
+  
+  resultsDiv.innerHTML = '<div class="search-loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+  
+  try {
+    const [people, projects, skills] = await Promise.all([
+      api(`/people?search=${encodeURIComponent(query)}&limit=5`),
+      api(`/projects?search=${encodeURIComponent(query)}&limit=5`),
+      api(`/skills?search=${encodeURIComponent(query)}&limit=5`)
+    ]);
+    
+    let html = '';
+    
+    if (people.data?.length > 0) {
+      html += `<div class="search-category"><h4><i class="fas fa-users"></i> ${t('common.people')}</h4>`;
+      html += people.data.map(p => `
+        <div class="search-result-item" onclick="closeGlobalSearch(); switchView('people'); setTimeout(() => showPersonDetails(${p.id}), 100);">
+          <div class="result-avatar">${p.firstName.charAt(0)}${p.lastName.charAt(0)}</div>
+          <div class="result-info">
+            <span class="result-name">${p.firstName} ${p.lastName}</span>
+            <span class="result-sub">${p.department || p.email}</span>
+          </div>
+        </div>
+      `).join('');
+      html += '</div>';
+    }
+    
+    if (projects.data?.length > 0) {
+      html += `<div class="search-category"><h4><i class="fas fa-folder"></i> ${t('common.projects')}</h4>`;
+      html += projects.data.map(p => `
+        <div class="search-result-item" onclick="closeGlobalSearch(); switchView('projects'); setTimeout(() => showProjectDetails(${p.id}), 100);">
+          <div class="result-avatar" style="background: ${p.color}">${p.name.substring(0, 2).toUpperCase()}</div>
+          <div class="result-info">
+            <span class="result-name">${p.name}</span>
+            <span class="result-sub">${p.client || p.status}</span>
+          </div>
+        </div>
+      `).join('');
+      html += '</div>';
+    }
+    
+    if (skills.data?.length > 0) {
+      html += `<div class="search-category"><h4><i class="fas fa-star"></i> ${t('common.skills')}</h4>`;
+      html += skills.data.map(s => `
+        <div class="search-result-item" onclick="closeGlobalSearch(); switchView('skills'); setTimeout(() => showSkillDetails(${s.id}), 100);">
+          <div class="result-avatar" style="background: ${s.color}20; color: ${s.color}">${s.name.charAt(0)}</div>
+          <div class="result-info">
+            <span class="result-name">${s.name}</span>
+            <span class="result-sub">${s.category || 'No category'} • ${s.personCount} people</span>
+          </div>
+        </div>
+      `).join('');
+      html += '</div>';
+    }
+    
+    if (!html) {
+      html = `<div class="search-empty"><i class="fas fa-search"></i><p>No results found for "${query}"</p></div>`;
+    } else {
+      // Add active class to first result
+      html = html.replace('search-result-item"', 'search-result-item active"');
+    }
+    
+    resultsDiv.innerHTML = html;
+  } catch (error) {
+    resultsDiv.innerHTML = `<div class="search-error"><i class="fas fa-exclamation-circle"></i> Search failed</div>`;
+  }
+}
+
+// ===== Calendar Export (.ics) =====
+async function exportToCalendar(type = 'week') {
+  try {
+    const startDate = state.scheduleDate;
+    const endDate = new Date(startDate);
+    if (type === 'week') endDate.setDate(endDate.getDate() + 7);
+    const endDateStr = endDate.toISOString().split('T')[0];
+    
+    const data = await api(`/assignments?startDate=${startDate}&endDate=${endDateStr}`);
+    
+    let icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Resource Scheduler//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'X-WR-CALNAME:Work Schedule'
+    ];
+    
+    for (const assignment of data.data) {
+      const startDateTime = `${assignment.date.replace(/-/g, '')}T${String(assignment.startHour).padStart(2, '0')}0000`;
+      const endDateTime = `${assignment.date.replace(/-/g, '')}T${String(assignment.endHour).padStart(2, '0')}0000`;
+      const uid = `${assignment.id}@scheduler`;
+      
+      icsContent.push(
+        'BEGIN:VEVENT',
+        `UID:${uid}`,
+        `DTSTART:${startDateTime}`,
+        `DTEND:${endDateTime}`,
+        `SUMMARY:${assignment.projectName} - ${assignment.personName}`,
+        `DESCRIPTION:${assignment.taskDescription || 'Scheduled work'}`,
+        `STATUS:CONFIRMED`,
+        'END:VEVENT'
+      );
+    }
+    
+    icsContent.push('END:VCALENDAR');
+    
+    const blob = new Blob([icsContent.join('\r\n')], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `schedule-${startDate}.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('Calendar exported successfully');
+  } catch (error) {
+    showToast('Failed to export calendar', 'error');
+  }
+}
+
+// ===== Auto-refresh for real-time updates =====
+let autoRefreshInterval = null;
+
+function startAutoRefresh(intervalMs = 60000) {
+  stopAutoRefresh();
+  autoRefreshInterval = setInterval(() => {
+    if (document.visibilityState === 'visible' && state.token) {
+      switch (state.currentView) {
+        case 'dashboard': loadDashboard(); break;
+        case 'schedule': loadSchedule(); break;
+        case 'conflicts': loadConflicts(); break;
+      }
+    }
+  }, intervalMs);
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+  }
+}
+
+// Start auto-refresh when logged in
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && state.token) {
+    // Refresh current view when tab becomes visible
+    switchView(state.currentView);
+  }
+});
+
+// ===== Smart Confirmation Dialogs =====
+const confirmPreferences = JSON.parse(localStorage.getItem('scheduler_confirm_prefs') || '{}');
+
+function showSmartConfirm(options) {
+  return new Promise((resolve) => {
+    const {
+      title = 'Confirm Action',
+      message = 'Are you sure?',
+      confirmText = 'Confirm',
+      cancelText = 'Cancel',
+      type = 'warning', // warning, danger, info
+      rememberKey = null, // Key to remember preference
+      dangerous = false
+    } = options;
+    
+    // Check if user has remembered preference
+    if (rememberKey && confirmPreferences[rememberKey]) {
+      resolve(true);
+      return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'smart-confirm-overlay';
+    modal.innerHTML = `
+      <div class="smart-confirm-dialog ${type}">
+        <div class="smart-confirm-icon">
+          <i class="fas fa-${type === 'danger' ? 'exclamation-triangle' : type === 'warning' ? 'question-circle' : 'info-circle'}"></i>
+        </div>
+        <h3>${title}</h3>
+        <p>${message}</p>
+        ${rememberKey ? `
+          <label class="smart-confirm-remember">
+            <input type="checkbox" id="confirm-remember">
+            <span>${t('common.dontAskAgain') || "Don't ask me again"}</span>
+          </label>
+        ` : ''}
+        <div class="smart-confirm-actions">
+          <button class="btn btn-secondary cancel-btn">${cancelText}</button>
+          <button class="btn ${dangerous ? 'btn-danger' : 'btn-primary'} confirm-btn">${confirmText}</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Animate in
+    requestAnimationFrame(() => modal.classList.add('active'));
+    
+    const cleanup = (result) => {
+      modal.classList.remove('active');
+      setTimeout(() => modal.remove(), 200);
+      resolve(result);
+    };
+    
+    modal.querySelector('.cancel-btn').onclick = () => cleanup(false);
+    modal.querySelector('.confirm-btn').onclick = () => {
+      if (rememberKey && document.getElementById('confirm-remember')?.checked) {
+        confirmPreferences[rememberKey] = true;
+        localStorage.setItem('scheduler_confirm_prefs', JSON.stringify(confirmPreferences));
+      }
+      cleanup(true);
+    };
+    
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) cleanup(false);
+    });
+    
+    // Close on Escape
+    const escHandler = (e) => {
+      if (e.key === 'Escape') {
+        cleanup(false);
+        document.removeEventListener('keydown', escHandler);
+      }
+    };
+    document.addEventListener('keydown', escHandler);
+  });
+}
+
+// Function to reset confirmation preferences
+function resetConfirmPreferences() {
+  localStorage.removeItem('scheduler_confirm_prefs');
+  Object.keys(confirmPreferences).forEach(key => delete confirmPreferences[key]);
+  showToast('Confirmation preferences reset');
+}
 
 // Help button click
 document.getElementById('help-btn')?.addEventListener('click', showHelp);

@@ -57,6 +57,12 @@
     "info": "Information",
     "noSkills": "No skills",
     "loadError": "Failed to load data",
+    "navigate": "to navigate",
+    "select": "to select",
+    "people": "People",
+    "projects": "Projects",
+    "skills": "Skills",
+    "dontAskAgain": "Don't ask me again",
     "startDate": "Start Date",
     "endDate": "End Date",
     "saveChanges": "Save Changes",
@@ -125,7 +131,9 @@
     "noSkillData": "No skill data",
     "availableEmployees": "Available Employees",
     "allEmployeesBusy": "All employees are fully scheduled today",
-    "available": "available"
+    "available": "available",
+    "quickActions": "Quick Actions",
+    "exportCalendar": "Export Calendar"
   },
   "people": {
     "title": "People Management",
