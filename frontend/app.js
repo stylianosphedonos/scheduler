@@ -3026,10 +3026,11 @@ async function loadGroups() {
     if (search) url += `search=${encodeURIComponent(search)}&`;
     
     const response = await api(url);
-    renderGroups(response.data);
+    renderGroups(response.data || []);
   } catch (error) {
     console.error('Error loading groups:', error);
     showToast(t('common.error') || 'Error loading groups', 'error');
+    renderGroups([]);
   }
 }
 
@@ -3037,7 +3038,7 @@ function renderGroups(groups) {
   const grid = document.getElementById('groups-grid');
   if (!grid) return;
   
-  if (!groups || groups.length === 0) {
+  if (!groups || !Array.isArray(groups) || groups.length === 0) {
     grid.innerHTML = `
       <div class="empty-state">
         <i class="fas fa-users-cog"></i>
