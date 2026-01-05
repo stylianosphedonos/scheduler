@@ -1215,6 +1215,77 @@ async function api(endpoint, options = {}) {
   return data;
 }
 
+// ===== Location Utilities =====
+function extractCoordinates(input) {
+  setTimeout(() => {
+    const url = input.value;
+    if (!url) return;
+    
+    // Try to extract coordinates from various Google Maps URL formats
+    let lat, lng;
+    
+    // Format: @lat,lng,zoom
+    let match = url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+    if (match) {
+      lat = parseFloat(match[1]);
+      lng = parseFloat(match[2]);
+    }
+    
+    // Format: ?q=lat,lng or place/lat,lng
+    if (!lat) {
+      match = url.match(/[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+      if (match) {
+        lat = parseFloat(match[1]);
+        lng = parseFloat(match[2]);
+      }
+    }
+    
+    // Format: ll=lat,lng
+    if (!lat) {
+      match = url.match(/ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+      if (match) {
+        lat = parseFloat(match[1]);
+        lng = parseFloat(match[2]);
+      }
+    }
+    
+    // Format: /place/.../@lat,lng or maps/place/.../@lat,lng
+    if (!lat) {
+      match = url.match(/place\/[^@]*@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+      if (match) {
+        lat = parseFloat(match[1]);
+        lng = parseFloat(match[2]);
+      }
+    }
+    
+    if (lat && lng) {
+      // Find the form and update lat/lng fields
+      const form = input.closest('form');
+      if (form) {
+        const latInput = form.querySelector('[name="locationLat"]');
+        const lngInput = form.querySelector('[name="locationLng"]');
+        if (latInput) latInput.value = lat;
+        if (lngInput) lngInput.value = lng;
+        showToast(t('projects.coordinatesExtracted') || 'Coordinates extracted from link', 'success');
+      }
+    }
+  }, 100);
+}
+
+// Calculate distance between two coordinates in km (Haversine formula)
+function calculateDistance(lat1, lng1, lat2, lng2) {
+  if (!lat1 || !lng1 || !lat2 || !lng2) return null;
+  
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
 // ===== Toast Notifications =====
 function showToast(message, type = 'success') {
   const container = document.getElementById('toast-container');
@@ -2316,16 +2387,17 @@ async function loadProjects() {
         </div>
         <div class="grid-card-body">
           <span class="status-badge ${p.status}">${p.status}</span>
-          <span class="tag" style="margin-left: 8px;">${p.priority} priority</span>
+          <span class="tag" style="margin-left: 8px;">${p.priority} ${t('projects.priorityLabel') || 'priority'}</span>
+          ${p.location_name ? `<span class="tag" style="margin-left: 8px;"><i class="fas fa-map-marker-alt"></i> ${p.location_name}</span>` : ''}
         </div>
         <div class="grid-card-footer">
           <div class="grid-card-stat">
             <span class="grid-card-stat-value">${p.assignedPeople}</span>
-            <span class="grid-card-stat-label">People</span>
+            <span class="grid-card-stat-label">${t('common.people') || 'People'}</span>
           </div>
           <div class="grid-card-stat">
             <span class="grid-card-stat-value">${p.assignmentCount}</span>
-            <span class="grid-card-stat-label">Assignments</span>
+            <span class="grid-card-stat-label">${t('nav.assignments') || 'Assignments'}</span>
           </div>
         </div>
       </div>
@@ -2343,26 +2415,40 @@ async function showProjectDetails(id) {
     showModal(project.name, `
       <div class="project-details">
         <div class="detail-row">
-          <span class="detail-label">Status</span>
+          <span class="detail-label">${t('projects.status') || 'Status'}</span>
           <span class="status-badge ${project.status}">${project.status}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Priority</span>
+          <span class="detail-label">${t('projects.priority') || 'Priority'}</span>
           <span class="detail-value">${project.priority}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Client</span>
+          <span class="detail-label">${t('projects.client') || 'Client'}</span>
           <span class="detail-value">${project.client || '-'}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Budget Hours</span>
+          <span class="detail-label">${t('projects.budgetHours') || 'Budget Hours'}</span>
           <span class="detail-value">${project.budgetHours || '-'}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Hours Used</span>
+          <span class="detail-label">${t('projects.hoursUsed') || 'Hours Used'}</span>
           <span class="detail-value">${project.statistics?.totalHours || 0}</span>
         </div>
-        <h4 style="margin: 20px 0 10px;"><i class="fas fa-users"></i> Required Skills & Staffing</h4>
+        ${project.location_name ? `
+          <h4 style="margin: 20px 0 10px;"><i class="fas fa-map-marker-alt"></i> ${t('projects.location') || 'Location'}</h4>
+          <div class="detail-row">
+            <span class="detail-label">${t('projects.locationName') || 'Location Name'}</span>
+            <span class="detail-value">${project.location_name}</span>
+          </div>
+          ${project.location_url ? `
+            <div class="detail-row">
+              <a href="${project.location_url}" target="_blank" class="btn btn-secondary btn-sm">
+                <i class="fas fa-map-marker-alt"></i> ${t('projects.viewOnMap') || 'View on Google Maps'}
+              </a>
+            </div>
+          ` : ''}
+        ` : ''}
+        <h4 style="margin: 20px 0 10px;"><i class="fas fa-users"></i> ${t('projects.requiredSkillsStaffing') || 'Required Skills & Staffing'}</h4>
         ${!project.skills || project.skills.length === 0 ? `<p class="text-muted">${t('projects.noSkillRequirements')}</p>` : `
           <div class="skill-requirements-list">
             ${project.skills.map(s => `
@@ -2505,6 +2591,29 @@ async function showAddProjectModal() {
         </div>
         
         <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+          <i class="fas fa-map-marker-alt"></i> ${t('projects.location') || 'Location'}
+        </h4>
+        <div class="form-group">
+          <label>${t('projects.locationName') || 'Location Name'}</label>
+          <input type="text" name="locationName" placeholder="${t('projects.locationNamePlaceholder') || 'e.g., Main Office, Client Site A'}">
+        </div>
+        <div class="form-group">
+          <label>${t('projects.locationUrl') || 'Google Maps Link'}</label>
+          <input type="url" name="locationUrl" placeholder="${t('projects.locationUrlPlaceholder') || 'Paste Google Maps link here'}" onpaste="extractCoordinates(this)">
+          <small class="text-muted">${t('projects.locationUrlHint') || 'Paste a Google Maps link - coordinates will be extracted automatically'}</small>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>${t('projects.latitude') || 'Latitude'}</label>
+            <input type="number" name="locationLat" step="0.0000001" placeholder="e.g., 35.1856">
+          </div>
+          <div class="form-group">
+            <label>${t('projects.longitude') || 'Longitude'}</label>
+            <input type="number" name="locationLng" step="0.0000001" placeholder="e.g., 33.3823">
+          </div>
+        </div>
+        
+        <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
           <i class="fas fa-users"></i> ${t('projects.skillRequirements') || 'Skill Requirements'}
         </h4>
         <p class="text-muted" style="margin-bottom: 15px; font-size: 0.85rem;">
@@ -2584,6 +2693,10 @@ async function showAddProjectModal() {
         startDate: formData.get('startDate'),
         endDate: formData.get('endDate'),
         budgetHours: formData.get('budgetHours') ? parseInt(formData.get('budgetHours')) : null,
+        locationName: formData.get('locationName'),
+        locationUrl: formData.get('locationUrl'),
+        locationLat: formData.get('locationLat') ? parseFloat(formData.get('locationLat')) : null,
+        locationLng: formData.get('locationLng') ? parseFloat(formData.get('locationLng')) : null,
         skills
       };
       
@@ -2593,7 +2706,7 @@ async function showAddProjectModal() {
           body: JSON.stringify(data)
         });
         closeModal();
-        showToast('Project created successfully');
+        showToast(t('projects.projectCreated') || 'Project created successfully');
         loadProjects();
       } catch (error) {
         showToast(error.message, 'error');
@@ -2669,15 +2782,45 @@ async function editProject(id) {
           </div>
         </div>
         <div class="form-group">
-          <label>Budget Hours</label>
+          <label>${t('projects.budgetHours') || 'Budget Hours'}</label>
           <input type="number" name="budgetHours" value="${project.budgetHours || ''}" min="0">
         </div>
         
         <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-          <i class="fas fa-users"></i> Skill Requirements
+          <i class="fas fa-map-marker-alt"></i> ${t('projects.location') || 'Location'}
+        </h4>
+        <div class="form-group">
+          <label>${t('projects.locationName') || 'Location Name'}</label>
+          <input type="text" name="locationName" value="${project.location_name || ''}" placeholder="${t('projects.locationNamePlaceholder') || 'e.g., Main Office, Client Site A'}">
+        </div>
+        <div class="form-group">
+          <label>${t('projects.locationUrl') || 'Google Maps Link'}</label>
+          <input type="url" name="locationUrl" value="${project.location_url || ''}" placeholder="${t('projects.locationUrlPlaceholder') || 'Paste Google Maps link here'}" onpaste="extractCoordinates(this)">
+          <small class="text-muted">${t('projects.locationUrlHint') || 'Paste a Google Maps link - coordinates will be extracted automatically'}</small>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>${t('projects.latitude') || 'Latitude'}</label>
+            <input type="number" name="locationLat" value="${project.location_lat || ''}" step="0.0000001" placeholder="e.g., 35.1856">
+          </div>
+          <div class="form-group">
+            <label>${t('projects.longitude') || 'Longitude'}</label>
+            <input type="number" name="locationLng" value="${project.location_lng || ''}" step="0.0000001" placeholder="e.g., 33.3823">
+          </div>
+        </div>
+        ${project.location_url ? `
+          <div class="form-group">
+            <a href="${project.location_url}" target="_blank" class="btn btn-secondary btn-sm">
+              <i class="fas fa-map-marker-alt"></i> ${t('projects.viewOnMap') || 'View on Google Maps'}
+            </a>
+          </div>
+        ` : ''}
+        
+        <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+          <i class="fas fa-users"></i> ${t('projects.skillRequirements') || 'Skill Requirements'}
         </h4>
         <p class="text-muted" style="margin-bottom: 15px; font-size: 0.85rem;">
-          Specify which skills are needed and how many people with each skill
+          ${t('projects.skillRequirementsHint') || 'Specify which skills are needed and how many people with each skill'}
         </p>
         
         <div id="project-skills-list" class="project-skills-list">
@@ -2756,7 +2899,11 @@ async function editProject(id) {
         priority: formData.get('priority'),
         startDate: formData.get('startDate') || null,
         endDate: formData.get('endDate') || null,
-        budgetHours: formData.get('budgetHours') ? parseFloat(formData.get('budgetHours')) : null
+        budgetHours: formData.get('budgetHours') ? parseFloat(formData.get('budgetHours')) : null,
+        locationName: formData.get('locationName') || null,
+        locationUrl: formData.get('locationUrl') || null,
+        locationLat: formData.get('locationLat') ? parseFloat(formData.get('locationLat')) : null,
+        locationLng: formData.get('locationLng') ? parseFloat(formData.get('locationLng')) : null
       };
       
       try {

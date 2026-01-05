@@ -26,9 +26,10 @@ router.post('/suggest', authenticateToken, requireRole('admin', 'scheduler'), as
     const targetEndDate = endDate || startDate;
     const suggestions = [];
 
-    // Get active projects with their skill requirements
+    // Get active projects with their skill requirements and location
     let projectQuery = `
       SELECT p.id, p.name, p.code, p.priority, p.color, p.budget_hours,
+        p.location_name, p.location_url, p.location_lat, p.location_lng,
         (SELECT SUM(end_hour - start_hour) FROM assignments WHERE project_id = p.id AND status != 'cancelled') as hours_used
       FROM projects p 
       WHERE p.status = 'active'
@@ -455,13 +456,17 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
         FROM person_skills WHERE person_id = ?
       `).all(person.id);
       
+      // Get person's assigned locations for the day (from existing assignments)
+      const assignedLocations = await getAssignedLocations(db, person.id, date);
+      
       personAvailability.set(person.id, {
         ...person,
         hoursRemaining,
         maxHoursPerDay: person.max_hours_per_day,
         projectsRemaining,
         skills: new Map(skills.map(s => [s.skill_id, s.proficiency_level])),
-        assignedHours: await getAssignedHours(db, person.id, date)
+        assignedHours: await getAssignedHours(db, person.id, date),
+        assignedLocations: assignedLocations // Track locations person is already assigned to
       });
     }
   }
@@ -525,6 +530,12 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
 
       // Find qualified people
       const qualifiedPeople = [];
+      const projectLocation = {
+        lat: project.location_lat,
+        lng: project.location_lng,
+        name: project.location_name
+      };
+      
       for (const [personId, person] of personAvailability) {
         const proficiency = person.skills.get(skillReq.skill_id);
         if (proficiency && proficiency >= skillReq.required_proficiency) {
@@ -532,7 +543,7 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
             personId,
             person,
             proficiency,
-            score: calculateMatchScore(person, skillReq, proficiency)
+            score: calculateMatchScore(person, skillReq, proficiency, projectLocation)
           });
         }
       }
@@ -572,6 +583,8 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
           projectCode: project.code,
           projectColor: project.color,
           projectPriority: project.priority,
+          projectLocation: project.location_name,
+          projectLocationUrl: project.location_url,
           personId: match.personId,
           personName: `${person.first_name} ${person.last_name}`,
           department: person.department,
@@ -585,13 +598,18 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
           duration: duration,
           matchScore: match.score,
           isMandatory: !!skillReq.is_mandatory,
-          reason: generateReason(match, skillReq, project)
+          reason: generateReason(match, skillReq, project, projectLocation, person)
         });
 
         // Update person availability
         person.hoursRemaining -= duration;
         person.projectsRemaining--;
         person.assignedHours.push({ start: slot.start, end: slot.end });
+        
+        // Track this location for the person (for location-based scheduling)
+        if (projectLocation.lat && projectLocation.lng) {
+          person.assignedLocations.push(projectLocation);
+        }
         
         // Update project budget tracking
         projectBudgetRemaining.set(project.id, currentBudgetRemaining - duration);
@@ -651,22 +669,73 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
 
 /**
  * Calculate match score for a person-skill-project combination
+ * Considers proficiency, availability, project diversity, and location proximity
  */
-function calculateMatchScore(person, skillReq, proficiency) {
+function calculateMatchScore(person, skillReq, proficiency, projectLocation) {
   let score = 0;
   
-  // Proficiency bonus (0-50 points)
+  // Proficiency bonus (0-40 points)
   score += (proficiency - skillReq.required_proficiency + 1) * 10;
-  score = Math.min(score, 50);
+  score = Math.min(score, 40);
   
-  // Availability bonus (0-30 points) - prefer people with more hours remaining
-  score += Math.min(person.hoursRemaining * 5, 30);
+  // Availability bonus (0-25 points) - prefer people with more hours remaining
+  score += Math.min(person.hoursRemaining * 5, 25);
   
-  // Project diversity bonus (0-20 points) - prefer people with fewer projects
-  score += (person.max_projects_per_day - person.projects_assigned) * 10;
-  score = Math.min(score, 20);
+  // Project diversity bonus (0-15 points) - prefer people with fewer projects
+  score += (person.max_projects_per_day - person.projects_assigned) * 5;
+  score = Math.min(score, 15);
+  
+  // Location proximity bonus (0-20 points)
+  // Strongly prefer people already assigned to nearby locations
+  if (projectLocation && projectLocation.lat && projectLocation.lng && person.assignedLocations && person.assignedLocations.length > 0) {
+    let minDistance = Infinity;
+    
+    for (const loc of person.assignedLocations) {
+      if (loc.lat && loc.lng) {
+        const distance = calculateDistance(projectLocation.lat, projectLocation.lng, loc.lat, loc.lng);
+        if (distance < minDistance) {
+          minDistance = distance;
+        }
+      }
+    }
+    
+    // Score based on distance:
+    // Same location (< 0.5 km): 20 points
+    // Very close (< 2 km): 15 points  
+    // Close (< 5 km): 10 points
+    // Moderate (< 15 km): 5 points
+    // Far: 0 points
+    if (minDistance < 0.5) {
+      score += 20;
+    } else if (minDistance < 2) {
+      score += 15;
+    } else if (minDistance < 5) {
+      score += 10;
+    } else if (minDistance < 15) {
+      score += 5;
+    }
+  } else if (!person.assignedLocations || person.assignedLocations.length === 0) {
+    // Person has no location assignments yet - neutral score (10 points)
+    score += 10;
+  }
   
   return Math.round(score);
+}
+
+/**
+ * Calculate distance between two coordinates in km (Haversine formula)
+ */
+function calculateDistance(lat1, lng1, lat2, lng2) {
+  if (!lat1 || !lng1 || !lat2 || !lng2) return Infinity;
+  
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
 }
 
 /**
@@ -712,9 +781,28 @@ async function getAssignedHours(db, personId, date) {
 }
 
 /**
+ * Get assigned locations for a person on a date (from existing assignments)
+ */
+async function getAssignedLocations(db, personId, date) {
+  const assignments = await db.prepare(`
+    SELECT DISTINCT p.location_name, p.location_lat, p.location_lng
+    FROM assignments a
+    JOIN projects p ON a.project_id = p.id
+    WHERE a.person_id = ? AND a.date = ? AND a.status != 'cancelled'
+    AND p.location_lat IS NOT NULL AND p.location_lng IS NOT NULL
+  `).all(personId, date);
+  
+  return assignments.map(a => ({ 
+    name: a.location_name,
+    lat: a.location_lat, 
+    lng: a.location_lng 
+  }));
+}
+
+/**
  * Generate human-readable reason for the suggestion
  */
-function generateReason(match, skillReq, project) {
+function generateReason(match, skillReq, project, projectLocation, person) {
   const reasons = [];
   
   if (match.proficiency > skillReq.required_proficiency) {
@@ -725,6 +813,28 @@ function generateReason(match, skillReq, project) {
   
   if (project.priority === 'critical' || project.priority === 'high') {
     reasons.push(`High priority project`);
+  }
+  
+  // Add location-based reasoning
+  if (projectLocation && projectLocation.lat && projectLocation.lng && person.assignedLocations && person.assignedLocations.length > 0) {
+    let minDistance = Infinity;
+    let closestLocation = null;
+    
+    for (const loc of person.assignedLocations) {
+      if (loc.lat && loc.lng) {
+        const distance = calculateDistance(projectLocation.lat, projectLocation.lng, loc.lat, loc.lng);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestLocation = loc.name;
+        }
+      }
+    }
+    
+    if (minDistance < 0.5) {
+      reasons.push(`Same location${closestLocation ? ` (${closestLocation})` : ''}`);
+    } else if (minDistance < 5) {
+      reasons.push(`Near other assignment (${minDistance.toFixed(1)} km away)`);
+    }
   }
   
   if (match.score >= 70) {

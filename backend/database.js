@@ -276,6 +276,10 @@ function getSQLiteSchema() {
       actual_hours REAL DEFAULT 0,
       manager_id INTEGER,
       is_billable INTEGER DEFAULT 1,
+      location_name TEXT,
+      location_url TEXT,
+      location_lat REAL,
+      location_lng REAL,
       notes TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -547,6 +551,10 @@ function getPostgresSchema() {
       actual_hours DECIMAL(10,2) DEFAULT 0,
       manager_id INTEGER REFERENCES people(id) ON DELETE SET NULL,
       is_billable BOOLEAN DEFAULT true,
+      location_name VARCHAR(500),
+      location_url TEXT,
+      location_lat DECIMAL(10,7),
+      location_lng DECIMAL(10,7),
       notes TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -790,7 +798,12 @@ async function runPostgresMigrations(pool) {
     `ALTER TABLE skills ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
     // Add work hours to people if they don't exist
     `ALTER TABLE people ADD COLUMN IF NOT EXISTS work_start_hour INTEGER DEFAULT 9`,
-    `ALTER TABLE people ADD COLUMN IF NOT EXISTS work_end_hour INTEGER DEFAULT 17`
+    `ALTER TABLE people ADD COLUMN IF NOT EXISTS work_end_hour INTEGER DEFAULT 17`,
+    // Add location fields to projects if they don't exist
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS location_name VARCHAR(500)`,
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS location_url TEXT`,
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS location_lat DECIMAL(10,7)`,
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS location_lng DECIMAL(10,7)`
   ];
 
   for (const migration of columnMigrations) {
@@ -857,7 +870,12 @@ function runSQLiteMigrations(database) {
     { check: `PRAGMA table_info(skills)`, column: 'updated_at', sql: `ALTER TABLE skills ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP` },
     // Add work hours to people if they don't exist
     { check: `PRAGMA table_info(people)`, column: 'work_start_hour', sql: `ALTER TABLE people ADD COLUMN work_start_hour INTEGER DEFAULT 9` },
-    { check: `PRAGMA table_info(people)`, column: 'work_end_hour', sql: `ALTER TABLE people ADD COLUMN work_end_hour INTEGER DEFAULT 17` }
+    { check: `PRAGMA table_info(people)`, column: 'work_end_hour', sql: `ALTER TABLE people ADD COLUMN work_end_hour INTEGER DEFAULT 17` },
+    // Add location fields to projects if they don't exist
+    { check: `PRAGMA table_info(projects)`, column: 'location_name', sql: `ALTER TABLE projects ADD COLUMN location_name TEXT` },
+    { check: `PRAGMA table_info(projects)`, column: 'location_url', sql: `ALTER TABLE projects ADD COLUMN location_url TEXT` },
+    { check: `PRAGMA table_info(projects)`, column: 'location_lat', sql: `ALTER TABLE projects ADD COLUMN location_lat REAL` },
+    { check: `PRAGMA table_info(projects)`, column: 'location_lng', sql: `ALTER TABLE projects ADD COLUMN location_lng REAL` }
   ];
 
   for (const migration of columnMigrations) {
