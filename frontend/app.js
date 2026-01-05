@@ -1407,6 +1407,116 @@ function switchView(viewName) {
 }
 
 // ===== Dashboard =====
+// Render schedule grouped by projects
+function renderScheduleByProjects(container, schedule) {
+  if (!schedule || schedule.length === 0) {
+    container.innerHTML = `
+      <div class="schedule-empty">
+        <i class="fas fa-folder-open"></i>
+        <p>${t('dashboard.noAssignmentsToday')}</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Group assignments by project
+  const byProject = {};
+  schedule.forEach(person => {
+    person.assignments.forEach(a => {
+      if (!byProject[a.projectId]) {
+        byProject[a.projectId] = {
+          id: a.projectId,
+          name: a.projectName,
+          color: a.projectColor,
+          assignments: [],
+          totalHours: 0
+        };
+      }
+      byProject[a.projectId].assignments.push({
+        ...a,
+        personName: `${person.firstName} ${person.lastName}`
+      });
+      byProject[a.projectId].totalHours += (a.endHour - a.startHour);
+    });
+  });
+  
+  const projects = Object.values(byProject).sort((a, b) => b.totalHours - a.totalHours);
+  
+  container.innerHTML = projects.map(project => `
+    <div class="schedule-group">
+      <div class="schedule-group-header">
+        <div class="schedule-group-icon" style="background: ${project.color}">
+          ${project.name.substring(0, 2).toUpperCase()}
+        </div>
+        <div class="schedule-group-info">
+          <div class="schedule-group-name">${project.name}</div>
+          <div class="schedule-group-meta">${project.assignments.length} ${t('schedule.assignments')}</div>
+        </div>
+        <div class="schedule-group-hours">
+          <div class="hours-value">${project.totalHours}h</div>
+          <div class="hours-label">${t('common.total')}</div>
+        </div>
+      </div>
+      <div class="schedule-group-items">
+        ${project.assignments.map(a => `
+          <div class="schedule-item">
+            <span class="schedule-item-time">${String(a.startHour).padStart(2, '0')}:00 - ${String(a.endHour).padStart(2, '0')}:00</span>
+            <span class="schedule-item-badge" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;">
+              ${a.personName}
+            </span>
+            <span class="schedule-item-task">${a.taskDescription || '-'}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Render schedule grouped by employees
+function renderScheduleByEmployees(container, schedule) {
+  if (!schedule || schedule.length === 0) {
+    container.innerHTML = `
+      <div class="schedule-empty">
+        <i class="fas fa-users"></i>
+        <p>${t('dashboard.noAssignmentsToday')}</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = schedule.map(person => {
+    const totalHours = person.assignments.reduce((sum, a) => sum + (a.endHour - a.startHour), 0);
+    return `
+      <div class="schedule-group">
+        <div class="schedule-group-header">
+          <div class="schedule-group-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6)">
+            ${person.firstName.charAt(0)}${person.lastName.charAt(0)}
+          </div>
+          <div class="schedule-group-info">
+            <div class="schedule-group-name">${person.firstName} ${person.lastName}</div>
+            <div class="schedule-group-meta">${person.assignments.length} ${t('schedule.assignments')}</div>
+          </div>
+          <div class="schedule-group-hours">
+            <div class="hours-value">${totalHours}h</div>
+            <div class="hours-label">${t('common.total')}</div>
+          </div>
+        </div>
+        <div class="schedule-group-items">
+          ${person.assignments.map(a => `
+            <div class="schedule-item">
+              <span class="schedule-item-time">${String(a.startHour).padStart(2, '0')}:00 - ${String(a.endHour).padStart(2, '0')}:00</span>
+              <span class="schedule-item-badge" style="background: ${a.projectColor}20; color: ${a.projectColor}; border: 1px solid ${a.projectColor};">
+                ${a.projectName}
+              </span>
+              <span class="schedule-item-task">${a.taskDescription || '-'}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 async function loadDashboard() {
   try {
     const data = await api('/analytics/dashboard');
@@ -1426,33 +1536,17 @@ async function loadDashboard() {
       conflictBadge.classList.add('hidden');
     }
     
-    // Today's timeline
-    const timeline = document.getElementById('today-timeline');
+    // Today's schedules
     const today = new Date().toISOString().split('T')[0];
     const todaySchedule = await api(`/assignments/daily/${today}`);
     
-    if (todaySchedule.schedule.length === 0) {
-      timeline.innerHTML = `
-        <div class="empty-state">
-          <i class="fas fa-calendar-check"></i>
-          <h3>${t('dashboard.noAssignmentsToday')}</h3>
-          <p>${t('dashboard.scheduleToGetStarted')}</p>
-        </div>
-      `;
-    } else {
-      timeline.innerHTML = todaySchedule.schedule.slice(0, 10).map(person => 
-        person.assignments.map(a => `
-          <div class="timeline-item" style="border-left-color: ${a.projectColor}">
-            <span class="timeline-time">${a.startHour}:00 - ${a.endHour}:00</span>
-            <span class="timeline-person">${person.firstName} ${person.lastName}</span>
-            <span class="timeline-project">
-              <span class="color-dot" style="background: ${a.projectColor}"></span>
-              ${a.projectName}
-            </span>
-          </div>
-        `).join('')
-      ).join('');
-    }
+    // Schedule by Projects
+    const projectsContainer = document.getElementById('today-by-projects');
+    renderScheduleByProjects(projectsContainer, todaySchedule.schedule);
+    
+    // Schedule by Employees
+    const employeesContainer = document.getElementById('today-by-employees');
+    renderScheduleByEmployees(employeesContainer, todaySchedule.schedule);
     
     // Utilization chart
     const chartContainer = document.getElementById('utilization-chart');
@@ -4732,7 +4826,7 @@ async function performGlobalSearch(query) {
 
 // ===== Calendar Export (.ics) =====
 // ===== PDF Export with Preview =====
-async function showPdfExportPreview() {
+async function showPdfExportPreview(viewType = 'all') {
   try {
     const today = new Date().toISOString().split('T')[0];
     const endDate = new Date();
@@ -4753,11 +4847,18 @@ async function showPdfExportPreview() {
     // Sort dates
     const sortedDates = Object.keys(byDate).sort();
     
+    // Determine title based on view type
+    const viewTitles = {
+      'projects': t('dashboard.scheduleByProjects') || 'Schedule by Projects',
+      'employees': t('dashboard.scheduleByEmployees') || 'Schedule by Employees',
+      'all': t('dashboard.exportPdf') || 'Export Schedule to PDF'
+    };
+    
     // Build preview HTML
     let previewHtml = `
       <div class="pdf-preview-container">
         <div class="pdf-preview-header">
-          <h3><i class="fas fa-file-pdf"></i> ${t('dashboard.exportPdf') || 'Export Schedule to PDF'}</h3>
+          <h3><i class="fas fa-file-pdf"></i> ${viewTitles[viewType]}</h3>
           <p>${t('dashboard.pdfPreviewDesc') || 'Preview your schedule before exporting'}</p>
         </div>
         
@@ -4766,13 +4867,14 @@ async function showPdfExportPreview() {
           <input type="date" id="pdf-start-date" value="${today}">
           <label>${t('common.endDate') || 'End Date'}:</label>
           <input type="date" id="pdf-end-date" value="${endDateStr}">
+          <input type="hidden" id="pdf-view-type" value="${viewType}">
           <button class="btn btn-secondary btn-sm" onclick="refreshPdfPreview()">
             <i class="fas fa-sync-alt"></i> ${t('common.refresh') || 'Refresh'}
           </button>
         </div>
         
         <div class="pdf-preview-document" id="pdf-preview-content">
-          ${generatePdfPreviewContent(sortedDates, byDate)}
+          ${generatePdfPreviewContent(sortedDates, byDate, viewType)}
         </div>
         
         <div class="pdf-preview-actions">
@@ -4786,13 +4888,13 @@ async function showPdfExportPreview() {
       </div>
     `;
     
-    showModal(t('dashboard.exportPdf') || 'Export to PDF', previewHtml, 'pdf-export-modal');
+    showModal(viewTitles[viewType], previewHtml, 'pdf-export-modal');
   } catch (error) {
     showToast(t('common.loadError') || 'Failed to load data', 'error');
   }
 }
 
-function generatePdfPreviewContent(sortedDates, byDate) {
+function generatePdfPreviewContent(sortedDates, byDate, viewType = 'all') {
   if (sortedDates.length === 0) {
     return `
       <div class="pdf-empty">
@@ -4802,52 +4904,167 @@ function generatePdfPreviewContent(sortedDates, byDate) {
     `;
   }
   
+  // Determine title based on view type
+  const titleMap = {
+    'projects': t('dashboard.scheduleByProjects') || 'Schedule by Projects',
+    'employees': t('dashboard.scheduleByEmployees') || 'Schedule by Employees',
+    'all': t('nav.schedule') || 'Work Schedule'
+  };
+  
   let html = `
     <div class="pdf-document">
       <div class="pdf-title">
-        <h1>${t('nav.schedule') || 'Work Schedule'}</h1>
+        <h1>${titleMap[viewType]}</h1>
         <p>${t('common.generatedOn') || 'Generated on'}: ${new Date().toLocaleDateString()}</p>
       </div>
   `;
   
-  for (const date of sortedDates) {
-    const dayName = new Date(date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const dayAssignments = byDate[date];
-    
-    html += `
-      <div class="pdf-day-section">
-        <h2 class="pdf-day-header">${dayName}</h2>
-        <table class="pdf-schedule-table">
-          <thead>
-            <tr>
-              <th>${t('common.person') || 'Person'}</th>
-              <th>${t('common.project') || 'Project'}</th>
-              <th>${t('common.time') || 'Time'}</th>
-              <th>${t('schedule.hours') || 'Hours'}</th>
-              <th>${t('schedule.task') || 'Task'}</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
-    
-    for (const a of dayAssignments) {
-      const hours = a.endHour - a.startHour;
-      html += `
-        <tr>
-          <td>${a.personName}</td>
-          <td><span class="pdf-project-badge" style="background: ${a.projectColor}20; color: ${a.projectColor}; border: 1px solid ${a.projectColor}">${a.projectName}</span></td>
-          <td>${String(a.startHour).padStart(2, '0')}:00 - ${String(a.endHour).padStart(2, '0')}:00</td>
-          <td>${hours}h</td>
-          <td>${a.taskDescription || '-'}</td>
-        </tr>
-      `;
+  if (viewType === 'projects') {
+    // Group all assignments by project across all dates
+    const byProject = {};
+    for (const date of sortedDates) {
+      for (const a of byDate[date]) {
+        if (!byProject[a.projectId]) {
+          byProject[a.projectId] = {
+            name: a.projectName,
+            color: a.projectColor,
+            assignments: []
+          };
+        }
+        byProject[a.projectId].assignments.push({ ...a, date });
+      }
     }
     
-    html += `
-          </tbody>
-        </table>
-      </div>
-    `;
+    for (const projectId of Object.keys(byProject)) {
+      const project = byProject[projectId];
+      const totalHours = project.assignments.reduce((sum, a) => sum + (a.endHour - a.startHour), 0);
+      
+      html += `
+        <div class="pdf-day-section">
+          <h2 class="pdf-day-header" style="border-left-color: ${project.color}">
+            <span style="color: ${project.color}">●</span> ${project.name} 
+            <span style="float: right; font-size: 14px; color: #666;">${totalHours}h total</span>
+          </h2>
+          <table class="pdf-schedule-table">
+            <thead>
+              <tr>
+                <th>${t('common.date') || 'Date'}</th>
+                <th>${t('common.person') || 'Person'}</th>
+                <th>${t('common.time') || 'Time'}</th>
+                <th>${t('schedule.hours') || 'Hours'}</th>
+                <th>${t('schedule.task') || 'Task'}</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      for (const a of project.assignments.sort((x, y) => x.date.localeCompare(y.date))) {
+        const hours = a.endHour - a.startHour;
+        const dateStr = new Date(a.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+        html += `
+          <tr>
+            <td>${dateStr}</td>
+            <td>${a.personName}</td>
+            <td>${String(a.startHour).padStart(2, '0')}:00 - ${String(a.endHour).padStart(2, '0')}:00</td>
+            <td>${hours}h</td>
+            <td>${a.taskDescription || '-'}</td>
+          </tr>
+        `;
+      }
+      
+      html += `</tbody></table></div>`;
+    }
+  } else if (viewType === 'employees') {
+    // Group all assignments by employee across all dates
+    const byEmployee = {};
+    for (const date of sortedDates) {
+      for (const a of byDate[date]) {
+        if (!byEmployee[a.personId]) {
+          byEmployee[a.personId] = {
+            name: a.personName,
+            assignments: []
+          };
+        }
+        byEmployee[a.personId].assignments.push({ ...a, date });
+      }
+    }
+    
+    for (const personId of Object.keys(byEmployee)) {
+      const employee = byEmployee[personId];
+      const totalHours = employee.assignments.reduce((sum, a) => sum + (a.endHour - a.startHour), 0);
+      
+      html += `
+        <div class="pdf-day-section">
+          <h2 class="pdf-day-header">
+            👤 ${employee.name}
+            <span style="float: right; font-size: 14px; color: #666;">${totalHours}h total</span>
+          </h2>
+          <table class="pdf-schedule-table">
+            <thead>
+              <tr>
+                <th>${t('common.date') || 'Date'}</th>
+                <th>${t('common.project') || 'Project'}</th>
+                <th>${t('common.time') || 'Time'}</th>
+                <th>${t('schedule.hours') || 'Hours'}</th>
+                <th>${t('schedule.task') || 'Task'}</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      for (const a of employee.assignments.sort((x, y) => x.date.localeCompare(y.date))) {
+        const hours = a.endHour - a.startHour;
+        const dateStr = new Date(a.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+        html += `
+          <tr>
+            <td>${dateStr}</td>
+            <td><span class="pdf-project-badge" style="background: ${a.projectColor}20; color: ${a.projectColor}; border: 1px solid ${a.projectColor}">${a.projectName}</span></td>
+            <td>${String(a.startHour).padStart(2, '0')}:00 - ${String(a.endHour).padStart(2, '0')}:00</td>
+            <td>${hours}h</td>
+            <td>${a.taskDescription || '-'}</td>
+          </tr>
+        `;
+      }
+      
+      html += `</tbody></table></div>`;
+    }
+  } else {
+    // Default: by date (original behavior)
+    for (const date of sortedDates) {
+      const dayName = new Date(date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const dayAssignments = byDate[date];
+      
+      html += `
+        <div class="pdf-day-section">
+          <h2 class="pdf-day-header">${dayName}</h2>
+          <table class="pdf-schedule-table">
+            <thead>
+              <tr>
+                <th>${t('common.person') || 'Person'}</th>
+                <th>${t('common.project') || 'Project'}</th>
+                <th>${t('common.time') || 'Time'}</th>
+                <th>${t('schedule.hours') || 'Hours'}</th>
+                <th>${t('schedule.task') || 'Task'}</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      for (const a of dayAssignments) {
+        const hours = a.endHour - a.startHour;
+        html += `
+          <tr>
+            <td>${a.personName}</td>
+            <td><span class="pdf-project-badge" style="background: ${a.projectColor}20; color: ${a.projectColor}; border: 1px solid ${a.projectColor}">${a.projectName}</span></td>
+            <td>${String(a.startHour).padStart(2, '0')}:00 - ${String(a.endHour).padStart(2, '0')}:00</td>
+            <td>${hours}h</td>
+            <td>${a.taskDescription || '-'}</td>
+          </tr>
+        `;
+      }
+      
+      html += `</tbody></table></div>`;
+    }
   }
   
   html += '</div>';
@@ -4857,6 +5074,7 @@ function generatePdfPreviewContent(sortedDates, byDate) {
 async function refreshPdfPreview() {
   const startDate = document.getElementById('pdf-start-date').value;
   const endDate = document.getElementById('pdf-end-date').value;
+  const viewType = document.getElementById('pdf-view-type')?.value || 'all';
   
   if (!startDate || !endDate) {
     showToast('Please select both dates', 'error');
@@ -4874,7 +5092,7 @@ async function refreshPdfPreview() {
     });
     
     const sortedDates = Object.keys(byDate).sort();
-    document.getElementById('pdf-preview-content').innerHTML = generatePdfPreviewContent(sortedDates, byDate);
+    document.getElementById('pdf-preview-content').innerHTML = generatePdfPreviewContent(sortedDates, byDate, viewType);
   } catch (error) {
     showToast('Failed to refresh preview', 'error');
   }

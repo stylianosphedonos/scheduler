@@ -264,6 +264,42 @@
               </div>
             </div>
 
+            <!-- Today's Schedule by Projects (Full Width at Top) -->
+            <div class="card schedule-by-projects">
+              <div class="card-header">
+                <h2><i class="fas fa-folder-open"></i> <span data-i18n="dashboard.scheduleByProjects">Today's Schedule by Projects</span></h2>
+                <div class="card-actions">
+                  <button class="btn btn-sm btn-secondary" onclick="showPdfExportPreview('projects')">
+                    <i class="fas fa-file-pdf"></i> <span data-i18n="common.pdf">PDF</span>
+                  </button>
+                  <a href="#" class="btn btn-sm btn-secondary" data-view="schedule" data-i18n="common.viewAll">View All</a>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="today-by-projects" class="schedule-grid-view">
+                  <div class="loading" data-i18n="common.loading">Loading...</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Today's Schedule by Employees -->
+            <div class="card schedule-by-employees">
+              <div class="card-header">
+                <h2><i class="fas fa-users"></i> <span data-i18n="dashboard.scheduleByEmployees">Today's Schedule by Employees</span></h2>
+                <div class="card-actions">
+                  <button class="btn btn-sm btn-secondary" onclick="showPdfExportPreview('employees')">
+                    <i class="fas fa-file-pdf"></i> <span data-i18n="common.pdf">PDF</span>
+                  </button>
+                  <a href="#" class="btn btn-sm btn-secondary" data-view="schedule" data-i18n="common.viewAll">View All</a>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="today-by-employees" class="schedule-grid-view">
+                  <div class="loading" data-i18n="common.loading">Loading...</div>
+                </div>
+              </div>
+            </div>
+
             <!-- Quick Actions -->
             <div class="card quick-actions-card">
               <div class="card-header">
@@ -283,25 +319,9 @@
                   <button class="quick-action-btn" onclick="switchView('ai-scheduler');">
                     <i class="fas fa-robot"></i> <span data-i18n="nav.aiScheduler">AI Scheduler</span>
                   </button>
-                  <button class="quick-action-btn" onclick="showPdfExportPreview();">
-                    <i class="fas fa-file-pdf"></i> <span data-i18n="dashboard.exportPdf">Export to PDF</span>
-                  </button>
                   <button class="quick-action-btn" onclick="openGlobalSearch();">
                     <i class="fas fa-search"></i> <span data-i18n="common.search">Search</span> <kbd>Ctrl+K</kbd>
                   </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Today's Schedule -->
-            <div class="card today-schedule">
-              <div class="card-header">
-                <h2><i class="fas fa-calendar-day"></i> <span data-i18n="dashboard.todaysSchedule">Today's Schedule</span></h2>
-                <a href="#" class="btn btn-sm btn-secondary" data-view="schedule" data-i18n="common.viewAll">View All</a>
-              </div>
-              <div class="card-body">
-                <div id="today-timeline" class="timeline">
-                  <div class="loading" data-i18n="common.loading">Loading...</div>
                 </div>
               </div>
             </div>

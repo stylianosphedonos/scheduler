@@ -68,6 +68,9 @@
     "person": "Person",
     "project": "Project",
     "time": "Time",
+    "date": "Date",
+    "total": "Total",
+    "pdf": "PDF",
     "startDate": "Start Date",
     "endDate": "End Date",
     "saveChanges": "Save Changes",
@@ -139,7 +142,9 @@
     "available": "available",
     "quickActions": "Quick Actions",
     "exportPdf": "Export to PDF",
-    "pdfPreviewDesc": "Preview your schedule before exporting"
+    "pdfPreviewDesc": "Preview your schedule before exporting",
+    "scheduleByProjects": "Today's Schedule by Projects",
+    "scheduleByEmployees": "Today's Schedule by Employees"
   },
   "people": {
     "title": "People Management",
