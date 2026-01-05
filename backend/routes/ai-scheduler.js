@@ -62,16 +62,44 @@ router.post('/suggest', authenticateToken, requireRole('admin', 'scheduler'), as
           dayName: currentDate.toLocaleDateString('en-US', { weekday: 'long' }),
           suggestions: dailySuggestions.suggestions,
           warnings: dailySuggestions.warnings,
-          coverage: dailySuggestions.coverage
+          coverage: dailySuggestions.coverage,
+          remainingAvailability: dailySuggestions.remainingAvailability
         });
       }
       currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Calculate summary
+    const totalHoursScheduled = suggestions.reduce((sum, d) => 
+      sum + d.suggestions.reduce((s, sug) => s + sug.duration, 0), 0);
+    
+    const projectsSummary = {};
+    for (const day of suggestions) {
+      for (const [projectId, cov] of Object.entries(day.coverage)) {
+        if (!projectsSummary[projectId]) {
+          projectsSummary[projectId] = {
+            projectName: cov.projectName,
+            budgetHours: cov.budgetHours || 0,
+            hoursUsedBefore: cov.hoursUsed || 0,
+            hoursScheduled: 0,
+            budgetStatus: 'pending'
+          };
+        }
+        projectsSummary[projectId].hoursScheduled += cov.hoursScheduledToday || 0;
+        if (cov.budgetStatus === 'completed') {
+          projectsSummary[projectId].budgetStatus = 'completed';
+        } else if (cov.budgetStatus === 'partial' && projectsSummary[projectId].budgetStatus !== 'completed') {
+          projectsSummary[projectId].budgetStatus = 'partial';
+        }
+      }
     }
 
     res.json({
       success: true,
       dateRange: { startDate, endDate: targetEndDate },
       totalSuggestions: suggestions.reduce((sum, d) => sum + d.suggestions.length, 0),
+      totalHoursScheduled,
+      projectsSummary,
       days: suggestions
     });
 
@@ -430,6 +458,7 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
       personAvailability.set(person.id, {
         ...person,
         hoursRemaining,
+        maxHoursPerDay: person.max_hours_per_day,
         projectsRemaining,
         skills: new Map(skills.map(s => [s.skill_id, s.proficiency_level])),
         assignedHours: await getAssignedHours(db, person.id, date)
@@ -437,8 +466,31 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
     }
   }
 
+  // Track remaining budget hours for each project
+  const projectBudgetRemaining = new Map();
+  for (const project of projects) {
+    const budgetHours = project.budget_hours || 0;
+    const hoursUsed = project.hours_used || 0;
+    const remaining = Math.max(0, budgetHours - hoursUsed);
+    projectBudgetRemaining.set(project.id, remaining);
+  }
+
   // Process each project
   for (const project of projects) {
+    // Skip project if budget is already met
+    const budgetRemaining = projectBudgetRemaining.get(project.id);
+    if (project.budget_hours && budgetRemaining <= 0) {
+      coverage[project.id] = {
+        projectName: project.name,
+        projectColor: project.color,
+        budgetHours: project.budget_hours,
+        hoursUsed: project.hours_used || 0,
+        budgetStatus: 'completed',
+        skills: {}
+      };
+      continue;
+    }
+
     const projectSkills = await db.prepare(`
       SELECT ps.skill_id, ps.required_proficiency, ps.people_needed, ps.is_mandatory,
         s.name as skill_name, s.color
@@ -451,8 +503,14 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
     coverage[project.id] = {
       projectName: project.name,
       projectColor: project.color,
+      budgetHours: project.budget_hours,
+      hoursUsed: project.hours_used || 0,
+      hoursScheduledToday: 0,
+      budgetStatus: 'in_progress',
       skills: {}
     };
+
+    let projectHoursScheduledToday = 0;
 
     // For each skill requirement
     for (const skillReq of projectSkills) {
@@ -486,12 +544,25 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
       for (const match of qualifiedPeople) {
         if (peopleFilled >= peopleNeeded) break;
         
+        // Check if project budget is already met
+        const currentBudgetRemaining = projectBudgetRemaining.get(project.id);
+        if (project.budget_hours && currentBudgetRemaining <= 0) break;
+        
         const person = personAvailability.get(match.personId);
-        if (!person || person.hoursRemaining < 2) continue;
+        if (!person || person.hoursRemaining < 1) continue;
+
+        // Calculate how many hours to schedule (respect budget)
+        let hoursToSchedule = Math.min(4, person.hoursRemaining);
+        if (project.budget_hours && currentBudgetRemaining > 0) {
+          hoursToSchedule = Math.min(hoursToSchedule, currentBudgetRemaining);
+        }
+        if (hoursToSchedule < 1) continue;
 
         // Find available time slot
-        const slot = findAvailableSlot(person.assignedHours, Math.min(4, person.hoursRemaining));
+        const slot = findAvailableSlot(person.assignedHours, hoursToSchedule);
         if (!slot) continue;
+
+        const duration = slot.end - slot.start;
 
         suggestions.push({
           id: `${date}-${project.id}-${match.personId}-${skillReq.skill_id}`,
@@ -511,16 +582,20 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
           requiredProficiency: skillReq.required_proficiency,
           startHour: slot.start,
           endHour: slot.end,
-          duration: slot.end - slot.start,
+          duration: duration,
           matchScore: match.score,
           isMandatory: !!skillReq.is_mandatory,
           reason: generateReason(match, skillReq, project)
         });
 
         // Update person availability
-        person.hoursRemaining -= (slot.end - slot.start);
+        person.hoursRemaining -= duration;
         person.projectsRemaining--;
         person.assignedHours.push({ start: slot.start, end: slot.end });
+        
+        // Update project budget tracking
+        projectBudgetRemaining.set(project.id, currentBudgetRemaining - duration);
+        projectHoursScheduledToday += duration;
         
         peopleFilled++;
         coverage[project.id].skills[skillReq.skill_id].filled++;
@@ -541,9 +616,37 @@ async function generateDailySuggestions(db, date, projects, prioritizeBy) {
         });
       }
     }
+
+    coverage[project.id].hoursScheduledToday = projectHoursScheduledToday;
+    
+    // Update budget status
+    const finalBudgetRemaining = projectBudgetRemaining.get(project.id);
+    if (project.budget_hours) {
+      if (finalBudgetRemaining <= 0) {
+        coverage[project.id].budgetStatus = 'completed';
+      } else if (projectHoursScheduledToday > 0) {
+        coverage[project.id].budgetStatus = 'partial';
+        coverage[project.id].budgetRemaining = finalBudgetRemaining;
+      }
+    }
   }
 
-  return { suggestions, warnings, coverage };
+  // Calculate remaining availability for people
+  const remainingAvailability = [];
+  for (const [personId, person] of personAvailability) {
+    if (person.hoursRemaining > 0) {
+      remainingAvailability.push({
+        personId,
+        personName: `${person.first_name} ${person.last_name}`,
+        department: person.department,
+        hoursRemaining: person.hoursRemaining,
+        maxHoursPerDay: person.maxHoursPerDay,
+        projectsRemaining: person.projectsRemaining
+      });
+    }
+  }
+
+  return { suggestions, warnings, coverage, remainingAvailability };
 }
 
 /**
