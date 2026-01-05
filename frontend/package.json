@@ -1,0 +1,25 @@
+{
+  "name": "resource-scheduler-app",
+  "version": "1.0.0",
+  "description": "Resource Scheduler - Native Mobile App",
+  "main": "app.js",
+  "scripts": {
+    "build": "node build.js",
+    "sync": "npm run build && npx cap sync",
+    "sync:android": "npm run build && npx cap sync android",
+    "sync:ios": "npm run build && npx cap sync ios",
+    "open:android": "npx cap open android",
+    "open:ios": "npx cap open ios",
+    "run:android": "npm run sync:android && npx cap run android",
+    "run:ios": "npm run sync:ios && npx cap run ios"
+  },
+  "keywords": ["scheduler", "resource-management", "mobile-app"],
+  "author": "Playtech",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0"
+  }
+}
