@@ -4731,55 +4731,234 @@ async function performGlobalSearch(query) {
 }
 
 // ===== Calendar Export (.ics) =====
-async function exportToCalendar(type = 'week') {
+// ===== PDF Export with Preview =====
+async function showPdfExportPreview() {
   try {
-    const startDate = state.scheduleDate;
-    const endDate = new Date(startDate);
-    if (type === 'week') endDate.setDate(endDate.getDate() + 7);
+    const today = new Date().toISOString().split('T')[0];
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 7);
     const endDateStr = endDate.toISOString().split('T')[0];
     
-    const data = await api(`/assignments?startDate=${startDate}&endDate=${endDateStr}`);
+    // Fetch schedule data
+    const data = await api(`/assignments?startDate=${today}&endDate=${endDateStr}`);
+    const assignments = data.data || [];
     
-    let icsContent = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//Resource Scheduler//EN',
-      'CALSCALE:GREGORIAN',
-      'METHOD:PUBLISH',
-      'X-WR-CALNAME:Work Schedule'
-    ];
+    // Group assignments by date
+    const byDate = {};
+    assignments.forEach(a => {
+      if (!byDate[a.date]) byDate[a.date] = [];
+      byDate[a.date].push(a);
+    });
     
-    for (const assignment of data.data) {
-      const startDateTime = `${assignment.date.replace(/-/g, '')}T${String(assignment.startHour).padStart(2, '0')}0000`;
-      const endDateTime = `${assignment.date.replace(/-/g, '')}T${String(assignment.endHour).padStart(2, '0')}0000`;
-      const uid = `${assignment.id}@scheduler`;
-      
-      icsContent.push(
-        'BEGIN:VEVENT',
-        `UID:${uid}`,
-        `DTSTART:${startDateTime}`,
-        `DTEND:${endDateTime}`,
-        `SUMMARY:${assignment.projectName} - ${assignment.personName}`,
-        `DESCRIPTION:${assignment.taskDescription || 'Scheduled work'}`,
-        `STATUS:CONFIRMED`,
-        'END:VEVENT'
-      );
+    // Sort dates
+    const sortedDates = Object.keys(byDate).sort();
+    
+    // Build preview HTML
+    let previewHtml = `
+      <div class="pdf-preview-container">
+        <div class="pdf-preview-header">
+          <h3><i class="fas fa-file-pdf"></i> ${t('dashboard.exportPdf') || 'Export Schedule to PDF'}</h3>
+          <p>${t('dashboard.pdfPreviewDesc') || 'Preview your schedule before exporting'}</p>
+        </div>
+        
+        <div class="pdf-date-range">
+          <label>${t('common.startDate') || 'Start Date'}:</label>
+          <input type="date" id="pdf-start-date" value="${today}">
+          <label>${t('common.endDate') || 'End Date'}:</label>
+          <input type="date" id="pdf-end-date" value="${endDateStr}">
+          <button class="btn btn-secondary btn-sm" onclick="refreshPdfPreview()">
+            <i class="fas fa-sync-alt"></i> ${t('common.refresh') || 'Refresh'}
+          </button>
+        </div>
+        
+        <div class="pdf-preview-document" id="pdf-preview-content">
+          ${generatePdfPreviewContent(sortedDates, byDate)}
+        </div>
+        
+        <div class="pdf-preview-actions">
+          <button class="btn btn-secondary" onclick="closeModal()">
+            <i class="fas fa-times"></i> ${t('common.cancel') || 'Cancel'}
+          </button>
+          <button class="btn btn-primary" onclick="downloadSchedulePdf()">
+            <i class="fas fa-download"></i> ${t('common.download') || 'Download'} PDF
+          </button>
+        </div>
+      </div>
+    `;
+    
+    showModal(t('dashboard.exportPdf') || 'Export to PDF', previewHtml, 'pdf-export-modal');
+  } catch (error) {
+    showToast(t('common.loadError') || 'Failed to load data', 'error');
+  }
+}
+
+function generatePdfPreviewContent(sortedDates, byDate) {
+  if (sortedDates.length === 0) {
+    return `
+      <div class="pdf-empty">
+        <i class="fas fa-calendar-times"></i>
+        <p>${t('schedule.noAssignments') || 'No assignments for this period'}</p>
+      </div>
+    `;
+  }
+  
+  let html = `
+    <div class="pdf-document">
+      <div class="pdf-title">
+        <h1>${t('nav.schedule') || 'Work Schedule'}</h1>
+        <p>${t('common.generatedOn') || 'Generated on'}: ${new Date().toLocaleDateString()}</p>
+      </div>
+  `;
+  
+  for (const date of sortedDates) {
+    const dayName = new Date(date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const dayAssignments = byDate[date];
+    
+    html += `
+      <div class="pdf-day-section">
+        <h2 class="pdf-day-header">${dayName}</h2>
+        <table class="pdf-schedule-table">
+          <thead>
+            <tr>
+              <th>${t('common.person') || 'Person'}</th>
+              <th>${t('common.project') || 'Project'}</th>
+              <th>${t('common.time') || 'Time'}</th>
+              <th>${t('schedule.hours') || 'Hours'}</th>
+              <th>${t('schedule.task') || 'Task'}</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    for (const a of dayAssignments) {
+      const hours = a.endHour - a.startHour;
+      html += `
+        <tr>
+          <td>${a.personName}</td>
+          <td><span class="pdf-project-badge" style="background: ${a.projectColor}20; color: ${a.projectColor}; border: 1px solid ${a.projectColor}">${a.projectName}</span></td>
+          <td>${String(a.startHour).padStart(2, '0')}:00 - ${String(a.endHour).padStart(2, '0')}:00</td>
+          <td>${hours}h</td>
+          <td>${a.taskDescription || '-'}</td>
+        </tr>
+      `;
     }
     
-    icsContent.push('END:VCALENDAR');
-    
-    const blob = new Blob([icsContent.join('\r\n')], { type: 'text/calendar' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `schedule-${startDate}.ics`;
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    showToast('Calendar exported successfully');
-  } catch (error) {
-    showToast('Failed to export calendar', 'error');
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
   }
+  
+  html += '</div>';
+  return html;
+}
+
+async function refreshPdfPreview() {
+  const startDate = document.getElementById('pdf-start-date').value;
+  const endDate = document.getElementById('pdf-end-date').value;
+  
+  if (!startDate || !endDate) {
+    showToast('Please select both dates', 'error');
+    return;
+  }
+  
+  try {
+    const data = await api(`/assignments?startDate=${startDate}&endDate=${endDate}`);
+    const assignments = data.data || [];
+    
+    const byDate = {};
+    assignments.forEach(a => {
+      if (!byDate[a.date]) byDate[a.date] = [];
+      byDate[a.date].push(a);
+    });
+    
+    const sortedDates = Object.keys(byDate).sort();
+    document.getElementById('pdf-preview-content').innerHTML = generatePdfPreviewContent(sortedDates, byDate);
+  } catch (error) {
+    showToast('Failed to refresh preview', 'error');
+  }
+}
+
+function downloadSchedulePdf() {
+  const content = document.getElementById('pdf-preview-content');
+  const startDate = document.getElementById('pdf-start-date').value;
+  const endDate = document.getElementById('pdf-end-date').value;
+  
+  // Create a printable window
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Schedule ${startDate} to ${endDate}</title>
+      <style>
+        * { box-sizing: border-box; }
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          padding: 20px;
+          color: #1a1a1a;
+          line-height: 1.5;
+        }
+        .pdf-document { max-width: 800px; margin: 0 auto; }
+        .pdf-title { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+        .pdf-title h1 { margin: 0 0 10px; font-size: 28px; }
+        .pdf-title p { margin: 0; color: #666; }
+        .pdf-day-section { margin-bottom: 30px; page-break-inside: avoid; }
+        .pdf-day-header { 
+          font-size: 16px; 
+          background: #f5f5f5; 
+          padding: 10px 15px; 
+          margin: 0 0 15px;
+          border-left: 4px solid #6366f1;
+        }
+        .pdf-schedule-table { 
+          width: 100%; 
+          border-collapse: collapse; 
+          font-size: 13px;
+        }
+        .pdf-schedule-table th { 
+          background: #f9fafb; 
+          padding: 10px; 
+          text-align: left; 
+          border: 1px solid #e5e7eb;
+          font-weight: 600;
+        }
+        .pdf-schedule-table td { 
+          padding: 10px; 
+          border: 1px solid #e5e7eb;
+          vertical-align: top;
+        }
+        .pdf-project-badge {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+        .pdf-empty { text-align: center; padding: 60px; color: #666; }
+        .pdf-empty i { font-size: 48px; margin-bottom: 15px; display: block; }
+        @media print {
+          body { padding: 0; }
+          .pdf-day-section { page-break-inside: avoid; }
+        }
+      </style>
+    </head>
+    <body>
+      ${content.innerHTML}
+      <script>
+        window.onload = function() {
+          window.print();
+          setTimeout(function() { window.close(); }, 500);
+        };
+      </script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  
+  showToast(t('common.exportSuccess') || 'PDF export ready');
+  closeModal();
 }
 
 // ===== Auto-refresh for real-time updates =====

@@ -6516,3 +6516,182 @@ body {
 .btn-danger:hover {
   background: linear-gradient(135deg, #dc2626, #b91c1c);
 }
+
+/* ===== PDF Export Preview ===== */
+.pdf-preview-container {
+  padding: 0;
+}
+
+.pdf-preview-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: white;
+  margin: -20px -24px 20px;
+  border-radius: 12px 12px 0 0;
+}
+
+.pdf-preview-header h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pdf-preview-header p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+.pdf-date-range {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.pdf-date-range label {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.pdf-date-range input[type="date"] {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.pdf-preview-document {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.pdf-document {
+  color: #1a1a1a;
+}
+
+.pdf-title {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #333;
+}
+
+.pdf-title h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  color: #1a1a1a;
+}
+
+.pdf-title p {
+  margin: 0;
+  color: #666;
+  font-size: 13px;
+}
+
+.pdf-day-section {
+  margin-bottom: 24px;
+}
+
+.pdf-day-header {
+  font-size: 14px;
+  background: #f5f5f5;
+  padding: 10px 15px;
+  margin: 0 0 12px;
+  border-left: 4px solid #6366f1;
+  color: #333;
+  font-weight: 600;
+}
+
+.pdf-schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.pdf-schedule-table th {
+  background: #f9fafb;
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #e5e7eb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.pdf-schedule-table td {
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  color: #1f2937;
+}
+
+.pdf-project-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.pdf-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.pdf-empty i {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+  color: #ccc;
+}
+
+.pdf-preview-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Modal size for PDF export */
+.modal.pdf-export-modal .modal-content {
+  max-width: 800px;
+}
+
+@media (max-width: 767px) {
+  .pdf-date-range {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .pdf-date-range input[type="date"] {
+    width: 100%;
+  }
+  
+  .pdf-preview-document {
+    max-height: 40vh;
+  }
+  
+  .pdf-schedule-table {
+    font-size: 10px;
+  }
+  
+  .pdf-schedule-table th,
+  .pdf-schedule-table td {
+    padding: 6px;
+  }
+}
