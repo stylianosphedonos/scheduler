@@ -6888,6 +6888,119 @@ body {
   margin-top: 16px;
 }
 
+/* ===== Skills Selection in Add Person ===== */
+.form-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.form-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.form-section h4 i {
+  color: var(--primary);
+}
+
+.skills-selection-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.skill-category-group {
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.skill-category-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.skill-selection-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.skill-selection-item:last-child {
+  border-bottom: none;
+}
+
+.skill-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.skill-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+.skill-name {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.skill-level-select {
+  padding: 6px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  min-width: 130px;
+}
+
+.skill-level-select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.skill-level-select:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* Mobile adjustments for skills selection */
+@media (max-width: 575px) {
+  .skill-selection-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .skill-level-select {
+    width: 100%;
+  }
+  
+  .skills-selection-grid {
+    max-height: 200px;
+  }
+}
+
 /* ===== Sidebar Quick Actions (Mobile) ===== */
 .sidebar-quick-actions {
   display: none; /* Hidden on desktop, shown on mobile via media query */

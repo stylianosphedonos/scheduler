@@ -1911,72 +1911,163 @@ async function showPersonDetails(id) {
   }
 }
 
-function showAddPersonModal() {
+async function showAddPersonModal() {
   if (!canEdit()) {
     showToast('You do not have permission to add people', 'error');
     return;
   }
   
-  showModal('Add Person', `
+  // Fetch available skills
+  let allSkills = [];
+  try {
+    const skillsData = await api('/skills?active=true');
+    allSkills = skillsData.data || [];
+  } catch (error) {
+    console.error('Failed to load skills:', error);
+  }
+  
+  // Group skills by category
+  const skillsByCategory = {};
+  allSkills.forEach(skill => {
+    const category = skill.category || 'Other';
+    if (!skillsByCategory[category]) {
+      skillsByCategory[category] = [];
+    }
+    skillsByCategory[category].push(skill);
+  });
+  
+  showModal(t('people.addPerson') || 'Add Person', `
     <form id="add-person-form" class="modal-form">
       <div class="form-row">
         <div class="form-group">
-          <label>First Name *</label>
+          <label>${t('people.firstName') || 'First Name'} *</label>
           <input type="text" name="firstName" required>
         </div>
         <div class="form-group">
-          <label>Last Name *</label>
+          <label>${t('people.lastName') || 'Last Name'} *</label>
           <input type="text" name="lastName" required>
         </div>
       </div>
       <div class="form-group">
-        <label>Email *</label>
+        <label>${t('people.email') || 'Email'} *</label>
         <input type="email" name="email" required>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Department</label>
+          <label>${t('people.department') || 'Department'}</label>
           <input type="text" name="department">
         </div>
         <div class="form-group">
-          <label>Job Title</label>
+          <label>${t('people.jobTitle') || 'Job Title'}</label>
           <input type="text" name="jobTitle">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Max Hours/Day</label>
+          <label>${t('people.maxHoursPerDay') || 'Max Hours/Day'}</label>
           <input type="number" name="maxHoursPerDay" value="8" min="1" max="24">
         </div>
         <div class="form-group">
-          <label>Employment Type</label>
+          <label>${t('people.employmentType') || 'Employment Type'}</label>
           <select name="employmentType">
-            <option value="full-time">Full Time</option>
-            <option value="part-time">Part Time</option>
-            <option value="contractor">Contractor</option>
-            <option value="intern">Intern</option>
+            <option value="full-time">${t('people.fullTime') || 'Full Time'}</option>
+            <option value="part-time">${t('people.partTime') || 'Part Time'}</option>
+            <option value="contractor">${t('people.contractor') || 'Contractor'}</option>
+            <option value="intern">${t('people.intern') || 'Intern'}</option>
           </select>
         </div>
       </div>
+      
+      ${allSkills.length > 0 ? `
+        <div class="form-section">
+          <h4><i class="fas fa-star"></i> ${t('people.skills') || 'Skills'}</h4>
+          <p class="text-muted">${t('people.selectSkillsHint') || 'Select skills and proficiency level (1-5)'}</p>
+          <div class="skills-selection-grid">
+            ${Object.entries(skillsByCategory).map(([category, skills]) => `
+              <div class="skill-category-group">
+                <div class="skill-category-title">${category}</div>
+                ${skills.map(skill => `
+                  <div class="skill-selection-item">
+                    <label class="skill-checkbox">
+                      <input type="checkbox" name="skill_${skill.id}" value="${skill.id}">
+                      <span class="skill-name" style="color: ${skill.color}">${skill.name}</span>
+                    </label>
+                    <select name="level_${skill.id}" class="skill-level-select" disabled>
+                      <option value="1">1 - ${t('skills.beginner') || 'Beginner'}</option>
+                      <option value="2">2 - ${t('skills.elementary') || 'Elementary'}</option>
+                      <option value="3" selected>3 - ${t('skills.intermediate') || 'Intermediate'}</option>
+                      <option value="4">4 - ${t('skills.advanced') || 'Advanced'}</option>
+                      <option value="5">5 - ${t('skills.expert') || 'Expert'}</option>
+                    </select>
+                  </div>
+                `).join('')}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+      
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary">Add Person</button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">${t('common.cancel') || 'Cancel'}</button>
+        <button type="submit" class="btn btn-primary">${t('people.addPerson') || 'Add Person'}</button>
       </div>
     </form>
   `);
   
+  // Add event listeners to enable/disable level selects based on checkbox
+  document.querySelectorAll('.skill-selection-item input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+      const skillId = checkbox.value;
+      const levelSelect = document.querySelector(`select[name="level_${skillId}"]`);
+      if (levelSelect) {
+        levelSelect.disabled = !checkbox.checked;
+      }
+    });
+  });
+  
   document.getElementById('add-person-form').onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData);
+    
+    // Extract person data
+    const data = {
+      firstName: formData.get('firstName'),
+      lastName: formData.get('lastName'),
+      email: formData.get('email'),
+      department: formData.get('department'),
+      jobTitle: formData.get('jobTitle'),
+      maxHoursPerDay: formData.get('maxHoursPerDay'),
+      employmentType: formData.get('employmentType')
+    };
+    
+    // Extract selected skills
+    const selectedSkills = [];
+    allSkills.forEach(skill => {
+      if (formData.get(`skill_${skill.id}`)) {
+        selectedSkills.push({
+          skillId: skill.id,
+          proficiencyLevel: parseInt(formData.get(`level_${skill.id}`)) || 3
+        });
+      }
+    });
     
     try {
-      await api('/people', {
+      // Create person
+      const newPerson = await api('/people', {
         method: 'POST',
         body: JSON.stringify(data)
       });
+      
+      // If skills were selected, add them
+      if (selectedSkills.length > 0 && newPerson.id) {
+        await api(`/people/${newPerson.id}/skills`, {
+          method: 'PUT',
+          body: JSON.stringify({ skills: selectedSkills })
+        });
+      }
+      
       closeModal();
-      showToast('Person added successfully');
+      showToast(t('people.personAdded') || 'Person added successfully');
       loadPeople();
     } catch (error) {
       showToast(error.message, 'error');

@@ -167,6 +167,8 @@
     "skills": "Skills",
     "assignSkill": "Assign Skill",
     "proficiency": "Proficiency",
+    "selectSkillsHint": "Select skills and proficiency level (1-5)",
+    "personAdded": "Person added successfully",
     "yearsExperience": "Years Experience",
     "certified": "Certified",
     "notes": "Notes",
