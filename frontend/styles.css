@@ -4224,7 +4224,7 @@ body {
   }
   
   .header-right {
-    gap: 10px;
+    gap: 8px;
   }
   
   .header-right .date-display {
@@ -4232,6 +4232,37 @@ body {
   }
   
   .header-right #quick-add-btn span {
+    display: none;
+  }
+  
+  /* Ensure header buttons don't overlap on mobile */
+  .header-right {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .header-right > * {
+    flex-shrink: 0;
+  }
+  
+  .header-right .btn-icon,
+  .header-right .language-switcher .lang-btn {
+    min-width: 44px;
+    min-height: 44px;
+    position: relative;
+    z-index: 1;
+    isolation: isolate;
+  }
+  
+  .header-right .language-switcher {
+    position: relative;
+    z-index: 10;
+  }
+  
+  /* Hide some buttons on very small screens to prevent overlap */
+  .header-right .search-btn,
+  .header-right .help-btn {
     display: none;
   }
   
@@ -4401,9 +4432,10 @@ body {
   }
   
   .btn-icon {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 10px;
+    flex-shrink: 0;
   }
   
   .btn-sm {
@@ -4925,12 +4957,8 @@ body {
     scroll-snap-align: start;
   }
   
-  /* Better clickable area for small buttons */
-  .btn-icon::before {
-    content: '';
-    position: absolute;
-    inset: -8px;
-  }
+  /* Better clickable area for small buttons - REMOVED due to overlap issues */
+  /* Touch targets are now handled by proper button sizing */
 }
 
 /* ===== Landscape Mobile ===== */
