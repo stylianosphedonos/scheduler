@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { getDb, getDatabaseType } = require('../database');
+const { getDatabaseType } = require('../database');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
 // Get all groups
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const db = getDb();
+    const db = req.app.locals.db;
     const { search, active } = req.query;
     
     let query = `
@@ -48,7 +48,7 @@ router.get('/', authenticateToken, async (req, res) => {
 // Get single group with members and projects
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
-    const db = getDb();
+    const db = req.app.locals.db;
     const { id } = req.params;
     
     if (isNaN(parseInt(id))) {
@@ -93,7 +93,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // Create group
 router.post('/', authenticateToken, requireRole(['admin', 'manager']), async (req, res) => {
   try {
-    const db = getDb();
+    const db = req.app.locals.db;
     const { name, description, color, leaderId } = req.body;
     
     if (!name) {
@@ -129,7 +129,7 @@ router.post('/', authenticateToken, requireRole(['admin', 'manager']), async (re
 // Update group
 router.put('/:id', authenticateToken, requireRole(['admin', 'manager']), async (req, res) => {
   try {
-    const db = getDb();
+    const db = req.app.locals.db;
     const { id } = req.params;
     const { name, description, color, leaderId, isActive } = req.body;
     
@@ -169,7 +169,7 @@ router.put('/:id', authenticateToken, requireRole(['admin', 'manager']), async (
 // Delete group
 router.delete('/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
-    const db = getDb();
+    const db = req.app.locals.db;
     const { id } = req.params;
     
     if (isNaN(parseInt(id))) {
@@ -196,7 +196,7 @@ router.delete('/:id', authenticateToken, requireRole(['admin']), async (req, res
 // Add member to group
 router.post('/:id/members', authenticateToken, requireRole(['admin', 'manager']), async (req, res) => {
   try {
-    const db = getDb();
+    const db = req.app.locals.db;
     const { id } = req.params;
     const { personId, role } = req.body;
     
@@ -236,7 +236,7 @@ router.post('/:id/members', authenticateToken, requireRole(['admin', 'manager'])
 // Remove member from group
 router.delete('/:id/members/:personId', authenticateToken, requireRole(['admin', 'manager']), async (req, res) => {
   try {
-    const db = getDb();
+    const db = req.app.locals.db;
     const { id, personId } = req.params;
     
     db.prepare(`
@@ -253,7 +253,7 @@ router.delete('/:id/members/:personId', authenticateToken, requireRole(['admin',
 // Update member role in group
 router.put('/:id/members/:personId', authenticateToken, requireRole(['admin', 'manager']), async (req, res) => {
   try {
-    const db = getDb();
+    const db = req.app.locals.db;
     const { id, personId } = req.params;
     const { role } = req.body;
     
@@ -271,7 +271,7 @@ router.put('/:id/members/:personId', authenticateToken, requireRole(['admin', 'm
 // Add project to group
 router.post('/:id/projects', authenticateToken, requireRole(['admin', 'manager']), async (req, res) => {
   try {
-    const db = getDb();
+    const db = req.app.locals.db;
     const { id } = req.params;
     const { projectId } = req.body;
     
@@ -311,7 +311,7 @@ router.post('/:id/projects', authenticateToken, requireRole(['admin', 'manager']
 // Remove project from group
 router.delete('/:id/projects/:projectId', authenticateToken, requireRole(['admin', 'manager']), async (req, res) => {
   try {
-    const db = getDb();
+    const db = req.app.locals.db;
     const { id, projectId } = req.params;
     
     db.prepare(`
