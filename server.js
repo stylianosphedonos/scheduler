@@ -180,6 +180,7 @@ async function startServer() {
     const importRoutes = require('./backend/routes/import');
     const translationsRoutes = require('./backend/routes/translations');
     const databaseRoutes = require('./backend/routes/database');
+    const groupsRoutes = require('./backend/routes/groups');
 
     // API Routes
     app.use('/api/auth', authRoutes);
@@ -197,6 +198,7 @@ async function startServer() {
     app.use('/api/import', importRoutes);
     app.use('/api/translations', translationsRoutes);
     app.use('/api/database', databaseRoutes);
+    app.use('/api/groups', groupsRoutes);
 
     // Health check endpoint (no auth required)
     const serverStartTime = Date.now();

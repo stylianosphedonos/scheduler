@@ -1401,6 +1401,7 @@ function switchView(viewName) {
     case 'people': loadPeople(); break;
     case 'projects': loadProjects(); break;
     case 'skills': loadSkills(); break;
+    case 'groups': loadGroups(); break;
     case 'conflicts': loadConflicts(); break;
     case 'ai-scheduler': loadAIScheduler(); break;
     case 'reports': loadReports(); break;
@@ -3016,6 +3017,431 @@ function showAddSkillModal() {
   };
 }
 
+// ===== Groups =====
+async function loadGroups() {
+  try {
+    const search = document.getElementById('groups-search')?.value || '';
+    
+    let url = '/groups?';
+    if (search) url += `search=${encodeURIComponent(search)}&`;
+    
+    const response = await api(url);
+    renderGroups(response.data);
+  } catch (error) {
+    console.error('Error loading groups:', error);
+    showToast(t('common.error') || 'Error loading groups', 'error');
+  }
+}
+
+function renderGroups(groups) {
+  const grid = document.getElementById('groups-grid');
+  if (!grid) return;
+  
+  if (!groups || groups.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-users-cog"></i>
+        <h3>${t('groups.noGroupsFound') || 'No groups found'}</h3>
+        <p>${t('groups.createToStart') || 'Create groups to organize your teams'}</p>
+      </div>
+    `;
+    return;
+  }
+  
+  grid.innerHTML = groups.map(group => `
+    <div class="grid-card group-card" onclick="showGroupDetails(${group.id})">
+      <div class="card-header" style="border-left: 4px solid ${group.color || '#6366f1'}">
+        <h3>${group.name}</h3>
+        <span class="badge ${group.is_active ? 'badge-success' : 'badge-secondary'}">
+          ${group.is_active ? t('common.active') || 'Active' : t('common.inactive') || 'Inactive'}
+        </span>
+      </div>
+      <div class="card-body">
+        ${group.description ? `<p class="group-description">${group.description}</p>` : ''}
+        <div class="group-stats">
+          <div class="stat">
+            <i class="fas fa-users"></i>
+            <span>${group.member_count || 0} ${t('groups.members') || 'members'}</span>
+          </div>
+          <div class="stat">
+            <i class="fas fa-project-diagram"></i>
+            <span>${group.project_count || 0} ${t('groups.projects') || 'projects'}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); editGroup(${group.id})">
+          <i class="fas fa-edit"></i> ${t('common.edit') || 'Edit'}
+        </button>
+        <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteGroup(${group.id})">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function showGroupDetails(groupId) {
+  try {
+    const group = await api(`/groups/${groupId}`);
+    
+    showModal(group.name, `
+      <div class="group-details">
+        <div class="detail-section">
+          <h4><i class="fas fa-info-circle"></i> ${t('groups.details') || 'Details'}</h4>
+          <div class="detail-row">
+            <span class="detail-label">${t('groups.description') || 'Description'}</span>
+            <span class="detail-value">${group.description || '-'}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">${t('groups.color') || 'Color'}</span>
+            <span class="detail-value"><span class="color-swatch" style="background: ${group.color}"></span> ${group.color}</span>
+          </div>
+        </div>
+        
+        <div class="detail-section">
+          <h4><i class="fas fa-users"></i> ${t('groups.members') || 'Members'} (${group.members?.length || 0})</h4>
+          ${group.members && group.members.length > 0 ? `
+            <div class="members-list">
+              ${group.members.map(m => `
+                <div class="member-item">
+                  <div class="member-info">
+                    <span class="member-name">${m.first_name} ${m.last_name}</span>
+                    <span class="member-position">${m.position || m.department || ''}</span>
+                  </div>
+                  <span class="badge ${m.group_role === 'leader' ? 'badge-primary' : 'badge-secondary'}">${m.group_role}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : `<p class="text-muted">${t('groups.noMembers') || 'No members in this group'}</p>`}
+        </div>
+        
+        <div class="detail-section">
+          <h4><i class="fas fa-project-diagram"></i> ${t('groups.assignedProjects') || 'Assigned Projects'} (${group.projects?.length || 0})</h4>
+          ${group.projects && group.projects.length > 0 ? `
+            <div class="projects-list">
+              ${group.projects.map(p => `
+                <div class="project-item">
+                  <span class="project-name">${p.name}</span>
+                  <span class="badge badge-${p.status === 'active' ? 'success' : 'secondary'}">${p.status}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : `<p class="text-muted">${t('groups.noProjects') || 'No projects assigned to this group'}</p>`}
+        </div>
+        
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal()">${t('common.close') || 'Close'}</button>
+          <button class="btn btn-primary" onclick="closeModal(); editGroup(${group.id})">
+            <i class="fas fa-edit"></i> ${t('common.edit') || 'Edit'}
+          </button>
+        </div>
+      </div>
+    `);
+  } catch (error) {
+    showToast(t('common.error') || 'Error loading group details', 'error');
+  }
+}
+
+async function showAddGroupModal() {
+  if (!canEdit()) {
+    showToast(t('common.noPermission') || 'You do not have permission to add groups', 'error');
+    return;
+  }
+  
+  try {
+    const [people, projects] = await Promise.all([
+      api('/people?active=true'),
+      api('/projects?status=active')
+    ]);
+    
+    showModal(t('groups.addGroup') || 'Add Group', `
+      <form id="add-group-form" class="modal-form">
+        <div class="form-group">
+          <label>${t('groups.groupName') || 'Group Name'} *</label>
+          <input type="text" name="name" required>
+        </div>
+        <div class="form-group">
+          <label>${t('groups.description') || 'Description'}</label>
+          <textarea name="description" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>${t('groups.color') || 'Color'}</label>
+          <input type="color" name="color" value="#6366f1">
+        </div>
+        <div class="form-group">
+          <label>${t('groups.leader') || 'Group Leader'}</label>
+          <select name="leaderId">
+            <option value="">${t('groups.selectLeader') || 'Select a leader...'}</option>
+            ${people.data.map(p => `<option value="${p.id}">${p.firstName} ${p.lastName}</option>`).join('')}
+          </select>
+        </div>
+        
+        <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+          <i class="fas fa-users"></i> ${t('groups.addMembers') || 'Add Members'}
+        </h4>
+        <div class="form-group">
+          <div class="members-checkbox-list" style="max-height: 200px; overflow-y: auto;">
+            ${people.data.map(p => `
+              <label class="checkbox-label">
+                <input type="checkbox" name="members" value="${p.id}">
+                ${p.firstName} ${p.lastName} <small class="text-muted">(${p.department || p.position || ''})</small>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+        
+        <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+          <i class="fas fa-project-diagram"></i> ${t('groups.assignProjects') || 'Assign Projects'}
+        </h4>
+        <div class="form-group">
+          <div class="projects-checkbox-list" style="max-height: 200px; overflow-y: auto;">
+            ${projects.data.map(p => `
+              <label class="checkbox-label">
+                <input type="checkbox" name="projects" value="${p.id}">
+                ${p.name} <small class="text-muted">(${p.status})</small>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">${t('common.cancel') || 'Cancel'}</button>
+          <button type="submit" class="btn btn-primary">${t('groups.createGroup') || 'Create Group'}</button>
+        </div>
+      </form>
+    `);
+    
+    document.getElementById('add-group-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      
+      // Get selected members
+      const members = [];
+      document.querySelectorAll('input[name="members"]:checked').forEach(cb => {
+        members.push(parseInt(cb.value));
+      });
+      
+      // Get selected projects
+      const projects = [];
+      document.querySelectorAll('input[name="projects"]:checked').forEach(cb => {
+        projects.push(parseInt(cb.value));
+      });
+      
+      const data = {
+        name: formData.get('name'),
+        description: formData.get('description') || null,
+        color: formData.get('color'),
+        leaderId: formData.get('leaderId') ? parseInt(formData.get('leaderId')) : null
+      };
+      
+      try {
+        const newGroup = await api('/groups', {
+          method: 'POST',
+          body: JSON.stringify(data)
+        });
+        
+        // Add members
+        for (const personId of members) {
+          await api(`/groups/${newGroup.id}/members`, {
+            method: 'POST',
+            body: JSON.stringify({ personId, role: personId === data.leaderId ? 'leader' : 'member' })
+          });
+        }
+        
+        // Add projects
+        for (const projectId of projects) {
+          await api(`/groups/${newGroup.id}/projects`, {
+            method: 'POST',
+            body: JSON.stringify({ projectId })
+          });
+        }
+        
+        closeModal();
+        showToast(t('groups.groupCreated') || 'Group created successfully');
+        loadGroups();
+      } catch (error) {
+        showToast(error.message, 'error');
+      }
+    };
+  } catch (error) {
+    showToast(t('common.error') || 'Error loading data', 'error');
+  }
+}
+
+async function editGroup(groupId) {
+  if (!canEdit()) {
+    showToast(t('common.noPermission') || 'You do not have permission to edit groups', 'error');
+    return;
+  }
+  
+  try {
+    const [group, people, projects] = await Promise.all([
+      api(`/groups/${groupId}`),
+      api('/people?active=true'),
+      api('/projects?status=active')
+    ]);
+    
+    const memberIds = group.members?.map(m => m.id) || [];
+    const projectIds = group.projects?.map(p => p.id) || [];
+    
+    showModal(t('groups.editGroup') || 'Edit Group', `
+      <form id="edit-group-form" class="modal-form">
+        <div class="form-group">
+          <label>${t('groups.groupName') || 'Group Name'} *</label>
+          <input type="text" name="name" value="${group.name}" required>
+        </div>
+        <div class="form-group">
+          <label>${t('groups.description') || 'Description'}</label>
+          <textarea name="description" rows="2">${group.description || ''}</textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>${t('groups.color') || 'Color'}</label>
+            <input type="color" name="color" value="${group.color || '#6366f1'}">
+          </div>
+          <div class="form-group">
+            <label>${t('common.status') || 'Status'}</label>
+            <select name="isActive">
+              <option value="true" ${group.is_active ? 'selected' : ''}>${t('common.active') || 'Active'}</option>
+              <option value="false" ${!group.is_active ? 'selected' : ''}>${t('common.inactive') || 'Inactive'}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>${t('groups.leader') || 'Group Leader'}</label>
+          <select name="leaderId">
+            <option value="">${t('groups.selectLeader') || 'Select a leader...'}</option>
+            ${people.data.map(p => `<option value="${p.id}" ${group.leader_id === p.id ? 'selected' : ''}>${p.firstName} ${p.lastName}</option>`).join('')}
+          </select>
+        </div>
+        
+        <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+          <i class="fas fa-users"></i> ${t('groups.members') || 'Members'}
+        </h4>
+        <div class="form-group">
+          <div class="members-checkbox-list" style="max-height: 200px; overflow-y: auto;">
+            ${people.data.map(p => `
+              <label class="checkbox-label">
+                <input type="checkbox" name="members" value="${p.id}" ${memberIds.includes(p.id) ? 'checked' : ''}>
+                ${p.firstName} ${p.lastName} <small class="text-muted">(${p.department || p.position || ''})</small>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+        
+        <h4 style="margin: 20px 0 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+          <i class="fas fa-project-diagram"></i> ${t('groups.assignedProjects') || 'Assigned Projects'}
+        </h4>
+        <div class="form-group">
+          <div class="projects-checkbox-list" style="max-height: 200px; overflow-y: auto;">
+            ${projects.data.map(p => `
+              <label class="checkbox-label">
+                <input type="checkbox" name="projects" value="${p.id}" ${projectIds.includes(p.id) ? 'checked' : ''}>
+                ${p.name} <small class="text-muted">(${p.status})</small>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">${t('common.cancel') || 'Cancel'}</button>
+          <button type="submit" class="btn btn-primary">${t('common.saveChanges') || 'Save Changes'}</button>
+        </div>
+      </form>
+    `);
+    
+    document.getElementById('edit-group-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      
+      // Get selected members
+      const newMembers = [];
+      document.querySelectorAll('input[name="members"]:checked').forEach(cb => {
+        newMembers.push(parseInt(cb.value));
+      });
+      
+      // Get selected projects
+      const newProjects = [];
+      document.querySelectorAll('input[name="projects"]:checked').forEach(cb => {
+        newProjects.push(parseInt(cb.value));
+      });
+      
+      const data = {
+        name: formData.get('name'),
+        description: formData.get('description') || null,
+        color: formData.get('color'),
+        leaderId: formData.get('leaderId') ? parseInt(formData.get('leaderId')) : null,
+        isActive: formData.get('isActive') === 'true'
+      };
+      
+      try {
+        await api(`/groups/${groupId}`, {
+          method: 'PUT',
+          body: JSON.stringify(data)
+        });
+        
+        // Update members - remove old ones and add new ones
+        for (const oldMemberId of memberIds) {
+          if (!newMembers.includes(oldMemberId)) {
+            await api(`/groups/${groupId}/members/${oldMemberId}`, { method: 'DELETE' });
+          }
+        }
+        for (const newMemberId of newMembers) {
+          if (!memberIds.includes(newMemberId)) {
+            await api(`/groups/${groupId}/members`, {
+              method: 'POST',
+              body: JSON.stringify({ personId: newMemberId, role: newMemberId === data.leaderId ? 'leader' : 'member' })
+            });
+          }
+        }
+        
+        // Update projects - remove old ones and add new ones
+        for (const oldProjectId of projectIds) {
+          if (!newProjects.includes(oldProjectId)) {
+            await api(`/groups/${groupId}/projects/${oldProjectId}`, { method: 'DELETE' });
+          }
+        }
+        for (const newProjectId of newProjects) {
+          if (!projectIds.includes(newProjectId)) {
+            await api(`/groups/${groupId}/projects`, {
+              method: 'POST',
+              body: JSON.stringify({ projectId: newProjectId })
+            });
+          }
+        }
+        
+        closeModal();
+        showToast(t('groups.groupUpdated') || 'Group updated successfully');
+        loadGroups();
+      } catch (error) {
+        showToast(error.message, 'error');
+      }
+    };
+  } catch (error) {
+    showToast(t('common.error') || 'Error loading group', 'error');
+  }
+}
+
+async function deleteGroup(groupId) {
+  if (!canEdit()) {
+    showToast(t('common.noPermission') || 'You do not have permission to delete groups', 'error');
+    return;
+  }
+  
+  if (!confirm(t('groups.confirmDelete') || 'Are you sure you want to delete this group?')) {
+    return;
+  }
+  
+  try {
+    await api(`/groups/${groupId}`, { method: 'DELETE' });
+    showToast(t('groups.groupDeleted') || 'Group deleted successfully');
+    loadGroups();
+  } catch (error) {
+    showToast(error.message, 'error');
+  }
+}
+
 // ===== Conflicts =====
 async function loadConflicts() {
   try {
@@ -4475,6 +4901,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('add-person-btn')?.addEventListener('click', showAddPersonModal);
   document.getElementById('add-project-btn')?.addEventListener('click', showAddProjectModal);
   document.getElementById('add-skill-btn')?.addEventListener('click', showAddSkillModal);
+  document.getElementById('add-group-btn')?.addEventListener('click', showAddGroupModal);
   document.getElementById('add-user-btn')?.addEventListener('click', showAddUserModal);
   
   // AI Scheduler
@@ -4482,13 +4909,14 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Search handlers
   let searchTimeout;
-  ['people-search', 'projects-search', 'skills-search'].forEach(id => {
+  ['people-search', 'projects-search', 'skills-search', 'groups-search'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', (e) => {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
         if (id === 'people-search') loadPeople();
         if (id === 'projects-search') loadProjects();
         if (id === 'skills-search') loadSkills();
+        if (id === 'groups-search') loadGroups();
       }, 300);
     });
   });
