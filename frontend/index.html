@@ -114,6 +114,48 @@
           <span data-i18n="nav.settings">Settings</span>
         </a>
       </nav>
+      
+      <!-- Mobile Quick Actions (visible only on mobile in sidebar) -->
+      <div class="sidebar-quick-actions" id="sidebar-quick-actions">
+        <div class="sidebar-section-title" data-i18n="dashboard.quickActions">Quick Actions</div>
+        <div class="sidebar-actions-list">
+          <button class="sidebar-action-item" id="sidebar-lang-btn" onclick="toggleSidebarLanguage()">
+            <i class="fas fa-globe"></i>
+            <span data-i18n="settings.language">Language</span>
+            <span class="action-value" id="sidebar-lang-value">English</span>
+          </button>
+          <button class="sidebar-action-item" onclick="openGlobalSearch(); closeSidebar();">
+            <i class="fas fa-search"></i>
+            <span data-i18n="common.search">Search</span>
+            <kbd>Ctrl+K</kbd>
+          </button>
+          <button class="sidebar-action-item" onclick="showHelp(); closeSidebar();">
+            <i class="fas fa-question-circle"></i>
+            <span data-i18n="help.title">Help</span>
+          </button>
+          <a href="/manual.html" target="_blank" class="sidebar-action-item">
+            <i class="fas fa-book"></i>
+            <span data-i18n="help.manual">User Manual</span>
+            <i class="fas fa-external-link-alt action-external"></i>
+          </a>
+          <button class="sidebar-action-item" onclick="switchView('schedule'); setTimeout(showAddAssignmentModal, 100); closeSidebar();">
+            <i class="fas fa-plus-circle"></i>
+            <span data-i18n="schedule.addAssignment">Add Assignment</span>
+          </button>
+        </div>
+        <!-- Language submenu -->
+        <div class="sidebar-lang-menu hidden" id="sidebar-lang-menu">
+          <button class="lang-option" onclick="switchLanguage('en'); closeSidebarLangMenu();">
+            <span class="lang-flag">🇬🇧</span>
+            <span>English</span>
+          </button>
+          <button class="lang-option" onclick="switchLanguage('el'); closeSidebarLangMenu();">
+            <span class="lang-flag">🇬🇷</span>
+            <span>Ελληνικά</span>
+          </button>
+        </div>
+      </div>
+      
       <div class="sidebar-footer">
         <div class="user-info" id="user-info">
           <div class="user-avatar">

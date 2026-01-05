@@ -5078,5 +5078,33 @@ function resetConfirmPreferences() {
   showToast('Confirmation preferences reset');
 }
 
+// ===== Sidebar Mobile Functions =====
+function closeSidebar() {
+  document.querySelector('.sidebar')?.classList.remove('open');
+  document.getElementById('sidebar-overlay')?.classList.remove('active');
+}
+
+function toggleSidebarLanguage() {
+  const menu = document.getElementById('sidebar-lang-menu');
+  menu?.classList.toggle('hidden');
+}
+
+function closeSidebarLangMenu() {
+  document.getElementById('sidebar-lang-menu')?.classList.add('hidden');
+  updateSidebarLangValue();
+}
+
+function updateSidebarLangValue() {
+  const currentLang = localStorage.getItem('scheduler_language') || 'en';
+  const langValue = document.getElementById('sidebar-lang-value');
+  if (langValue) {
+    langValue.textContent = currentLang === 'el' ? 'Ελληνικά' : 'English';
+  }
+}
+
+// Update sidebar language value on load and language change
+document.addEventListener('DOMContentLoaded', updateSidebarLangValue);
+document.addEventListener('languageChanged', updateSidebarLangValue);
+
 // Help button click
 document.getElementById('help-btn')?.addEventListener('click', showHelp);

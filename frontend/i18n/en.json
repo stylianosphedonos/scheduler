@@ -454,6 +454,7 @@
   },
   "help": {
     "title": "Help",
+    "manual": "User Manual",
     "notAvailable": "Help content not available for this page.",
     "overview": "Overview",
     "tips": "Tips",
