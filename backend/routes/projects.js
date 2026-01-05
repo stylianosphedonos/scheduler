@@ -175,6 +175,8 @@ router.post('/', authenticateToken, requireRole('admin', 'scheduler'), async (re
 router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (req, res) => {
   try {
     const db = req.app.locals.db;
+    console.log('Update project request - ID:', req.params.id, 'Body:', JSON.stringify(req.body));
+    
     const projectId = parseInt(req.params.id);
     if (isNaN(projectId)) return res.status(400).json({ error: 'Invalid project ID' });
     
@@ -187,8 +189,8 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     const values = [];
 
     if (name !== undefined) { updates.push('name = ?'); values.push(name); }
-    if (code !== undefined) { updates.push('code = ?'); values.push(code); }
-    if (client !== undefined) { updates.push('client = ?'); values.push(client); }
+    if (code !== undefined) { updates.push('code = ?'); values.push(code || null); }
+    if (client !== undefined) { updates.push('client = ?'); values.push(client || null); }
     if (description !== undefined) { updates.push('description = ?'); values.push(description); }
     if (status !== undefined) { updates.push('status = ?'); values.push(status); }
     if (priority !== undefined) { updates.push('priority = ?'); values.push(priority); }
@@ -209,7 +211,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     res.json({ message: 'Project updated successfully' });
   } catch (error) {
     console.error('Update project error:', error);
-    res.status(500).json({ error: 'Failed to update project' });
+    res.status(500).json({ error: 'Failed to update project', details: error.message });
   }
 });
 

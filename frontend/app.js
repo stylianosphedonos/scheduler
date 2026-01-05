@@ -2481,13 +2481,13 @@ async function editProject(id) {
       
       const data = {
         name: formData.get('name'),
-        code: formData.get('code'),
-        client: formData.get('client'),
+        code: formData.get('code') || null,
+        client: formData.get('client') || null,
         status: formData.get('status'),
         priority: formData.get('priority'),
-        startDate: formData.get('startDate'),
-        endDate: formData.get('endDate'),
-        budgetHours: formData.get('budgetHours') ? parseInt(formData.get('budgetHours')) : null
+        startDate: formData.get('startDate') || null,
+        endDate: formData.get('endDate') || null,
+        budgetHours: formData.get('budgetHours') ? parseFloat(formData.get('budgetHours')) : null
       };
       
       try {
