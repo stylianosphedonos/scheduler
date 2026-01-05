@@ -76,6 +76,14 @@ function getHelpContent() {
           <li>${t('help.people.step4')}</li>
         </ol>
         
+        <h4>${t('people.workHours') || 'Work Hours'} <span style="color:#10b981;font-size:0.8em;">(NEW)</span></h4>
+        <p>${t('help.people.workHoursDesc') || 'Define individual work schedules for each employee:'}</p>
+        <ul>
+          <li><strong>${t('people.workStartTime') || 'Work Start Time'}:</strong> ${t('help.people.startTimeDesc') || 'When the workday begins (e.g., 09:00)'}</li>
+          <li><strong>${t('people.workEndTime') || 'Work End Time'}:</strong> ${t('help.people.endTimeDesc') || 'When the workday ends (e.g., 17:00)'}</li>
+          <li>${t('help.people.workHoursTip') || 'AI scheduler respects these hours when creating assignments'}</li>
+        </ul>
+        
         <h4>${t('help.people.assigningSkills')}</h4>
         <ol>
           <li>${t('help.people.skillStep1')}</li>
@@ -107,6 +115,14 @@ function getHelpContent() {
           <li>${t('help.projects.step3')}</li>
           <li>${t('help.projects.step4')}</li>
         </ol>
+        
+        <h4>${t('projects.location') || 'Location'} <span style="color:#10b981;font-size:0.8em;">(NEW)</span></h4>
+        <p>${t('help.projects.locationDesc') || 'Projects can have a physical location. Paste a Google Maps link and coordinates are extracted automatically.'}</p>
+        <ul>
+          <li><strong>${t('projects.locationName') || 'Location Name'}:</strong> ${t('help.projects.locationNameDesc') || 'Name of the site (e.g., Main Office)'}</li>
+          <li><strong>${t('projects.locationUrl') || 'Google Maps Link'}:</strong> ${t('help.projects.locationUrlDesc') || 'Paste link to auto-extract coordinates'}</li>
+          <li><strong>${t('help.projects.locationAI') || 'AI Integration'}:</strong> ${t('help.projects.locationAIDesc') || 'AI scheduler prefers nearby locations to minimize travel'}</li>
+        </ul>
         
         <h4>${t('help.projects.skillReqs')}</h4>
         <p>${t('help.projects.skillReqsDesc')}</p>
@@ -146,6 +162,43 @@ function getHelpContent() {
         <p>${t('help.skills.skillGapsDesc')}</p>
       `
     },
+    groups: {
+      title: t('help.groups.title') || 'Groups Help',
+      content: `
+        <h4>${t('help.overview')}</h4>
+        <p>${t('help.groups.overview') || 'Groups allow you to organize people into teams and assign projects to groups for better coordination.'}</p>
+        
+        <h4>${t('help.groups.creating') || 'Creating a Group'}</h4>
+        <ol>
+          <li>${t('help.groups.step1') || 'Click "Add Group" button'}</li>
+          <li>${t('help.groups.step2') || 'Enter group name and description'}</li>
+          <li>${t('help.groups.step3') || 'Choose a color for visual identification'}</li>
+          <li>${t('help.groups.step4') || 'Optionally select a team leader'}</li>
+          <li>${t('help.groups.step5') || 'Save the group'}</li>
+        </ol>
+        
+        <h4>${t('help.groups.members') || 'Managing Members'}</h4>
+        <ul>
+          <li>${t('help.groups.members1') || 'Add people to groups from the group details view'}</li>
+          <li>${t('help.groups.members2') || 'Assign "Leader" or "Member" roles'}</li>
+          <li>${t('help.groups.members3') || 'Remove members without deleting them from the system'}</li>
+        </ul>
+        
+        <h4>${t('help.groups.projects') || 'Assigning Projects'}</h4>
+        <ul>
+          <li>${t('help.groups.projects1') || 'Link projects to groups from group details'}</li>
+          <li>${t('help.groups.projects2') || 'Track which team is responsible for each project'}</li>
+          <li>${t('help.groups.projects3') || 'Help distribute work across teams'}</li>
+        </ul>
+        
+        <h4>${t('help.tips')}</h4>
+        <ul>
+          <li>${t('help.groups.tip1') || 'Use groups to organize by department or skill set'}</li>
+          <li>${t('help.groups.tip2') || 'Click on a group card to see full details'}</li>
+          <li>${t('help.groups.tip3') || 'Filter groups by status to find active teams'}</li>
+        </ul>
+      `
+    },
     'ai-scheduler': {
       title: t('help.aiScheduler.title'),
       content: `
@@ -173,6 +226,16 @@ function getHelpContent() {
           <li>${t('help.aiScheduler.consideration2')}</li>
           <li>${t('help.aiScheduler.consideration3')}</li>
           <li>${t('help.aiScheduler.consideration4')}</li>
+          <li>${t('help.aiScheduler.consideration5') || 'Location proximity - prefers assigning people to nearby projects'}</li>
+        </ul>
+        
+        <h4>${t('help.aiScheduler.locationAware') || 'Location-Aware Scheduling'} <span style="color:#10b981;font-size:0.8em;">(NEW)</span></h4>
+        <p>${t('help.aiScheduler.locationAwareDesc') || 'The AI considers project locations when making assignments:'}</p>
+        <ul>
+          <li>${t('help.aiScheduler.location1') || 'Same location (< 0.5 km): +20 points'}</li>
+          <li>${t('help.aiScheduler.location2') || 'Very close (< 2 km): +15 points'}</li>
+          <li>${t('help.aiScheduler.location3') || 'Close (< 5 km): +10 points'}</li>
+          <li>${t('help.aiScheduler.location4') || 'Moderate (< 15 km): +5 points'}</li>
         </ul>
       `
     },

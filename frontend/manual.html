@@ -196,11 +196,6 @@
       color: var(--primary);
     }
 
-    .feature-card p {
-      font-size: 0.9rem;
-      margin: 0;
-    }
-
     /* Screenshot Placeholder */
     .screenshot {
       background: var(--bg-elevated);
@@ -298,6 +293,28 @@
       gap: 8px;
     }
 
+    /* New Feature Box */
+    .new-feature-box {
+      background: rgba(16, 185, 129, 0.1);
+      border-left: 4px solid var(--success);
+      padding: 15px 20px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+    }
+
+    .new-feature-box h4 {
+      color: var(--success);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .new-feature-box p {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
     /* Keyboard Shortcuts */
     .kbd {
       background: var(--bg-elevated);
@@ -374,6 +391,17 @@
       background: var(--primary-dark);
     }
 
+    /* New badge */
+    .badge-new {
+      background: var(--success);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
     /* Print Styles */
     @media print {
       .manual-nav { display: none; }
@@ -395,7 +423,7 @@
   <header class="manual-header">
     <h1><i class="fas fa-calendar-alt"></i> Resource Scheduler</h1>
     <p>Comprehensive User Manual & Documentation</p>
-    <span class="version">Version 1.0.0</span>
+    <span class="version">Version 2.0.0</span>
   </header>
 
   <!-- Navigation -->
@@ -407,6 +435,7 @@
       <li><a href="#schedule">Schedule</a></li>
       <li><a href="#people">People</a></li>
       <li><a href="#projects">Projects</a></li>
+      <li><a href="#groups">Groups</a></li>
       <li><a href="#skills">Skills</a></li>
       <li><a href="#ai-scheduler">AI Scheduler</a></li>
       <li><a href="#conflicts">Conflicts</a></li>
@@ -426,17 +455,21 @@
         <h2>System Overview</h2>
       </div>
       <div class="section-content">
-        <p>The Resource Scheduler is a comprehensive workforce management system designed to optimize staff allocation across projects. It enables organizations to efficiently schedule employees based on their skills, availability, and project requirements.</p>
+        <p>The Resource Scheduler is a comprehensive workforce management system designed to optimize staff allocation across projects. It enables organizations to efficiently schedule employees based on their skills, availability, work hours, and project requirements.</p>
         
         <h3>Key Features</h3>
         <div class="feature-grid">
           <div class="feature-card">
             <h4><i class="fas fa-users"></i> People Management</h4>
-            <p>Manage employee profiles, skills, and availability with detailed proficiency tracking.</p>
+            <p>Manage employee profiles, skills, work schedules, and availability with detailed proficiency tracking.</p>
           </div>
           <div class="feature-card">
             <h4><i class="fas fa-project-diagram"></i> Project Management</h4>
-            <p>Create projects with skill requirements and track resource allocation.</p>
+            <p>Create projects with skill requirements, locations, and track resource allocation.</p>
+          </div>
+          <div class="feature-card">
+            <h4><i class="fas fa-users-cog"></i> Groups / Teams <span class="badge-new">NEW</span></h4>
+            <p>Organize people into teams and assign projects to groups for better coordination.</p>
           </div>
           <div class="feature-card">
             <h4><i class="fas fa-calendar-check"></i> Smart Scheduling</h4>
@@ -444,14 +477,18 @@
           </div>
           <div class="feature-card">
             <h4><i class="fas fa-robot"></i> AI Optimization</h4>
-            <p>Let AI suggest optimal schedules based on skills, availability, and priorities.</p>
+            <p>Let AI suggest optimal schedules based on skills, availability, location proximity, and priorities.</p>
+          </div>
+          <div class="feature-card">
+            <h4><i class="fas fa-map-marker-alt"></i> Location Tracking <span class="badge-new">NEW</span></h4>
+            <p>Track project locations with Google Maps integration for proximity-based scheduling.</p>
           </div>
           <div class="feature-card">
             <h4><i class="fas fa-exclamation-triangle"></i> Conflict Detection</h4>
             <p>Automatically detect scheduling conflicts, overallocation, and skill gaps.</p>
           </div>
           <div class="feature-card">
-            <h4><i class="fas fa-file-export"></i> Reporting</h4>
+            <h4><i class="fas fa-file-pdf"></i> PDF Export</h4>
             <p>Generate comprehensive reports with preview and PDF export capabilities.</p>
           </div>
         </div>
@@ -486,11 +523,6 @@
               <td>admin</td>
               <td>admin123</td>
               <td><span class="role-badge role-admin">Admin</span></td>
-            </tr>
-            <tr>
-              <td>manager</td>
-              <td>manager123</td>
-              <td><span class="role-badge role-manager">Manager</span></td>
             </tr>
             <tr>
               <td>scheduler</td>
@@ -556,6 +588,20 @@
           <li><strong>Weekly Hours Trend:</strong> Chart showing hours scheduled over the past week</li>
           <li><strong>Top Utilized:</strong> Most active employees by hours worked</li>
           <li><strong>Project Workload:</strong> Projects with the most scheduled hours</li>
+          <li><strong>Available Employees:</strong> <span class="badge-new">NEW</span> Shows employees with unassigned hours and their skills</li>
+        </ul>
+
+        <div class="new-feature-box">
+          <h4><i class="fas fa-star"></i> Available Employees Widget</h4>
+          <p>The dashboard now shows employees who have remaining available hours for the day. This helps schedulers quickly identify who can take on additional work.</p>
+        </div>
+
+        <h3>PDF Export</h3>
+        <p>Click "Export to PDF" to generate a printable report of the current schedule. The preview shows:</p>
+        <ul>
+          <li>Schedule grouped by date</li>
+          <li>All assignments with person, project, and time details</li>
+          <li>Professional formatting optimized for printing</li>
         </ul>
 
         <div class="tip-box">
@@ -635,7 +681,7 @@
         <h2>People Management</h2>
       </div>
       <div class="section-content">
-        <p>Manage your workforce by adding employees, tracking their skills, and monitoring their availability.</p>
+        <p>Manage your workforce by adding employees, tracking their skills, work schedules, and monitoring their availability.</p>
         
         <h3>Person Profile Fields</h3>
         <table class="manual-table">
@@ -678,15 +724,35 @@
               <td>Maximum working hours per day (default: 8)</td>
             </tr>
             <tr>
+              <td>Work Start Time <span class="badge-new">NEW</span></td>
+              <td>No</td>
+              <td>When the employee's workday starts (e.g., 09:00)</td>
+            </tr>
+            <tr>
+              <td>Work End Time <span class="badge-new">NEW</span></td>
+              <td>No</td>
+              <td>When the employee's workday ends (e.g., 17:00)</td>
+            </tr>
+            <tr>
               <td>Employment Type</td>
               <td>No</td>
               <td>Full-time, Part-time, Contractor, or Intern</td>
             </tr>
+            <tr>
+              <td>Skills</td>
+              <td>No</td>
+              <td>Skills can be assigned during creation with proficiency levels</td>
+            </tr>
           </tbody>
         </table>
 
+        <div class="new-feature-box">
+          <h4><i class="fas fa-clock"></i> Work Hours Schedule</h4>
+          <p>You can now define individual work schedules for each employee. For example, one employee might work 08:00-16:00 while another works 09:00-17:00. This helps the AI scheduler make better assignments and prevents scheduling outside working hours.</p>
+        </div>
+
         <h3>Assigning Skills</h3>
-        <p>Each person can have multiple skills with proficiency levels:</p>
+        <p>Skills can be assigned when creating a person or when editing their profile. Each skill includes:</p>
         <ul>
           <li><strong>Level 1:</strong> Beginner - Basic understanding</li>
           <li><strong>Level 2:</strong> Elementary - Can work with guidance</li>
@@ -697,11 +763,11 @@
 
         <h3>Actions</h3>
         <ul>
-          <li><strong>View Details:</strong> Click on a person card to see full profile</li>
-          <li><strong>Edit:</strong> Modify person information and skills (Admin/Manager only)</li>
+          <li><strong>View Details:</strong> Click on a person card to see full profile with work hours</li>
+          <li><strong>Edit:</strong> Modify person information, work schedule, and skills (Admin/Scheduler only)</li>
           <li><strong>Delete:</strong> Remove person from system (Admin only)</li>
           <li><strong>Search:</strong> Filter by name or email</li>
-          <li><strong>Filter:</strong> Show only active or inactive employees</li>
+          <li><strong>Filter:</strong> Show by department or status</li>
         </ul>
       </div>
     </section>
@@ -713,7 +779,7 @@
         <h2>Project Management</h2>
       </div>
       <div class="section-content">
-        <p>Create and manage projects with detailed skill requirements and staffing needs.</p>
+        <p>Create and manage projects with detailed skill requirements, locations, and staffing needs.</p>
         
         <h3>Project Fields</h3>
         <table class="manual-table">
@@ -748,8 +814,30 @@
               <td>Budget Hours</td>
               <td>Total hours allocated for the project</td>
             </tr>
+            <tr>
+              <td>Location Name <span class="badge-new">NEW</span></td>
+              <td>Name of the project site (e.g., "Main Office", "Client Site A")</td>
+            </tr>
+            <tr>
+              <td>Google Maps Link <span class="badge-new">NEW</span></td>
+              <td>Paste a Google Maps link - coordinates are extracted automatically</td>
+            </tr>
+            <tr>
+              <td>Latitude/Longitude <span class="badge-new">NEW</span></td>
+              <td>GPS coordinates for distance calculations</td>
+            </tr>
           </tbody>
         </table>
+
+        <div class="new-feature-box">
+          <h4><i class="fas fa-map-marker-alt"></i> Project Location & Google Maps</h4>
+          <p>Projects can now have a physical location. Simply paste a Google Maps link and the system will automatically extract the coordinates. This enables:</p>
+          <ul style="margin-top: 10px; margin-left: 20px;">
+            <li>View project location on Google Maps with one click</li>
+            <li>AI Scheduler optimizes assignments to minimize travel between locations</li>
+            <li>Location displayed on project cards and details</li>
+          </ul>
+        </div>
 
         <h3>Skill Requirements</h3>
         <p>For each project, you can specify which skills are needed:</p>
@@ -764,7 +852,79 @@
 
         <div class="tip-box">
           <h4><i class="fas fa-lightbulb"></i> Skill Matching</h4>
-          <p>The system scores candidates based on their skill proficiency, availability, and current workload to suggest optimal assignments.</p>
+          <p>The system scores candidates based on their skill proficiency, availability, current workload, and now also location proximity to suggest optimal assignments.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Groups Section (NEW) -->
+    <section id="groups" class="manual-section">
+      <div class="section-header">
+        <div class="section-icon"><i class="fas fa-users-cog"></i></div>
+        <h2>Groups / Teams <span class="badge-new">NEW</span></h2>
+      </div>
+      <div class="section-content">
+        <p>Organize your workforce into teams or groups for better coordination. Groups help manage related people and projects together.</p>
+        
+        <h3>Group Properties</h3>
+        <table class="manual-table">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Name</td>
+              <td>Group or team name (e.g., "Development Team", "Marketing")</td>
+            </tr>
+            <tr>
+              <td>Description</td>
+              <td>Brief description of the group's purpose</td>
+            </tr>
+            <tr>
+              <td>Color</td>
+              <td>Visual identifier for the group</td>
+            </tr>
+            <tr>
+              <td>Leader</td>
+              <td>Optional team leader from the people list</td>
+            </tr>
+            <tr>
+              <td>Status</td>
+              <td>Active or Inactive</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Managing Group Members</h3>
+        <p>Add people to groups to organize your teams:</p>
+        <ul>
+          <li><strong>Add Members:</strong> Select people to include in the group</li>
+          <li><strong>Member Roles:</strong> Assign "Leader" or "Member" roles</li>
+          <li><strong>Remove Members:</strong> Remove people from the group without deleting them</li>
+        </ul>
+
+        <h3>Assigning Projects to Groups</h3>
+        <p>Link projects to groups to track which team is responsible:</p>
+        <ul>
+          <li><strong>Assign Projects:</strong> Add projects that this group works on</li>
+          <li><strong>View Workload:</strong> See all projects assigned to the group</li>
+          <li><strong>Team Coordination:</strong> Helps in distributing work across teams</li>
+        </ul>
+
+        <h3>Group Details View</h3>
+        <p>Click on a group card to see:</p>
+        <ul>
+          <li>Full member list with roles</li>
+          <li>All projects assigned to the group</li>
+          <li>Quick actions to manage members and projects</li>
+        </ul>
+
+        <div class="tip-box">
+          <h4><i class="fas fa-lightbulb"></i> Team Organization</h4>
+          <p>Use groups to organize people by department, skill set, or project team. This makes it easier to find and schedule the right people for the right projects.</p>
         </div>
       </div>
     </section>
@@ -807,14 +967,14 @@
         <h2>AI Schedule Optimizer</h2>
       </div>
       <div class="section-content">
-        <p>Let artificial intelligence analyze your projects, skills, and availability to generate optimal schedule suggestions.</p>
+        <p>Let artificial intelligence analyze your projects, skills, availability, and locations to generate optimal schedule suggestions.</p>
         
         <h3>How It Works</h3>
         <div class="steps">
           <div class="step">
             <div class="step-content">
               <h4>Select Date Range</h4>
-              <p>Choose the start and end dates for schedule generation.</p>
+              <p>Choose the start and end dates for schedule generation. Defaults to today's date.</p>
             </div>
           </div>
           <div class="step">
@@ -826,7 +986,7 @@
           <div class="step">
             <div class="step-content">
               <h4>Review Suggestions</h4>
-              <p>Each suggestion shows project, person, skill match, and time slot.</p>
+              <p>Each suggestion shows project, person, skill match, time slot, and location information.</p>
             </div>
           </div>
           <div class="step">
@@ -867,13 +1027,34 @@
           <li>Project priority (Critical/High projects are scheduled first)</li>
           <li>Skill match score (proficiency level vs. required level)</li>
           <li>Person availability (excludes those on leave)</li>
+          <li>Work hours (respects individual start/end times)</li>
           <li>Workload balance (prefers people with available hours)</li>
           <li>Existing assignments (avoids time conflicts)</li>
+          <li><strong>Location proximity</strong> <span class="badge-new">NEW</span> - Prefers assigning people to nearby projects</li>
+        </ul>
+
+        <div class="new-feature-box">
+          <h4><i class="fas fa-map-marker-alt"></i> Location-Aware Scheduling</h4>
+          <p>The AI scheduler now considers project locations when making assignments. It prefers to assign people to projects at the same or nearby locations to minimize travel time. The scoring system:</p>
+          <ul style="margin-top: 10px; margin-left: 20px;">
+            <li><strong>Same location (&lt; 0.5 km):</strong> +20 points</li>
+            <li><strong>Very close (&lt; 2 km):</strong> +15 points</li>
+            <li><strong>Close (&lt; 5 km):</strong> +10 points</li>
+            <li><strong>Moderate (&lt; 15 km):</strong> +5 points</li>
+          </ul>
+        </div>
+
+        <h3>Remaining Availability</h3>
+        <p>After generating suggestions, the system shows employees who still have unassigned hours. This helps identify:</p>
+        <ul>
+          <li>People available for additional work</li>
+          <li>Potential under-utilization</li>
+          <li>Resources for last-minute assignments</li>
         </ul>
 
         <div class="tip-box">
           <h4><i class="fas fa-lightbulb"></i> Match Score</h4>
-          <p>The percentage shown indicates how well a person matches the requirement. 70%+ is considered a good match.</p>
+          <p>The percentage shown indicates how well a person matches the requirement. The score includes skills, availability, and location proximity. 70%+ is considered a good match.</p>
         </div>
       </div>
     </section>
@@ -952,19 +1133,19 @@
         <h3>Active Projects Summary</h3>
         <p>Displays all active projects with:</p>
         <ul>
-          <li>Project details (name, code, client, priority)</li>
+          <li>Project details (name, code, client, priority, location)</li>
           <li>Total hours worked</li>
           <li>Team members assigned</li>
           <li>Skill requirements</li>
           <li>Budget usage percentage</li>
         </ul>
 
-        <h3>Report Preview</h3>
+        <h3>PDF Export with Preview</h3>
         <p>Before exporting, preview your report organized by:</p>
         <ul>
           <li><strong>Day:</strong> Each working day gets its own section</li>
-          <li><strong>Status:</strong> Projects grouped by Active, Planning, On-Hold, Completed</li>
-          <li><strong>Project:</strong> Full details including assigned people and hours</li>
+          <li><strong>Project:</strong> Full details including assigned people, hours, and locations</li>
+          <li><strong>Professional formatting:</strong> Clean layout optimized for printing</li>
         </ul>
 
         <h3>Export Options</h3>
@@ -974,14 +1155,14 @@
             <p>Download as .xlsx file with multiple sheets for schedules, people, and conflicts.</p>
           </div>
           <div class="feature-card">
-            <h4><i class="fas fa-print"></i> Print / PDF</h4>
-            <p>Use the preview and print to save as PDF or send to printer.</p>
+            <h4><i class="fas fa-file-pdf"></i> PDF Export</h4>
+            <p>Preview the report and print/save as PDF with professional formatting.</p>
           </div>
         </div>
 
         <div class="tip-box">
           <h4><i class="fas fa-lightbulb"></i> Saving as PDF</h4>
-          <p>Click "Print / Save as PDF", then in the print dialog, select "Save as PDF" as the destination.</p>
+          <p>Click "Export to PDF" on the dashboard, review the preview, then click "Print / Save as PDF". In the print dialog, select "Save as PDF" as the destination.</p>
         </div>
       </div>
     </section>
@@ -1024,9 +1205,18 @@
           <li><strong>Activate/Deactivate:</strong> Enable or disable account access</li>
         </ul>
 
+        <h3>Database Management (Admin Only)</h3>
+        <p>Administrators have access to database management tools:</p>
+        <ul>
+          <li><strong>Backup Database:</strong> Create a backup of all data</li>
+          <li><strong>Export Data:</strong> Export data in various formats</li>
+          <li><strong>Clean Old Data:</strong> Remove outdated records</li>
+          <li><strong>Reset Database:</strong> Clear all data (use with caution)</li>
+        </ul>
+
         <div class="warning-box">
           <h4><i class="fas fa-exclamation-triangle"></i> Admin Access</h4>
-          <p>User Management is only accessible to administrators. Other roles will not see this menu item.</p>
+          <p>User Management and Database tools are only accessible to administrators. Other roles will not see these menu items.</p>
         </div>
       </div>
     </section>
@@ -1046,7 +1236,6 @@
             <tr>
               <th>Feature</th>
               <th><span class="role-badge role-admin">Admin</span></th>
-              <th><span class="role-badge role-manager">Manager</span></th>
               <th><span class="role-badge role-scheduler">Scheduler</span></th>
               <th><span class="role-badge role-viewer">Viewer</span></th>
             </tr>
@@ -1057,18 +1246,15 @@
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
-              <td><i class="fas fa-check" style="color: var(--success)"></i></td>
             </tr>
             <tr>
               <td>View Schedule</td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
-              <td><i class="fas fa-check" style="color: var(--success)"></i></td>
             </tr>
             <tr>
               <td>Create Assignments</td>
-              <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-times" style="color: var(--error)"></i></td>
@@ -1078,25 +1264,27 @@
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-times" style="color: var(--error)"></i></td>
-              <td><i class="fas fa-times" style="color: var(--error)"></i></td>
             </tr>
             <tr>
               <td>Manage Projects</td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-times" style="color: var(--error)"></i></td>
+            </tr>
+            <tr>
+              <td>Manage Groups</td>
+              <td><i class="fas fa-check" style="color: var(--success)"></i></td>
+              <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-times" style="color: var(--error)"></i></td>
             </tr>
             <tr>
               <td>Use AI Scheduler</td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
-              <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-times" style="color: var(--error)"></i></td>
             </tr>
             <tr>
               <td>Export Reports</td>
-              <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-times" style="color: var(--error)"></i></td>
@@ -1106,12 +1294,16 @@
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
               <td><i class="fas fa-times" style="color: var(--error)"></i></td>
               <td><i class="fas fa-times" style="color: var(--error)"></i></td>
+            </tr>
+            <tr>
+              <td>Database Management</td>
+              <td><i class="fas fa-check" style="color: var(--success)"></i></td>
+              <td><i class="fas fa-times" style="color: var(--error)"></i></td>
               <td><i class="fas fa-times" style="color: var(--error)"></i></td>
             </tr>
             <tr>
               <td>Delete Records</td>
               <td><i class="fas fa-check" style="color: var(--success)"></i></td>
-              <td><i class="fas fa-times" style="color: var(--error)"></i></td>
               <td><i class="fas fa-times" style="color: var(--error)"></i></td>
               <td><i class="fas fa-times" style="color: var(--error)"></i></td>
             </tr>
@@ -1122,15 +1314,11 @@
         <div class="feature-grid">
           <div class="feature-card">
             <h4><span class="role-badge role-admin">Admin</span></h4>
-            <p>Full system access. Can manage users, configure settings, and perform all operations including deletions.</p>
-          </div>
-          <div class="feature-card">
-            <h4><span class="role-badge role-manager">Manager</span></h4>
-            <p>Can manage people, projects, and skills. Full scheduling capabilities but no user management.</p>
+            <p>Full system access. Can manage users, configure settings, database operations, and perform all operations including deletions.</p>
           </div>
           <div class="feature-card">
             <h4><span class="role-badge role-scheduler">Scheduler</span></h4>
-            <p>Focused on scheduling operations. Can create and manage assignments, use AI scheduler, and export reports.</p>
+            <p>Full scheduling capabilities. Can manage people, projects, groups, and skills. Can create assignments and use AI scheduler.</p>
           </div>
           <div class="feature-card">
             <h4><span class="role-badge role-viewer">Viewer</span></h4>
@@ -1140,11 +1328,57 @@
       </div>
     </section>
 
+    <!-- Keyboard Shortcuts Section -->
+    <section id="shortcuts" class="manual-section">
+      <div class="section-header">
+        <div class="section-icon"><i class="fas fa-keyboard"></i></div>
+        <h2>Keyboard Shortcuts</h2>
+      </div>
+      <div class="section-content">
+        <p>Speed up your workflow with these keyboard shortcuts:</p>
+        
+        <table class="manual-table">
+          <thead>
+            <tr>
+              <th>Shortcut</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="kbd">?</span></td>
+              <td>Show context-sensitive help</td>
+            </tr>
+            <tr>
+              <td><span class="kbd">Ctrl</span> + <span class="kbd">K</span></td>
+              <td>Open global search</td>
+            </tr>
+            <tr>
+              <td><span class="kbd">N</span></td>
+              <td>Create new item (in People, Projects, Skills views)</td>
+            </tr>
+            <tr>
+              <td><span class="kbd">←</span> / <span class="kbd">→</span></td>
+              <td>Navigate dates in Schedule view</td>
+            </tr>
+            <tr>
+              <td><span class="kbd">T</span></td>
+              <td>Jump to today (in Schedule view)</td>
+            </tr>
+            <tr>
+              <td><span class="kbd">Esc</span></td>
+              <td>Close modal or search</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
   </main>
 
   <!-- Footer -->
   <footer class="manual-footer">
-    <p>Resource Scheduler User Manual v1.0.0</p>
+    <p>Resource Scheduler User Manual v2.0.0</p>
     <p>© 2026 All rights reserved</p>
     <a href="/" class="back-to-app">
       <i class="fas fa-arrow-left"></i> Back to Application
@@ -1184,4 +1418,3 @@
   </script>
 </body>
 </html>
-
