@@ -5,7 +5,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const PUBLIC_PORT = process.env.PUBLIC_PORT || 3002;
+const PUBLIC_PORT = process.env.PUBLIC_PORT; // optional local mirror only
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Log environment
@@ -140,8 +140,8 @@ app.use('/api/auth/reset-password', rateLimit(3600000, 5, req => req.ip + ':rese
 // General API rate limit
 app.use('/api/', rateLimit(60000, 100));
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'frontend')));
+// Serve static files (do not auto-serve index.html at /)
+app.use(express.static(path.join(__dirname, 'frontend'), { index: false }));
 
 // Request logging
 app.use((req, res, next) => {
@@ -204,11 +204,8 @@ async function startServer() {
     // Public customer requests (no auth) — stricter rate limit
     app.use('/api/public/requests', rateLimit(60000, 10, (req) => req.ip + ':public-requests'), publicRequestsRoutes);
 
-    // Also available on the scheduler host (optional aliases)
-    app.get('/request', (req, res) => {
-      res.sendFile(path.join(__dirname, 'frontend', 'request.html'));
-    });
-    app.get('/jobs', (req, res) => {
+    // Also available as aliases on the main host
+    app.get(['/request', '/jobs'], (req, res) => {
       res.sendFile(path.join(__dirname, 'frontend', 'request.html'));
     });
 
@@ -335,9 +332,22 @@ async function startServer() {
       }
     });
 
-    // Serve frontend for all other routes
-    app.get('*', (req, res) => {
+    // Public website is the default landing page (Render root URL)
+    app.get('/', (req, res) => {
+      res.sendFile(path.join(__dirname, 'frontend', 'request.html'));
+    });
+
+    // Scheduler admin app (login + dashboard)
+    app.get(['/admin', '/admin/', '/staff', '/staff/'], (req, res) => {
       res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+    });
+
+    // Fallback: unknown non-API routes go to the public website
+    app.get('*', (req, res) => {
+      if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+      res.redirect('/');
     });
 
     // Error handling middleware
@@ -346,58 +356,52 @@ async function startServer() {
       res.status(500).json({ error: 'Internal server error' });
     });
 
-    // ===== Public customer website (separate link / port) =====
-    const publicApp = express();
-    publicApp.locals.db = db;
-    publicApp.use(cors());
-    publicApp.use(express.json({ limit: '1mb' }));
-    publicApp.use((req, res, next) => {
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      next();
-    });
-    publicApp.use('/api/', rateLimit(60000, 60));
-    publicApp.use(
-      '/api/public/requests',
-      rateLimit(60000, 10, (req) => req.ip + ':public-site-requests'),
-      publicRequestsRoutes
-    );
-    publicApp.get('/api/settings/public', async (req, res) => {
-      try {
-        const brandingKeys = ['company_name', 'logo_url', 'logo_icon', 'primary_color', 'footer_text', 'default_language'];
-        const settings = await db.prepare(
-          `SELECT key, value FROM settings WHERE key IN (${brandingKeys.map(() => '?').join(',')})`
-        ).all(...brandingKeys);
-        const settingsObj = {};
-        for (const s of settings) settingsObj[s.key] = s.value;
-        res.json(settingsObj);
-      } catch (error) {
-        console.error('Get public settings error:', error);
-        res.status(500).json({ error: 'Failed to get settings' });
-      }
-    });
-    publicApp.get('/', (req, res) => {
-      res.sendFile(path.join(__dirname, 'frontend', 'request.html'));
-    });
-    publicApp.get(['/request', '/jobs'], (req, res) => {
-      res.sendFile(path.join(__dirname, 'frontend', 'request.html'));
-    });
-    publicApp.get('/staff', (req, res) => {
-      res.redirect(`http://localhost:${PORT}/`);
-    });
+    // Optional local-only second port that mirrors the public site
+    const enablePublicPort = process.env.PUBLIC_PORT && String(PUBLIC_PORT) !== String(PORT);
+    if (enablePublicPort) {
+      const publicApp = express();
+      publicApp.locals.db = db;
+      publicApp.use(cors());
+      publicApp.use(express.json({ limit: '1mb' }));
+      publicApp.use('/api/', rateLimit(60000, 60));
+      publicApp.use(
+        '/api/public/requests',
+        rateLimit(60000, 10, (req) => req.ip + ':public-site-requests'),
+        publicRequestsRoutes
+      );
+      publicApp.get('/api/settings/public', async (req, res) => {
+        try {
+          const brandingKeys = ['company_name', 'logo_url', 'logo_icon', 'primary_color', 'footer_text', 'default_language'];
+          const settings = await db.prepare(
+            `SELECT key, value FROM settings WHERE key IN (${brandingKeys.map(() => '?').join(',')})`
+          ).all(...brandingKeys);
+          const settingsObj = {};
+          for (const s of settings) settingsObj[s.key] = s.value;
+          res.json(settingsObj);
+        } catch (error) {
+          res.status(500).json({ error: 'Failed to get settings' });
+        }
+      });
+      publicApp.get(['/', '/request', '/jobs'], (req, res) => {
+        res.sendFile(path.join(__dirname, 'frontend', 'request.html'));
+      });
+      publicApp.get('/staff', (req, res) => res.redirect('/admin'));
+      publicApp.get('/admin', (req, res) => {
+        res.redirect(`http://localhost:${PORT}/admin`);
+      });
+      publicApp.listen(PUBLIC_PORT, () => {
+        console.log(`Public mirror port:  http://localhost:${PUBLIC_PORT}`);
+      });
+    }
 
-    // Start scheduler + public customer website
     app.listen(PORT, () => {
-      console.log(`Scheduler (staff):     http://localhost:${PORT}`);
-    });
-
-    publicApp.listen(PUBLIC_PORT, () => {
       console.log(`
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
 ║   🗓️  Resource Scheduler v1.0.0                          ║
 ║                                                           ║
-║   Staff app:      http://localhost:${String(PORT).padEnd(23)}║
-║   Public website: http://localhost:${String(PUBLIC_PORT).padEnd(23)}║
+║   Public website: http://localhost:${String(PORT).padEnd(23)}║
+║   Admin login:    http://localhost:${PORT}/admin${' '.repeat(Math.max(0, 17 - String(PORT).length))}║
 ║   Environment: ${NODE_ENV.padEnd(41)}║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
