@@ -743,7 +743,10 @@
 
   <footer class="site-footer">
     <span id="footer-text" data-i18n="footerText">© Κουτσοδούλια. Με επιφύλαξη παντός δικαιώματος.</span>
-    <a id="footer-staff-link" href="/admin" data-i18n="staffLogin">Σύνδεση προσωπικού</a>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+      <a href="/manual.html" target="_blank" rel="noopener" data-i18n="manualLink">Εγχειρίδιο χρήσης</a>
+      <a id="footer-staff-link" href="/admin" data-i18n="staffLogin">Σύνδεση προσωπικού</a>
+    </div>
   </footer>
 
   <script>
@@ -811,6 +814,7 @@
         contactRequired: 'Απαιτείται ηλ. ταχυδρομείο ή τηλέφωνο για να επικοινωνήσουμε μαζί σας.',
         customPrefix: 'Ειδική:',
         footerText: '© Κουτσοδούλια. Με επιφύλαξη παντός δικαιώματος.',
+        manualLink: 'Εγχειρίδιο χρήσης',
         errContact: 'Παρακαλώ συμπληρώστε ηλ. ταχυδρομείο ή τηλέφωνο.',
         errServices: 'Επιλέξτε τουλάχιστον μία υπηρεσία ή περιγράψτε την εργασία.',
         errSubmit: 'Αποτυχία υποβολής αιτήματος',
@@ -861,6 +865,7 @@
         contactRequired: 'Email or phone is required so we can reach you.',
         customPrefix: 'Custom:',
         footerText: '© Koutsodouleia. All rights reserved.',
+        manualLink: 'User manual',
         errContact: 'Please provide an email or phone number.',
         errServices: 'Select at least one service, or describe the job you need.',
         errSubmit: 'Failed to submit request',
