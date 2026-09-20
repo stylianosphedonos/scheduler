@@ -534,19 +534,20 @@
       }
 
       .hero {
-        padding-top: 0.35rem;
+        padding-top: 0.5rem;
       }
 
-      /* Keep banner compact so headline + CTAs fit in the first viewport */
+      /* Near-native size so banner art/text stay sharp (source is 1024×576) */
       .hero-media {
-        width: auto;
-        max-width: min(100% - 10vw, 720px);
-        max-height: min(36vh, 320px);
+        width: min(100% - 6vw, 1024px);
+        max-width: 1024px;
+        height: auto;
+        max-height: none;
         object-fit: contain;
       }
 
       .hero-content {
-        padding: 0.85rem 6vw 1.25rem;
+        padding: 1rem 6vw 1.5rem;
         border-top: none;
       }
 
