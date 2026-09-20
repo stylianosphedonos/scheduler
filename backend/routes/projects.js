@@ -71,6 +71,8 @@ router.get('/', authenticateToken, async (req, res) => {
         locationName: p.location_name, locationUrl: p.location_url,
         source: p.source || 'internal', contactEmail: p.contact_email, contactPhone: p.contact_phone,
         serviceCategory: p.service_category, notes: p.notes, createdAt: p.created_at,
+        quotationAmount: p.quotation_amount, quotationNotes: p.quotation_notes,
+        quotationValidUntil: p.quotation_valid_until, quotationTaxRate: p.quotation_tax_rate,
         assignmentCount: p.assignment_count, assignedPeople: p.assigned_people
       })),
       pagination: { page: parseInt(page), limit: parseInt(limit), total, totalPages: Math.ceil(total / limit) }
@@ -123,6 +125,8 @@ router.get('/:id', authenticateToken, async (req, res) => {
       source: project.source || 'internal', contactEmail: project.contact_email,
       contactPhone: project.contact_phone, serviceCategory: project.service_category,
       notes: project.notes, createdAt: project.created_at, updatedAt: project.updated_at,
+      quotationAmount: project.quotation_amount, quotationNotes: project.quotation_notes,
+      quotationValidUntil: project.quotation_valid_until, quotationTaxRate: project.quotation_tax_rate,
       skills: skills.map(s => ({
         id: s.id, name: s.name, category: s.category, color: s.color,
         requiredProficiency: s.required_proficiency, isMandatory: !!s.is_mandatory, 
@@ -195,7 +199,7 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
-    const { name, code, client, description, status, priority, color, startDate, endDate, budgetHours, managerId, isBillable, locationName, locationUrl, locationLat, locationLng, timeSlotStart, timeSlotEnd, notes } = req.body;
+    const { name, code, client, description, status, priority, color, startDate, endDate, budgetHours, managerId, isBillable, locationName, locationUrl, locationLat, locationLng, timeSlotStart, timeSlotEnd, notes, quotationAmount, quotationNotes, quotationValidUntil, quotationTaxRate } = req.body;
 
     const updates = [];
     const values = [];
@@ -219,6 +223,10 @@ router.put('/:id', authenticateToken, requireRole('admin', 'scheduler'), async (
     if (locationLng !== undefined) { updates.push('location_lng = ?'); values.push(locationLng || null); }
     if (timeSlotStart !== undefined) { updates.push('time_slot_start = ?'); values.push(timeSlotStart || null); }
     if (timeSlotEnd !== undefined) { updates.push('time_slot_end = ?'); values.push(timeSlotEnd || null); }
+    if (quotationAmount !== undefined) { updates.push('quotation_amount = ?'); values.push(quotationAmount === null || quotationAmount === '' ? null : Number(quotationAmount)); }
+    if (quotationNotes !== undefined) { updates.push('quotation_notes = ?'); values.push(quotationNotes || null); }
+    if (quotationValidUntil !== undefined) { updates.push('quotation_valid_until = ?'); values.push(quotationValidUntil || null); }
+    if (quotationTaxRate !== undefined) { updates.push('quotation_tax_rate = ?'); values.push(quotationTaxRate === null || quotationTaxRate === '' ? null : Number(quotationTaxRate)); }
 
     if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
 

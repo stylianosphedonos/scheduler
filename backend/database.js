@@ -288,6 +288,10 @@ function getSQLiteSchema() {
       contact_email TEXT,
       contact_phone TEXT,
       service_category TEXT,
+      quotation_amount REAL,
+      quotation_notes TEXT,
+      quotation_valid_until TEXT,
+      quotation_tax_rate REAL DEFAULT 19,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (manager_id) REFERENCES people(id) ON DELETE SET NULL
@@ -570,6 +574,10 @@ function getPostgresSchema() {
       contact_email VARCHAR(255),
       contact_phone VARCHAR(50),
       service_category VARCHAR(50),
+      quotation_amount DECIMAL(12,2),
+      quotation_notes TEXT,
+      quotation_valid_until DATE,
+      quotation_tax_rate DECIMAL(5,2) DEFAULT 19,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
@@ -827,7 +835,11 @@ async function runPostgresMigrations(pool) {
     `ALTER TABLE projects ADD COLUMN IF NOT EXISTS source VARCHAR(20) DEFAULT 'internal'`,
     `ALTER TABLE projects ADD COLUMN IF NOT EXISTS contact_email VARCHAR(255)`,
     `ALTER TABLE projects ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(50)`,
-    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS service_category VARCHAR(50)`
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS service_category VARCHAR(50)`,
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS quotation_amount DECIMAL(12,2)`,
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS quotation_notes TEXT`,
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS quotation_valid_until DATE`,
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS quotation_tax_rate DECIMAL(5,2) DEFAULT 19`
   ];
 
   for (const migration of columnMigrations) {
@@ -933,6 +945,10 @@ function migrateSqliteRequestedStatus(database) {
         contact_email TEXT,
         contact_phone TEXT,
         service_category TEXT,
+        quotation_amount REAL,
+        quotation_notes TEXT,
+        quotation_valid_until TEXT,
+        quotation_tax_rate REAL DEFAULT 19,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (manager_id) REFERENCES people(id) ON DELETE SET NULL
@@ -945,7 +961,8 @@ function migrateSqliteRequestedStatus(database) {
       'start_date', 'end_date', 'budget_hours', 'actual_hours', 'manager_id', 'is_billable',
       'location_name', 'location_url', 'location_lat', 'location_lng',
       'time_slot_start', 'time_slot_end', 'notes', 'source', 'contact_email',
-      'contact_phone', 'service_category', 'created_at', 'updated_at'
+      'contact_phone', 'service_category', 'quotation_amount', 'quotation_notes',
+      'quotation_valid_until', 'quotation_tax_rate', 'created_at', 'updated_at'
     ].filter(col => columns.includes(col));
 
     database.exec(`
@@ -987,7 +1004,11 @@ function runSQLiteMigrations(database) {
     { check: `PRAGMA table_info(projects)`, column: 'source', sql: `ALTER TABLE projects ADD COLUMN source TEXT DEFAULT 'internal'` },
     { check: `PRAGMA table_info(projects)`, column: 'contact_email', sql: `ALTER TABLE projects ADD COLUMN contact_email TEXT` },
     { check: `PRAGMA table_info(projects)`, column: 'contact_phone', sql: `ALTER TABLE projects ADD COLUMN contact_phone TEXT` },
-    { check: `PRAGMA table_info(projects)`, column: 'service_category', sql: `ALTER TABLE projects ADD COLUMN service_category TEXT` }
+    { check: `PRAGMA table_info(projects)`, column: 'service_category', sql: `ALTER TABLE projects ADD COLUMN service_category TEXT` },
+    { check: `PRAGMA table_info(projects)`, column: 'quotation_amount', sql: `ALTER TABLE projects ADD COLUMN quotation_amount REAL` },
+    { check: `PRAGMA table_info(projects)`, column: 'quotation_notes', sql: `ALTER TABLE projects ADD COLUMN quotation_notes TEXT` },
+    { check: `PRAGMA table_info(projects)`, column: 'quotation_valid_until', sql: `ALTER TABLE projects ADD COLUMN quotation_valid_until TEXT` },
+    { check: `PRAGMA table_info(projects)`, column: 'quotation_tax_rate', sql: `ALTER TABLE projects ADD COLUMN quotation_tax_rate REAL DEFAULT 19` }
   ];
 
   for (const migration of columnMigrations) {

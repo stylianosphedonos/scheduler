@@ -1387,14 +1387,18 @@ function formatDateForInput(dateString) {
 }
 
 // ===== Modal =====
-function showModal(title, content) {
+function showModal(title, content, className = '') {
+  const modal = document.getElementById('modal');
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-body').innerHTML = content;
+  modal.className = className ? `modal ${className}` : 'modal';
   document.getElementById('modal-overlay').classList.remove('hidden');
 }
 
 function closeModal() {
   document.getElementById('modal-overlay').classList.add('hidden');
+  const modal = document.getElementById('modal');
+  if (modal) modal.className = 'modal';
 }
 
 // ===== Authentication =====
@@ -2665,6 +2669,9 @@ async function showProjectDetails(id) {
         <div class="modal-footer">
           <button class="btn btn-secondary" onclick="closeModal()">Close</button>
           ${canEdit() ? `
+            ${(project.status === 'requested' || project.source === 'web') ? `
+              <button class="btn btn-secondary" onclick="prepareQuotation(${id})"><i class="fas fa-file-invoice-dollar"></i> ${t('projects.prepareQuotation') || 'Prepare Quotation'}</button>
+            ` : ''}
             ${project.status === 'requested' ? `
               <button class="btn btn-primary" onclick="acceptWebRequest(${id})"><i class="fas fa-check"></i> ${t('projects.acceptRequest') || 'Accept into planning'}</button>
             ` : ''}
@@ -2696,6 +2703,348 @@ async function acceptWebRequest(id) {
     }
   } catch (error) {
     showToast(error.message || 'Failed to accept request', 'error');
+  }
+}
+
+function defaultQuotationValidUntil(days = 30) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function formatQuotationMoney(amount) {
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return '€0.00';
+  try {
+    return new Intl.NumberFormat('en-CY', { style: 'currency', currency: 'EUR' }).format(value);
+  } catch (_) {
+    return `€${value.toFixed(2)}`;
+  }
+}
+
+function formatQuotationDate(value) {
+  if (!value) return '—';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return escapeHtml(String(value));
+  return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function getQuotationNumber(projectId) {
+  const today = new Date();
+  return `QT-${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}-${String(projectId).padStart(4, '0')}`;
+}
+
+function buildQuotationPreviewHtml(project, opts = {}) {
+  const amount = Number(opts.amount) || 0;
+  const taxRate = Number(opts.taxRate);
+  const vatRate = Number.isFinite(taxRate) ? taxRate : 19;
+  const notes = opts.notes || '';
+  const validUntil = opts.validUntil || '';
+  const subtotal = amount;
+  const tax = subtotal * (vatRate / 100);
+  const total = subtotal + tax;
+  const quoteNo = getQuotationNumber(project.id);
+  const accent = branding.primaryColor || '#1f4b3f';
+  const company = escapeHtml(branding.companyName || 'Resource Scheduler');
+  const scope = escapeHtml(project.description || project.name || '').replace(/\n/g, '<br>');
+
+  return `
+    <article class="quotation-doc" style="--quote-accent: ${accent}">
+      <header class="quotation-doc-header">
+        <div class="quotation-doc-brand">
+          <div class="quotation-doc-logo">
+            ${branding.logoUrl
+              ? `<img src="${escapeHtml(branding.logoUrl)}" alt="">`
+              : `<i class="fas ${escapeHtml(branding.logoIcon || 'fa-calendar-check')}"></i>`}
+          </div>
+          <div>
+            <div class="quotation-doc-company">${company}</div>
+            <div class="quotation-doc-label">${t('projects.quotation') || 'Quotation'}</div>
+          </div>
+        </div>
+        <div class="quotation-doc-meta">
+          <div><span>${t('projects.quoteNumber') || 'Quote No.'}</span><strong>${quoteNo}</strong></div>
+          <div><span>${t('common.date') || 'Date'}</span><strong>${formatQuotationDate(new Date().toISOString())}</strong></div>
+          ${validUntil ? `<div><span>${t('projects.validUntil') || 'Valid until'}</span><strong>${formatQuotationDate(validUntil)}</strong></div>` : ''}
+        </div>
+      </header>
+
+      <div class="quotation-doc-grid">
+        <section>
+          <h4>${t('projects.preparedFor') || 'Prepared for'}</h4>
+          <p class="quotation-doc-name">${escapeHtml(project.client || project.name || 'Customer')}</p>
+          ${project.contactEmail ? `<p>${escapeHtml(project.contactEmail)}</p>` : ''}
+          ${project.contactPhone ? `<p>${escapeHtml(project.contactPhone)}</p>` : ''}
+          ${(project.location_name || project.locationName) ? `<p>${escapeHtml(project.location_name || project.locationName)}</p>` : ''}
+        </section>
+        <section>
+          <h4>${t('projects.requestDetails') || 'Request details'}</h4>
+          <p><strong>${t('projects.projectCode') || 'Code'}:</strong> ${escapeHtml(project.code || String(project.id))}</p>
+          <p><strong>${t('projects.serviceCategory') || 'Service'}:</strong> ${escapeHtml(project.serviceCategory || 'Custom')}</p>
+          <p><strong>${t('projects.priority') || 'Priority'}:</strong> ${escapeHtml(project.priority || 'medium')}</p>
+          ${project.startDate ? `<p><strong>${t('projects.startDate') || 'Preferred date'}:</strong> ${formatQuotationDate(project.startDate)}</p>` : ''}
+        </section>
+      </div>
+
+      <section class="quotation-doc-scope">
+        <h4>${t('projects.scopeOfWork') || 'Scope of work'}</h4>
+        <div class="quotation-doc-scope-body">${scope || '—'}</div>
+      </section>
+
+      <table class="quotation-doc-table">
+        <thead>
+          <tr>
+            <th>${t('projects.description') || 'Description'}</th>
+            <th class="num">${t('projects.quotationAmount') || 'Amount'}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>${escapeHtml(project.name || 'Requested service')}</td>
+            <td class="num">${formatQuotationMoney(subtotal)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="quotation-doc-totals">
+        <div class="quotation-doc-total-row">
+          <span>${t('projects.subtotal') || 'Subtotal'}</span>
+          <strong>${formatQuotationMoney(subtotal)}</strong>
+        </div>
+        <div class="quotation-doc-total-row">
+          <span>${t('projects.vat') || 'VAT'} (${vatRate}%)</span>
+          <strong>${formatQuotationMoney(tax)}</strong>
+        </div>
+        <div class="quotation-doc-total-row grand">
+          <span>${t('common.total') || 'Total'}</span>
+          <strong>${formatQuotationMoney(total)}</strong>
+        </div>
+      </div>
+
+      ${notes ? `
+        <section class="quotation-doc-notes">
+          <h4>${t('projects.quotationNotes') || 'Notes'}</h4>
+          <p>${escapeHtml(notes).replace(/\n/g, '<br>')}</p>
+        </section>
+      ` : ''}
+
+      <section class="quotation-doc-terms">
+        <h4>${t('projects.quotationTerms') || 'Terms'}</h4>
+        <p>${t('projects.quotationTermsText') || 'This quotation is an estimate based on the details provided in the web request. Final pricing may be adjusted after an on-site assessment. Payment terms and scheduling will be confirmed upon acceptance.'}</p>
+      </section>
+
+      <footer class="quotation-doc-footer">
+        <div class="quotation-sign">
+          <span>${t('projects.preparedBy') || 'Prepared by'}</span>
+          <div class="quotation-sign-line"></div>
+          <small>${escapeHtml(state.user?.firstName || state.user?.username || '')}</small>
+        </div>
+        <div class="quotation-sign">
+          <span>${t('projects.customerAcceptance') || 'Customer acceptance'}</span>
+          <div class="quotation-sign-line"></div>
+          <small>${t('projects.signatureDate') || 'Signature / Date'}</small>
+        </div>
+      </footer>
+      ${branding.footerText ? `<p class="quotation-doc-legal">${escapeHtml(branding.footerText)}</p>` : ''}
+    </article>
+  `;
+}
+
+let quotationProjectCache = null;
+
+function refreshQuotationPreview() {
+  const preview = document.getElementById('quotation-preview');
+  if (!preview || !quotationProjectCache) return;
+  preview.innerHTML = buildQuotationPreviewHtml(quotationProjectCache, {
+    amount: document.getElementById('quotation-amount')?.value,
+    taxRate: document.getElementById('quotation-tax-rate')?.value,
+    notes: document.getElementById('quotation-notes')?.value,
+    validUntil: document.getElementById('quotation-valid-until')?.value
+  });
+}
+
+async function prepareQuotation(id) {
+  if (!canEdit()) {
+    showToast(t('common.noPermission') || 'You do not have permission', 'error');
+    return;
+  }
+
+  try {
+    const project = await api(`/projects/${id}`);
+    quotationProjectCache = {
+      id: project.id,
+      name: project.name,
+      code: project.code,
+      client: project.client,
+      description: project.description,
+      contactEmail: project.contactEmail,
+      contactPhone: project.contactPhone,
+      location_name: project.location_name || project.locationName,
+      locationName: project.locationName || project.location_name,
+      serviceCategory: project.serviceCategory,
+      priority: project.priority,
+      startDate: project.startDate
+    };
+    const amountValue = project.quotationAmount != null ? Number(project.quotationAmount) : '';
+    const taxRateValue = project.quotationTaxRate != null ? Number(project.quotationTaxRate) : 19;
+    const validUntilValue = project.quotationValidUntil || defaultQuotationValidUntil(30);
+    const notesValue = project.quotationNotes || '';
+
+    showModal(t('projects.prepareQuotation') || 'Prepare Quotation', `
+      <div class="quotation-builder">
+        <div class="quotation-builder-intro">
+          <div>
+            <h3><i class="fas fa-file-invoice-dollar"></i> ${t('projects.quotationPrototype') || 'Quotation prototype'}</h3>
+            <p>${t('projects.quotationPrototypeDesc') || 'Review the request details, set your price, then export a polished PDF for the customer.'}</p>
+          </div>
+          <span class="quotation-ref-pill">${escapeHtml(project.code || `ID ${project.id}`)}</span>
+        </div>
+
+        <div class="quotation-builder-layout">
+          <form id="quotation-form" class="quotation-form" onsubmit="return false;">
+            <div class="form-group">
+              <label>${t('projects.quotationAmount') || 'Quotation amount'} (€) *</label>
+              <div class="quotation-amount-input">
+                <span class="currency-prefix">€</span>
+                <input type="number" id="quotation-amount" min="0" step="0.01" value="${amountValue}" placeholder="0.00" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>${t('projects.vatRate') || 'VAT rate'} (%)</label>
+                <input type="number" id="quotation-tax-rate" min="0" max="100" step="0.01" value="${taxRateValue}">
+              </div>
+              <div class="form-group">
+                <label>${t('projects.validUntil') || 'Valid until'}</label>
+                <input type="date" id="quotation-valid-until" value="${validUntilValue}">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>${t('projects.quotationNotes') || 'Notes for customer'}</label>
+              <textarea id="quotation-notes" rows="4" placeholder="${t('projects.quotationNotesPlaceholder') || 'Optional terms, inclusions, or site visit notes'}">${escapeHtml(notesValue)}</textarea>
+            </div>
+
+            <div class="quotation-request-summary">
+              <h4>${t('projects.requestDetails') || 'Request details'}</h4>
+              <div class="detail-row"><span class="detail-label">${t('projects.client') || 'Client'}</span><span class="detail-value">${escapeHtml(project.client || '-')}</span></div>
+              ${project.contactEmail ? `<div class="detail-row"><span class="detail-label">${t('projects.contactEmail') || 'Email'}</span><span class="detail-value">${escapeHtml(project.contactEmail)}</span></div>` : ''}
+              ${project.contactPhone ? `<div class="detail-row"><span class="detail-label">${t('projects.contactPhone') || 'Phone'}</span><span class="detail-value">${escapeHtml(project.contactPhone)}</span></div>` : ''}
+              ${project.serviceCategory ? `<div class="detail-row"><span class="detail-label">${t('projects.serviceCategory') || 'Service'}</span><span class="detail-value">${escapeHtml(project.serviceCategory)}</span></div>` : ''}
+              ${(project.location_name || project.locationName) ? `<div class="detail-row"><span class="detail-label">${t('projects.location') || 'Location'}</span><span class="detail-value">${escapeHtml(project.location_name || project.locationName)}</span></div>` : ''}
+              ${project.description ? `<div class="detail-row" style="display:block;"><span class="detail-label">${t('projects.description') || 'Description'}</span><div class="detail-value" style="white-space:pre-wrap;margin-top:6px;">${escapeHtml(project.description)}</div></div>` : ''}
+            </div>
+          </form>
+
+          <div class="quotation-preview-pane">
+            <div class="quotation-preview-label"><i class="fas fa-eye"></i> ${t('projects.livePreview') || 'Live preview'}</div>
+            <div id="quotation-preview" class="quotation-preview-scroll"></div>
+          </div>
+        </div>
+
+        <div class="modal-footer quotation-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">${t('common.close') || 'Close'}</button>
+          <button type="button" class="btn btn-secondary" onclick="saveQuotationDraft(${id})">
+            <i class="fas fa-save"></i> ${t('projects.saveQuotation') || 'Save quotation'}
+          </button>
+          <button type="button" class="btn btn-primary" onclick="exportQuotationPdf(${id})">
+            <i class="fas fa-file-pdf"></i> ${t('projects.exportQuotationPdf') || 'Export PDF'}
+          </button>
+        </div>
+      </div>
+    `, 'quotation-modal');
+
+    ['quotation-amount', 'quotation-tax-rate', 'quotation-notes', 'quotation-valid-until'].forEach(fieldId => {
+      document.getElementById(fieldId)?.addEventListener('input', refreshQuotationPreview);
+    });
+    refreshQuotationPreview();
+  } catch (error) {
+    showToast(error.message || 'Failed to open quotation', 'error');
+  }
+}
+
+function getQuotationFormPayload() {
+  const amount = document.getElementById('quotation-amount')?.value;
+  const taxRate = document.getElementById('quotation-tax-rate')?.value;
+  const notes = document.getElementById('quotation-notes')?.value || '';
+  const validUntil = document.getElementById('quotation-valid-until')?.value || null;
+
+  if (amount === '' || amount == null || Number.isNaN(Number(amount)) || Number(amount) < 0) {
+    throw new Error(t('projects.quotationAmountRequired') || 'Please enter a valid quotation amount');
+  }
+
+  return {
+    amount: Number(amount),
+    taxRate: taxRate === '' ? 19 : Number(taxRate),
+    notes,
+    validUntil,
+    quotationAmount: Number(amount),
+    quotationTaxRate: taxRate === '' ? 19 : Number(taxRate),
+    quotationNotes: notes,
+    quotationValidUntil: validUntil
+  };
+}
+
+async function saveQuotationDraft(id) {
+  try {
+    const payload = getQuotationFormPayload();
+    await api(`/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        quotationAmount: payload.quotationAmount,
+        quotationTaxRate: payload.quotationTaxRate,
+        quotationNotes: payload.quotationNotes,
+        quotationValidUntil: payload.quotationValidUntil
+      })
+    });
+    showToast(t('projects.quotationSaved') || 'Quotation saved');
+  } catch (error) {
+    showToast(error.message || 'Failed to save quotation', 'error');
+  }
+}
+
+async function exportQuotationPdf(id) {
+  try {
+    const payload = getQuotationFormPayload();
+    showToast(t('projects.generatingQuotation') || 'Generating quotation PDF...');
+
+    const response = await fetch(`/api/exports/quotation/${id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`
+      },
+      body: JSON.stringify({
+        amount: payload.amount,
+        taxRate: payload.taxRate,
+        notes: payload.notes,
+        validUntil: payload.validUntil,
+        save: true
+      })
+    });
+
+    if (!response.ok) {
+      let message = 'Failed to export quotation PDF';
+      try {
+        const err = await response.json();
+        message = err.error || message;
+      } catch (_) {}
+      throw new Error(message);
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = `quotation_${id}_${stamp}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+
+    showToast(t('projects.quotationExported') || 'Quotation PDF exported');
+  } catch (error) {
+    showToast(error.message || 'Failed to export quotation PDF', 'error');
   }
 }
 
@@ -3127,6 +3476,11 @@ async function editProject(id) {
         
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          ${(project.status === 'requested' || project.source === 'web') ? `
+            <button type="button" class="btn btn-secondary" onclick="prepareQuotation(${id})">
+              <i class="fas fa-file-invoice-dollar"></i> ${t('projects.prepareQuotation') || 'Prepare Quotation'}
+            </button>
+          ` : ''}
           <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
       </form>

@@ -7501,3 +7501,417 @@ body {
     padding: 6px;
   }
 }
+
+/* ===== Quotation Builder ===== */
+.modal.quotation-modal {
+  max-width: 1080px;
+  width: min(1080px, 96vw);
+}
+
+.quotation-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.quotation-builder-intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at top right, rgba(31, 75, 63, 0.18), transparent 42%),
+    linear-gradient(135deg, #f7f3ea 0%, #e7efe9 55%, #dce8e2 100%);
+  color: #1f2a24;
+  border: 1px solid rgba(31, 75, 63, 0.12);
+}
+
+.quotation-builder-intro h3 {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quotation-builder-intro p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #405248;
+  max-width: 52ch;
+}
+
+.quotation-ref-pill {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(31, 75, 63, 0.1);
+  color: #1f4b3f;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.quotation-builder-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.quotation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 2px 0;
+}
+
+.quotation-amount-input {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
+.quotation-amount-input .currency-prefix {
+  padding: 0 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  background: var(--bg-elevated, var(--bg-secondary));
+  border-right: 1px solid var(--border-color);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+.quotation-amount-input input {
+  border: none !important;
+  border-radius: 0 !important;
+  flex: 1;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.quotation-request-summary {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--bg-elevated, var(--bg-secondary));
+  border: 1px solid var(--border-color);
+}
+
+.quotation-request-summary h4 {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.quotation-preview-pane {
+  min-width: 0;
+}
+
+.quotation-preview-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.quotation-preview-scroll {
+  max-height: min(62vh, 720px);
+  overflow: auto;
+  padding: 18px;
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, #d9dee5 0%, #c9d0d8 100%);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.quotation-doc {
+  --quote-accent: #1f4b3f;
+  background: #fffdf8;
+  color: #1c2430;
+  border-radius: 10px;
+  box-shadow:
+    0 18px 40px rgba(28, 36, 48, 0.16),
+    0 2px 0 rgba(255, 255, 255, 0.7) inset;
+  overflow: hidden;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+}
+
+.quotation-doc-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 28px 24px;
+  background:
+    linear-gradient(135deg, var(--quote-accent) 0%, #2f6a58 55%, #3d7d68 100%);
+  color: #f7faf8;
+}
+
+.quotation-doc-brand {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.quotation-doc-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 1.25rem;
+}
+
+.quotation-doc-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.quotation-doc-company {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.quotation-doc-label {
+  margin-top: 2px;
+  opacity: 0.86;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.quotation-doc-meta {
+  text-align: right;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quotation-doc-meta span {
+  display: block;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+}
+
+.quotation-doc-meta strong {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.quotation-doc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 24px 28px 8px;
+}
+
+.quotation-doc-grid h4,
+.quotation-doc-scope h4,
+.quotation-doc-notes h4,
+.quotation-doc-terms h4 {
+  margin: 0 0 8px;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.quotation-doc-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.quotation-doc-grid p,
+.quotation-doc-scope-body,
+.quotation-doc-notes p,
+.quotation-doc-terms p {
+  margin: 0 0 4px;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #374151;
+}
+
+.quotation-doc-scope,
+.quotation-doc-notes,
+.quotation-doc-terms {
+  padding: 12px 28px;
+}
+
+.quotation-doc-scope-body {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #f4f1ea;
+  border-left: 3px solid var(--quote-accent);
+}
+
+.quotation-doc-table {
+  width: calc(100% - 56px);
+  margin: 8px 28px 0;
+  border-collapse: collapse;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.quotation-doc-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: #f3f4f6;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #4b5563;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.quotation-doc-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #eceff3;
+  font-size: 0.92rem;
+}
+
+.quotation-doc-table .num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.quotation-doc-totals {
+  width: min(280px, 100%);
+  margin: 16px 28px 8px auto;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.quotation-doc-total-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0;
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+.quotation-doc-total-row.grand {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--quote-accent);
+  color: #fff;
+  font-size: 1rem;
+}
+
+.quotation-doc-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  padding: 24px 28px 12px;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.quotation-sign span {
+  display: block;
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 28px;
+}
+
+.quotation-sign-line {
+  height: 1px;
+  background: #9ca3af;
+  margin-bottom: 6px;
+}
+
+.quotation-sign small {
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
+
+.quotation-doc-legal {
+  margin: 0;
+  padding: 0 28px 22px;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  color: #9ca3af;
+}
+
+.quotation-footer {
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .quotation-builder-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .quotation-preview-scroll {
+    max-height: 50vh;
+  }
+
+  .quotation-builder-intro {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .quotation-doc-header,
+  .quotation-doc-grid,
+  .quotation-doc-footer {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .quotation-doc-header {
+    gap: 16px;
+  }
+
+  .quotation-doc-meta {
+    text-align: left;
+  }
+
+  .quotation-doc-table {
+    width: calc(100% - 32px);
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  .quotation-doc-scope,
+  .quotation-doc-notes,
+  .quotation-doc-terms,
+  .quotation-doc-grid,
+  .quotation-doc-header,
+  .quotation-doc-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .quotation-doc-totals {
+    margin-right: 16px;
+  }
+}
