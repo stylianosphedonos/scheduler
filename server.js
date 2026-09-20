@@ -5,6 +5,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PUBLIC_PORT = process.env.PUBLIC_PORT || 3002;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Log environment
@@ -181,6 +182,7 @@ async function startServer() {
     const translationsRoutes = require('./backend/routes/translations');
     const databaseRoutes = require('./backend/routes/database');
     const groupsRoutes = require('./backend/routes/groups');
+    const publicRequestsRoutes = require('./backend/routes/public-requests');
 
     // API Routes
     app.use('/api/auth', authRoutes);
@@ -199,6 +201,16 @@ async function startServer() {
     app.use('/api/translations', translationsRoutes);
     app.use('/api/database', databaseRoutes);
     app.use('/api/groups', groupsRoutes);
+    // Public customer requests (no auth) — stricter rate limit
+    app.use('/api/public/requests', rateLimit(60000, 10, (req) => req.ip + ':public-requests'), publicRequestsRoutes);
+
+    // Also available on the scheduler host (optional aliases)
+    app.get('/request', (req, res) => {
+      res.sendFile(path.join(__dirname, 'frontend', 'request.html'));
+    });
+    app.get('/jobs', (req, res) => {
+      res.sendFile(path.join(__dirname, 'frontend', 'request.html'));
+    });
 
     // Health check endpoint (no auth required)
     const serverStartTime = Date.now();
@@ -334,14 +346,58 @@ async function startServer() {
       res.status(500).json({ error: 'Internal server error' });
     });
 
-    // Start server
+    // ===== Public customer website (separate link / port) =====
+    const publicApp = express();
+    publicApp.locals.db = db;
+    publicApp.use(cors());
+    publicApp.use(express.json({ limit: '1mb' }));
+    publicApp.use((req, res, next) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      next();
+    });
+    publicApp.use('/api/', rateLimit(60000, 60));
+    publicApp.use(
+      '/api/public/requests',
+      rateLimit(60000, 10, (req) => req.ip + ':public-site-requests'),
+      publicRequestsRoutes
+    );
+    publicApp.get('/api/settings/public', async (req, res) => {
+      try {
+        const brandingKeys = ['company_name', 'logo_url', 'logo_icon', 'primary_color', 'footer_text', 'default_language'];
+        const settings = await db.prepare(
+          `SELECT key, value FROM settings WHERE key IN (${brandingKeys.map(() => '?').join(',')})`
+        ).all(...brandingKeys);
+        const settingsObj = {};
+        for (const s of settings) settingsObj[s.key] = s.value;
+        res.json(settingsObj);
+      } catch (error) {
+        console.error('Get public settings error:', error);
+        res.status(500).json({ error: 'Failed to get settings' });
+      }
+    });
+    publicApp.get('/', (req, res) => {
+      res.sendFile(path.join(__dirname, 'frontend', 'request.html'));
+    });
+    publicApp.get(['/request', '/jobs'], (req, res) => {
+      res.sendFile(path.join(__dirname, 'frontend', 'request.html'));
+    });
+    publicApp.get('/staff', (req, res) => {
+      res.redirect(`http://localhost:${PORT}/`);
+    });
+
+    // Start scheduler + public customer website
     app.listen(PORT, () => {
+      console.log(`Scheduler (staff):     http://localhost:${PORT}`);
+    });
+
+    publicApp.listen(PUBLIC_PORT, () => {
       console.log(`
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
 ║   🗓️  Resource Scheduler v1.0.0                          ║
 ║                                                           ║
-║   Server running on http://localhost:${PORT}                ║
+║   Staff app:      http://localhost:${String(PORT).padEnd(23)}║
+║   Public website: http://localhost:${String(PUBLIC_PORT).padEnd(23)}║
 ║   Environment: ${NODE_ENV.padEnd(41)}║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝

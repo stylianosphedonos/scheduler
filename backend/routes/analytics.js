@@ -26,6 +26,15 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
     const weekAssignmentsResult = await db.prepare('SELECT COUNT(*) as count FROM assignments WHERE date >= ?').get(weekAgo);
     const unresolvedConflictsResult = await db.prepare(`SELECT COUNT(*) as count FROM schedule_conflicts WHERE ${unresolvedCond}`).get();
     const pendingAvailabilityResult = await db.prepare("SELECT COUNT(*) as count FROM availability_windows WHERE status = 'pending'").get();
+    const webRequestsResult = await db.prepare("SELECT COUNT(*) as count FROM projects WHERE status = 'requested'").get();
+    const recentWebRequests = await db.prepare(`
+      SELECT id, name, code, client, description, priority, color, service_category,
+             contact_email, contact_phone, location_name, source, created_at
+      FROM projects
+      WHERE status = 'requested'
+      ORDER BY created_at DESC
+      LIMIT 10
+    `).all();
 
     const metrics = {
       totalPeople: totalPeopleResult?.count || 0,
@@ -34,7 +43,8 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
       todayAssignments: todayAssignmentsResult?.count || 0,
       weekAssignments: weekAssignmentsResult?.count || 0,
       unresolvedConflicts: unresolvedConflictsResult?.count || 0,
-      pendingAvailability: pendingAvailabilityResult?.count || 0
+      pendingAvailability: pendingAvailabilityResult?.count || 0,
+      webRequests: webRequestsResult?.count || 0
     };
 
     const todayStats = await db.prepare(`SELECT COUNT(DISTINCT person_id) as people_scheduled, SUM(end_hour - start_hour) as total_hours, COUNT(DISTINCT project_id) as projects_active FROM assignments WHERE date = ? AND status NOT IN ('cancelled')`).get(today);
@@ -56,7 +66,22 @@ router.get('/dashboard', authenticateToken, async (req, res) => {
       weeklyHours,
       topUtilized: topUtilized.map(p => ({ id: p.id, name: `${p.first_name} ${p.last_name}`, department: p.department, totalHours: p.total_hours, assignmentCount: p.assignment_count })),
       projectWorkload: projectWorkload.map(p => ({ id: p.id, name: p.name, color: p.color, totalHours: p.total_hours, peopleAssigned: p.people_assigned })),
-      skillDemand: skillDemand.map(s => ({ id: s.id, name: s.name, color: s.color, projectsRequiring: s.projects_requiring, peopleWithSkill: s.people_with_skill, gap: s.projects_requiring > s.people_with_skill }))
+      skillDemand: skillDemand.map(s => ({ id: s.id, name: s.name, color: s.color, projectsRequiring: s.projects_requiring, peopleWithSkill: s.people_with_skill, gap: s.projects_requiring > s.people_with_skill })),
+      webRequests: (recentWebRequests || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        code: p.code,
+        client: p.client,
+        description: p.description,
+        priority: p.priority,
+        color: p.color || '#c45c26',
+        serviceCategory: p.service_category,
+        contactEmail: p.contact_email,
+        contactPhone: p.contact_phone,
+        locationName: p.location_name,
+        source: p.source || 'web',
+        createdAt: p.created_at
+      }))
     });
   } catch (error) {
     console.error('Dashboard error:', error);

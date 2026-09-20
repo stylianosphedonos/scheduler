@@ -56,6 +56,9 @@
         </button>
         <div id="login-error" class="error-message hidden"></div>
       </form>
+      <p class="login-public-link">
+        <a href="http://localhost:3002" target="_blank" rel="noopener">Need cleaning or construction work? Open public website →</a>
+      </p>
     </div>
   </div>
 
@@ -87,6 +90,7 @@
         <a href="#" class="nav-item" data-view="projects">
           <i class="fas fa-folder-open"></i>
           <span data-i18n="nav.projects">Projects</span>
+          <span id="web-request-badge" class="badge hidden">0</span>
         </a>
         <a href="#" class="nav-item" data-view="skills">
           <i class="fas fa-star"></i>
@@ -264,6 +268,32 @@
                 <div class="stat-content">
                   <span class="stat-value" id="stat-conflicts">0</span>
                   <span class="stat-label" data-i18n="conflicts.title">Conflicts</span>
+                </div>
+              </div>
+              <div class="stat-card clickable-stat" onclick="viewWebRequestsFromDashboard()" title="View web requests">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #c45c26, #e07a45);">
+                  <i class="fas fa-globe"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-value" id="stat-web-requests">0</span>
+                  <span class="stat-label" data-i18n="dashboard.webRequests">Web Requests</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- New Web Requests -->
+            <div class="card web-requests-card">
+              <div class="card-header">
+                <h2><i class="fas fa-globe"></i> <span data-i18n="dashboard.webRequests">Web Requests</span> <span id="web-requests-count-badge" class="badge hidden">0</span></h2>
+                <div class="card-actions">
+                  <button class="btn btn-sm btn-secondary" onclick="viewWebRequestsFromDashboard()">
+                    <i class="fas fa-folder-open"></i> <span data-i18n="common.viewAll">View All</span>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="web-requests-list" class="list">
+                  <div class="loading" data-i18n="common.loading">Loading...</div>
                 </div>
               </div>
             </div>
@@ -451,6 +481,7 @@
             <div class="view-actions">
               <select id="projects-status-filter" class="select">
                 <option value="" data-i18n="projects.allStatuses">All Statuses</option>
+                <option value="requested" data-i18n="projects.requested">Web Requests</option>
                 <option value="planning" data-i18n="projects.planning">Planning</option>
                 <option value="active" data-i18n="projects.active">Active</option>
                 <option value="on-hold" data-i18n="projects.onHold">On Hold</option>

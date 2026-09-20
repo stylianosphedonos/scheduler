@@ -54,7 +54,11 @@ router.get('/', authenticateToken, async (req, res) => {
         (SELECT COUNT(DISTINCT person_id) FROM assignments WHERE project_id = p.id) as assigned_people
       FROM projects p LEFT JOIN people m ON p.manager_id = m.id
       WHERE ${whereClause}
-      ORDER BY CASE p.priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END, p.name
+      ORDER BY
+        CASE p.status WHEN 'requested' THEN 0 ELSE 1 END,
+        CASE p.priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END,
+        p.created_at DESC,
+        p.name
       LIMIT ? OFFSET ?
     `).all(...params, parseInt(limit), offset);
 
@@ -64,7 +68,10 @@ router.get('/', authenticateToken, async (req, res) => {
         status: p.status, priority: p.priority, color: p.color, startDate: p.start_date,
         endDate: p.end_date, budgetHours: p.budget_hours, managerId: p.manager_id,
         managerName: p.manager_name, isBillable: !!p.is_billable,
-        assignmentCount: p.assignment_count, assignedPeople: p.assigned_people, createdAt: p.created_at
+        locationName: p.location_name, locationUrl: p.location_url,
+        source: p.source || 'internal', contactEmail: p.contact_email, contactPhone: p.contact_phone,
+        serviceCategory: p.service_category, notes: p.notes, createdAt: p.created_at,
+        assignmentCount: p.assignment_count, assignedPeople: p.assigned_people
       })),
       pagination: { page: parseInt(page), limit: parseInt(limit), total, totalPages: Math.ceil(total / limit) }
     });
@@ -110,6 +117,11 @@ router.get('/:id', authenticateToken, async (req, res) => {
       color: project.color, startDate: project.start_date, endDate: project.end_date,
       budgetHours: project.budget_hours, managerId: project.manager_id,
       managerName: project.manager_name, isBillable: !!project.is_billable,
+      location_name: project.location_name, location_url: project.location_url,
+      locationName: project.location_name, locationUrl: project.location_url,
+      locationLat: project.location_lat, locationLng: project.location_lng,
+      source: project.source || 'internal', contactEmail: project.contact_email,
+      contactPhone: project.contact_phone, serviceCategory: project.service_category,
       notes: project.notes, createdAt: project.created_at, updatedAt: project.updated_at,
       skills: skills.map(s => ({
         id: s.id, name: s.name, category: s.category, color: s.color,

@@ -268,7 +268,7 @@ function getSQLiteSchema() {
       code TEXT UNIQUE,
       client TEXT,
       description TEXT,
-      status TEXT DEFAULT 'planning' CHECK(status IN ('planning', 'active', 'on-hold', 'completed', 'cancelled')),
+      status TEXT DEFAULT 'planning' CHECK(status IN ('planning', 'active', 'on-hold', 'completed', 'cancelled', 'requested')),
       priority TEXT DEFAULT 'medium' CHECK(priority IN ('low', 'medium', 'high', 'critical')),
       color TEXT DEFAULT '#8b5cf6',
       start_date TEXT,
@@ -284,6 +284,10 @@ function getSQLiteSchema() {
       time_slot_start INTEGER,
       time_slot_end INTEGER,
       notes TEXT,
+      source TEXT DEFAULT 'internal',
+      contact_email TEXT,
+      contact_phone TEXT,
+      service_category TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (manager_id) REFERENCES people(id) ON DELETE SET NULL
@@ -546,7 +550,7 @@ function getPostgresSchema() {
       code VARCHAR(50) UNIQUE,
       client VARCHAR(200),
       description TEXT,
-      status VARCHAR(20) DEFAULT 'planning' CHECK(status IN ('planning', 'active', 'on-hold', 'completed', 'cancelled')),
+      status VARCHAR(20) DEFAULT 'planning' CHECK(status IN ('planning', 'active', 'on-hold', 'completed', 'cancelled', 'requested')),
       priority VARCHAR(20) DEFAULT 'medium' CHECK(priority IN ('low', 'medium', 'high', 'critical')),
       color VARCHAR(7) DEFAULT '#8b5cf6',
       start_date DATE,
@@ -562,6 +566,10 @@ function getPostgresSchema() {
       time_slot_start INTEGER,
       time_slot_end INTEGER,
       notes TEXT,
+      source VARCHAR(20) DEFAULT 'internal',
+      contact_email VARCHAR(255),
+      contact_phone VARCHAR(50),
+      service_category VARCHAR(50),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
@@ -814,7 +822,12 @@ async function runPostgresMigrations(pool) {
     `ALTER TABLE people ADD COLUMN IF NOT EXISTS has_transportation BOOLEAN DEFAULT false`,
     // Add time slot fields to projects
     `ALTER TABLE projects ADD COLUMN IF NOT EXISTS time_slot_start INTEGER`,
-    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS time_slot_end INTEGER`
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS time_slot_end INTEGER`,
+    // Web customer request fields
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS source VARCHAR(20) DEFAULT 'internal'`,
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS contact_email VARCHAR(255)`,
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(50)`,
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS service_category VARCHAR(50)`
   ];
 
   for (const migration of columnMigrations) {
@@ -826,6 +839,14 @@ async function runPostgresMigrations(pool) {
         console.log('Migration note:', e.message);
       }
     }
+  }
+
+  // Allow 'requested' status for web customer submissions
+  try {
+    await pool.query(`ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_status_check`);
+    await pool.query(`ALTER TABLE projects ADD CONSTRAINT projects_status_check CHECK (status IN ('planning', 'active', 'on-hold', 'completed', 'cancelled', 'requested'))`);
+  } catch (e) {
+    console.log('Postgres status constraint migration note:', e.message);
   }
 
   // Create groups tables if they don't exist
@@ -872,6 +893,76 @@ async function runPostgresMigrations(pool) {
 }
 
 // SQLite migrations for existing databases
+function migrateSqliteRequestedStatus(database) {
+  try {
+    database.prepare(
+      `INSERT INTO projects (name, code, status) VALUES (?, ?, ?)`
+    ).run('__status_test__', '__STATUS_TEST__', 'requested');
+    database.prepare(`DELETE FROM projects WHERE code = ?`).run('__STATUS_TEST__');
+    return;
+  } catch (e) {
+    console.log('Migrating projects table to allow requested status...');
+  }
+
+  try {
+    database.pragma('foreign_keys = OFF');
+    database.exec(`
+      CREATE TABLE projects_migrated (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        code TEXT UNIQUE,
+        client TEXT,
+        description TEXT,
+        status TEXT DEFAULT 'planning' CHECK(status IN ('planning', 'active', 'on-hold', 'completed', 'cancelled', 'requested')),
+        priority TEXT DEFAULT 'medium' CHECK(priority IN ('low', 'medium', 'high', 'critical')),
+        color TEXT DEFAULT '#8b5cf6',
+        start_date TEXT,
+        end_date TEXT,
+        budget_hours REAL,
+        actual_hours REAL DEFAULT 0,
+        manager_id INTEGER,
+        is_billable INTEGER DEFAULT 1,
+        location_name TEXT,
+        location_url TEXT,
+        location_lat REAL,
+        location_lng REAL,
+        time_slot_start INTEGER,
+        time_slot_end INTEGER,
+        notes TEXT,
+        source TEXT DEFAULT 'internal',
+        contact_email TEXT,
+        contact_phone TEXT,
+        service_category TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (manager_id) REFERENCES people(id) ON DELETE SET NULL
+      )
+    `);
+
+    const columns = database.prepare(`PRAGMA table_info(projects)`).all().map(row => row.name);
+    const copyCols = [
+      'id', 'name', 'code', 'client', 'description', 'status', 'priority', 'color',
+      'start_date', 'end_date', 'budget_hours', 'actual_hours', 'manager_id', 'is_billable',
+      'location_name', 'location_url', 'location_lat', 'location_lng',
+      'time_slot_start', 'time_slot_end', 'notes', 'source', 'contact_email',
+      'contact_phone', 'service_category', 'created_at', 'updated_at'
+    ].filter(col => columns.includes(col));
+
+    database.exec(`
+      INSERT INTO projects_migrated (${copyCols.join(', ')})
+      SELECT ${copyCols.join(', ')} FROM projects
+    `);
+    database.exec(`DROP TABLE projects`);
+    database.exec(`ALTER TABLE projects_migrated RENAME TO projects`);
+    database.exec(`CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status)`);
+    console.log('Projects status constraint updated to include requested');
+  } catch (e) {
+    console.error('Failed to migrate projects status constraint:', e.message);
+  } finally {
+    database.pragma('foreign_keys = ON');
+  }
+}
+
 function runSQLiteMigrations(database) {
   const columnMigrations = [
     // Add location column to assignments if it doesn't exist
@@ -891,24 +982,28 @@ function runSQLiteMigrations(database) {
     { check: `PRAGMA table_info(people)`, column: 'has_transportation', sql: `ALTER TABLE people ADD COLUMN has_transportation INTEGER DEFAULT 0` },
     // Add time slot fields to projects
     { check: `PRAGMA table_info(projects)`, column: 'time_slot_start', sql: `ALTER TABLE projects ADD COLUMN time_slot_start INTEGER` },
-    { check: `PRAGMA table_info(projects)`, column: 'time_slot_end', sql: `ALTER TABLE projects ADD COLUMN time_slot_end INTEGER` }
+    { check: `PRAGMA table_info(projects)`, column: 'time_slot_end', sql: `ALTER TABLE projects ADD COLUMN time_slot_end INTEGER` },
+    // Web customer request fields
+    { check: `PRAGMA table_info(projects)`, column: 'source', sql: `ALTER TABLE projects ADD COLUMN source TEXT DEFAULT 'internal'` },
+    { check: `PRAGMA table_info(projects)`, column: 'contact_email', sql: `ALTER TABLE projects ADD COLUMN contact_email TEXT` },
+    { check: `PRAGMA table_info(projects)`, column: 'contact_phone', sql: `ALTER TABLE projects ADD COLUMN contact_phone TEXT` },
+    { check: `PRAGMA table_info(projects)`, column: 'service_category', sql: `ALTER TABLE projects ADD COLUMN service_category TEXT` }
   ];
 
   for (const migration of columnMigrations) {
     try {
-      // Check if column exists
-      const result = database.exec(migration.check);
-      if (result.length > 0) {
-        const columns = result[0].values.map(row => row[1]); // column name is at index 1
-        if (!columns.includes(migration.column)) {
-          database.exec(migration.sql);
-          console.log(`Added column ${migration.column}`);
-        }
+      const columns = database.prepare(migration.check).all().map(row => row.name);
+      if (!columns.includes(migration.column)) {
+        database.exec(migration.sql);
+        console.log(`Added column ${migration.column}`);
       }
     } catch (e) {
       console.log('Migration note:', e.message);
     }
   }
+
+  // Allow 'requested' status for web customer submissions (SQLite requires table rebuild for CHECK)
+  migrateSqliteRequestedStatus(database);
 
   // Create groups tables if they don't exist
   const tableMigrations = [

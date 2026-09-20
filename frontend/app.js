@@ -1483,6 +1483,7 @@ function showApp() {
   initLanguageSwitcher();
   
   loadDashboard();
+  updateWebRequestBadge();
 }
 
 // ===== View Navigation =====
@@ -1664,6 +1665,9 @@ async function loadDashboard() {
     document.getElementById('stat-projects').textContent = data.metrics.totalProjects;
     document.getElementById('stat-hours').textContent = data.today.total_hours || 0;
     document.getElementById('stat-conflicts').textContent = data.metrics.unresolvedConflicts;
+    const webRequestCount = data.metrics.webRequests || 0;
+    const webRequestsStat = document.getElementById('stat-web-requests');
+    if (webRequestsStat) webRequestsStat.textContent = webRequestCount;
     
     // Update conflict badge
     const conflictBadge = document.getElementById('conflict-badge');
@@ -1673,6 +1677,10 @@ async function loadDashboard() {
     } else {
       conflictBadge.classList.add('hidden');
     }
+
+    // Update web request badges + dashboard list
+    updateWebRequestBadge();
+    renderDashboardWebRequests(data.webRequests || [], webRequestCount);
     
     // Today's schedules
     const today = new Date().toISOString().split('T')[0];
@@ -1815,6 +1823,69 @@ async function loadDashboard() {
     console.error('Dashboard error:', error);
     showToast('Failed to load dashboard', 'error');
   }
+}
+
+function renderDashboardWebRequests(requests, count) {
+  const list = document.getElementById('web-requests-list');
+  const badge = document.getElementById('web-requests-count-badge');
+  if (!list) return;
+
+  if (badge) {
+    if (count > 0) {
+      badge.textContent = count;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
+
+  if (!requests.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <p>${t('dashboard.noWebRequests') || 'No new web requests'}</p>
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = requests.slice(0, 8).map(r => {
+    const category = r.serviceCategory || 'custom';
+    const contact = r.contactPhone || r.contactEmail || '-';
+    const when = r.createdAt ? new Date(r.createdAt).toLocaleString() : '';
+    return `
+      <div class="list-item web-request-item" onclick="showProjectDetails(${r.id})" style="cursor:pointer;">
+        <div class="list-item-left">
+          <div class="list-item-avatar" style="background: ${r.color || '#c45c26'}">${(r.client || r.name || '?').charAt(0).toUpperCase()}</div>
+          <div>
+            <span class="list-item-name">${r.name}</span>
+            <span class="list-item-sub">
+              <span class="web-request-pill"><i class="fas fa-globe"></i> ${t('projects.webRequest') || 'From web'}</span>
+              ${r.client ? ` · ${r.client}` : ''}
+              ${r.locationName ? ` · ${r.locationName}` : ''}
+            </span>
+            <span class="list-item-sub">${contact}${when ? ` · ${when}` : ''}</span>
+          </div>
+        </div>
+        <div class="web-request-actions">
+          <span class="status-badge requested">${t('projects.requested') || 'Web Request'}</span>
+          <span class="tag">${r.priority || 'medium'}</span>
+          ${canEdit() ? `<button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); acceptWebRequest(${r.id})"><i class="fas fa-check"></i></button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function viewWebRequestsFromDashboard() {
+  switchView('projects');
+  setTimeout(() => {
+    const filter = document.getElementById('projects-status-filter');
+    if (filter) {
+      filter.value = 'requested';
+      loadProjects();
+    }
+  }, 50);
 }
 
 // ===== Schedule =====
@@ -2456,7 +2527,7 @@ async function loadProjects() {
     }
     
     grid.innerHTML = data.data.map(p => `
-      <div class="grid-card" onclick="showProjectDetails(${p.id})">
+      <div class="grid-card ${p.status === 'requested' || p.source === 'web' ? 'web-request' : ''}" onclick="showProjectDetails(${p.id})">
         <div class="grid-card-header">
           <div class="grid-card-avatar" style="background: ${p.color}">${p.name.substring(0, 2).toUpperCase()}</div>
           <div>
@@ -2465,9 +2536,10 @@ async function loadProjects() {
           </div>
         </div>
         <div class="grid-card-body">
-          <span class="status-badge ${p.status}">${p.status}</span>
+          <span class="status-badge ${p.status}">${p.status === 'requested' ? (t('projects.requested') || 'Web Request') : p.status}</span>
+          ${p.source === 'web' ? `<span class="web-request-pill"><i class="fas fa-globe"></i> ${t('projects.webRequest') || 'From web customer'}</span>` : ''}
           <span class="tag" style="margin-left: 8px;">${p.priority} ${t('projects.priorityLabel') || 'priority'}</span>
-          ${p.location_name ? `<span class="tag" style="margin-left: 8px;"><i class="fas fa-map-marker-alt"></i> ${p.location_name}</span>` : ''}
+          ${(p.locationName || p.location_name) ? `<span class="tag" style="margin-left: 8px;"><i class="fas fa-map-marker-alt"></i> ${p.locationName || p.location_name}</span>` : ''}
         </div>
         <div class="grid-card-footer">
           <div class="grid-card-stat">
@@ -2481,10 +2553,26 @@ async function loadProjects() {
         </div>
       </div>
     `).join('');
+    updateWebRequestBadge();
   } catch (error) {
     console.error('Projects error:', error);
     showToast('Failed to load projects', 'error');
   }
+}
+
+async function updateWebRequestBadge() {
+  try {
+    const data = await api('/projects?status=requested&limit=1');
+    const count = data.pagination?.total || 0;
+    const badge = document.getElementById('web-request-badge');
+    if (!badge) return;
+    if (count > 0) {
+      badge.textContent = count;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  } catch (_) {}
 }
 
 async function showProjectDetails(id) {
@@ -2493,9 +2581,15 @@ async function showProjectDetails(id) {
     
     showModal(project.name, `
       <div class="project-details">
+        ${project.source === 'web' || project.status === 'requested' ? `
+          <div class="detail-row" style="margin-bottom: 12px;">
+            <span class="web-request-pill"><i class="fas fa-globe"></i> ${t('projects.webRequest') || 'From web customer'}</span>
+            ${project.code ? `<span class="tag" style="margin-left: 8px;">${project.code}</span>` : ''}
+          </div>
+        ` : ''}
         <div class="detail-row">
           <span class="detail-label">${t('projects.status') || 'Status'}</span>
-          <span class="status-badge ${project.status}">${project.status}</span>
+          <span class="status-badge ${project.status}">${project.status === 'requested' ? (t('projects.requested') || 'Web Request') : project.status}</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">${t('projects.priority') || 'Priority'}</span>
@@ -2505,6 +2599,30 @@ async function showProjectDetails(id) {
           <span class="detail-label">${t('projects.client') || 'Client'}</span>
           <span class="detail-value">${project.client || '-'}</span>
         </div>
+        ${project.contactEmail ? `
+          <div class="detail-row">
+            <span class="detail-label">${t('projects.contactEmail') || 'Customer email'}</span>
+            <span class="detail-value"><a href="mailto:${project.contactEmail}">${project.contactEmail}</a></span>
+          </div>
+        ` : ''}
+        ${project.contactPhone ? `
+          <div class="detail-row">
+            <span class="detail-label">${t('projects.contactPhone') || 'Customer phone'}</span>
+            <span class="detail-value"><a href="tel:${project.contactPhone}">${project.contactPhone}</a></span>
+          </div>
+        ` : ''}
+        ${project.serviceCategory ? `
+          <div class="detail-row">
+            <span class="detail-label">${t('projects.serviceCategory') || 'Service category'}</span>
+            <span class="detail-value">${project.serviceCategory}</span>
+          </div>
+        ` : ''}
+        ${project.description ? `
+          <div class="detail-row" style="display:block; margin-top: 12px;">
+            <span class="detail-label">${t('projects.description') || 'Description'}</span>
+            <div class="detail-value" style="white-space: pre-wrap; margin-top: 6px;">${project.description}</div>
+          </div>
+        ` : ''}
         <div class="detail-row">
           <span class="detail-label">${t('projects.budgetHours') || 'Budget Hours'}</span>
           <span class="detail-value">${project.budgetHours || '-'}</span>
@@ -2547,6 +2665,9 @@ async function showProjectDetails(id) {
         <div class="modal-footer">
           <button class="btn btn-secondary" onclick="closeModal()">Close</button>
           ${canEdit() ? `
+            ${project.status === 'requested' ? `
+              <button class="btn btn-primary" onclick="acceptWebRequest(${id})"><i class="fas fa-check"></i> ${t('projects.acceptRequest') || 'Accept into planning'}</button>
+            ` : ''}
             <button class="btn btn-danger" onclick="deleteProject(${id})"><i class="fas fa-trash"></i> Delete</button>
             <button class="btn btn-secondary" onclick="editProject(${id})"><i class="fas fa-edit"></i> Edit</button>
           ` : ''}
@@ -2556,6 +2677,25 @@ async function showProjectDetails(id) {
     `);
   } catch (error) {
     showToast('Failed to load project details', 'error');
+  }
+}
+
+async function acceptWebRequest(id) {
+  if (!canEdit()) return;
+  try {
+    await api(`/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'planning' })
+    });
+    showToast('Request accepted into planning');
+    closeModal();
+    loadProjects();
+    updateWebRequestBadge();
+    if (document.getElementById('dashboard-view')?.classList.contains('active')) {
+      loadDashboard();
+    }
+  } catch (error) {
+    showToast(error.message || 'Failed to accept request', 'error');
   }
 }
 
@@ -2859,6 +2999,7 @@ async function editProject(id) {
           <div class="form-group">
             <label>Status</label>
             <select name="status">
+              <option value="requested" ${project.status === 'requested' ? 'selected' : ''}>${t('projects.requested') || 'Web Request'}</option>
               <option value="planning" ${project.status === 'planning' ? 'selected' : ''}>Planning</option>
               <option value="active" ${project.status === 'active' ? 'selected' : ''}>Active</option>
               <option value="on-hold" ${project.status === 'on-hold' ? 'selected' : ''}>On Hold</option>
@@ -6161,6 +6302,7 @@ document.addEventListener('languageChanged', updateSidebarLangValue);
 
 // ===== Dashboard Configuration =====
 const DEFAULT_DASHBOARD_CONFIG = [
+  { id: 'web-requests-card', name: 'Web Requests', icon: 'fa-globe', color: '#c45c26', visible: true, size: 'full' },
   { id: 'schedule-by-projects', name: 'Schedule by Projects', icon: 'fa-folder-open', color: '#10b981', visible: true, size: 'full' },
   { id: 'schedule-by-employees', name: 'Schedule by Employees', icon: 'fa-users', color: '#6366f1', visible: true, size: 'large' },
   { id: 'quick-actions-card', name: 'Quick Actions', icon: 'fa-bolt', color: '#f59e0b', visible: true, size: 'small' },
@@ -6175,7 +6317,11 @@ function getDashboardConfig() {
   const saved = localStorage.getItem('dashboard_config');
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      const ids = new Set(parsed.map(c => c.id));
+      // Merge in any new default cards (e.g. web requests) for existing users
+      const missing = DEFAULT_DASHBOARD_CONFIG.filter(c => !ids.has(c.id));
+      return missing.length ? [...missing, ...parsed] : parsed;
     } catch (e) {
       return [...DEFAULT_DASHBOARD_CONFIG];
     }

@@ -815,6 +815,25 @@ body {
   grid-column: span 12;
 }
 
+.web-requests-card {
+  grid-column: span 12;
+}
+
+.web-request-item .web-request-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.clickable-stat {
+  cursor: pointer;
+}
+
+.clickable-stat:hover {
+  border-color: rgba(196, 92, 38, 0.45);
+}
+
 .schedule-by-employees {
   grid-column: span 8;
 }
@@ -2075,6 +2094,41 @@ body {
 .status-badge.on-hold { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
 .status-badge.completed { background: rgba(139, 92, 246, 0.2); color: var(--secondary); }
 .status-badge.cancelled { background: rgba(239, 68, 68, 0.2); color: var(--error); }
+.status-badge.requested { background: rgba(196, 92, 38, 0.2); color: #c45c26; }
+
+.grid-card.web-request {
+  border-color: rgba(196, 92, 38, 0.45);
+  box-shadow: 0 0 0 1px rgba(196, 92, 38, 0.15);
+}
+
+.web-request-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(196, 92, 38, 0.15);
+  color: #c45c26;
+}
+
+.login-public-link {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.login-public-link a {
+  color: var(--text-secondary, #94a3b8);
+  text-decoration: none;
+}
+
+.login-public-link a:hover {
+  color: var(--primary, #6366f1);
+  text-decoration: underline;
+}
 
 /* ===== Proficiency Level ===== */
 .proficiency-dots {

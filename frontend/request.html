@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Αίτημα Εργασίας</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --ink: #141210;
+      --ink-soft: #2a2622;
+      --paper: #f3eee6;
+      --paper-deep: #e6dfd3;
+      --copper: #c45c26;
+      --copper-deep: #9a4318;
+      --sage: #3f6b57;
+      --sage-soft: #5d8a72;
+      --steel: #4a5560;
+      --line: rgba(20, 18, 16, 0.12);
+      --shadow: 0 24px 60px rgba(20, 18, 16, 0.18);
+      --radius: 18px;
+      --font-display: "Syne", sans-serif;
+      --font-body: "Figtree", sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+
+    a { color: inherit; }
+
+    .site-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 6vw;
+      color: var(--paper);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .brand-mark {
+      width: 2.1rem;
+      height: 2.1rem;
+      border-radius: 0.55rem;
+      background: linear-gradient(145deg, var(--copper), var(--copper-deep));
+      display: grid;
+      place-items: center;
+      box-shadow: 0 8px 20px rgba(196, 92, 38, 0.35);
+    }
+
+    .header-link {
+      color: rgba(243, 238, 230, 0.85);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 500;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .header-link:hover {
+      color: #fff;
+      border-color: rgba(255,255,255,0.5);
+    }
+
+    .lang-toggle {
+      appearance: none;
+      border: 1px solid rgba(243, 238, 230, 0.35);
+      background: rgba(243, 238, 230, 0.08);
+      color: var(--paper);
+      border-radius: 999px;
+      padding: 0.55rem 0.95rem;
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .lang-toggle:hover {
+      background: rgba(243, 238, 230, 0.16);
+      border-color: rgba(243, 238, 230, 0.55);
+      transform: translateY(-1px);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: flex-end;
+      padding: 7rem 6vw 4.5rem;
+      color: var(--paper);
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse 80% 60% at 15% 20%, rgba(196, 92, 38, 0.35), transparent 55%),
+        radial-gradient(ellipse 70% 50% at 85% 30%, rgba(63, 107, 87, 0.28), transparent 50%),
+        linear-gradient(165deg, #1c1916 0%, #2a241f 42%, #1a2420 100%);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(243, 238, 230, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(243, 238, 230, 0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(to bottom, black 35%, transparent 95%);
+      pointer-events: none;
+      animation: gridDrift 28s linear infinite;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -8%;
+      bottom: -18%;
+      width: min(58vw, 640px);
+      height: min(58vw, 640px);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(196, 92, 38, 0.22), transparent 68%);
+      filter: blur(8px);
+      animation: glowPulse 7s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gridDrift {
+      from { transform: translateY(0); }
+      to { transform: translateY(48px); }
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.7; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.06); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 42rem;
+      animation: riseIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(28px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(2.6rem, 7vw, 4.6rem);
+      line-height: 0.98;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+      color: rgba(243, 238, 230, 0.78);
+      max-width: 32rem;
+      margin-bottom: 2rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.98rem;
+      border-radius: 999px;
+      padding: 0.9rem 1.45rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      text-decoration: none;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn-primary {
+      background: var(--copper);
+      color: #fff;
+      box-shadow: 0 12px 28px rgba(196, 92, 38, 0.35);
+    }
+
+    .btn-primary:hover { background: var(--copper-deep); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--paper);
+      border: 1px solid rgba(243, 238, 230, 0.35);
+    }
+
+    .btn-ghost:hover { background: rgba(243, 238, 230, 0.08); }
+
+    .btn-submit {
+      background: var(--ink);
+      color: var(--paper);
+      border-radius: 14px;
+      padding: 1rem 1.6rem;
+      width: 100%;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
+    .btn-submit:hover { background: var(--ink-soft); }
+    .btn-submit:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    section { padding: 4.5rem 6vw; }
+
+    .section-head {
+      max-width: 40rem;
+      margin-bottom: 2rem;
+      animation: riseIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .section-head h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.55rem;
+    }
+
+    .section-head p {
+      color: var(--steel);
+      font-size: 1.05rem;
+    }
+
+    .cleaning {
+      background: linear-gradient(180deg, #eef4f0 0%, var(--paper) 100%);
+    }
+
+    .construction {
+      background: linear-gradient(180deg, #f5ebe3 0%, var(--paper) 100%);
+    }
+
+    .custom-job { background: var(--paper-deep); }
+
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.85rem;
+    }
+
+    .service-option {
+      position: relative;
+      border: 1.5px solid var(--line);
+      background: rgba(255,255,255,0.55);
+      border-radius: 14px;
+      padding: 1.05rem 1rem 1.05rem 2.7rem;
+      text-align: left;
+      font-family: var(--font-body);
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .service-option::before {
+      content: "";
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      width: 1rem;
+      height: 1rem;
+      border-radius: 4px;
+      border: 1.5px solid rgba(20,18,16,0.28);
+      transform: translateY(-50%);
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .service-option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(20,18,16,0.08);
+    }
+
+    .service-option.selected {
+      border-color: currentColor;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(20,18,16,0.1);
+    }
+
+    .service-option.selected::before {
+      background: currentColor;
+      border-color: currentColor;
+      box-shadow: inset 0 0 0 2px #fff;
+    }
+
+    .service-option.cleaning { color: var(--sage); }
+    .service-option.construction { color: var(--copper-deep); }
+
+    .custom-panel {
+      display: grid;
+      gap: 1rem;
+      max-width: 48rem;
+    }
+
+    textarea, input, select {
+      width: 100%;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    textarea:focus, input:focus, select:focus {
+      border-color: var(--copper);
+      box-shadow: 0 0 0 4px rgba(196, 92, 38, 0.15);
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.92rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .hint {
+      color: var(--steel);
+      font-size: 0.88rem;
+      margin-top: 0.35rem;
+    }
+
+    .contact {
+      background:
+        radial-gradient(ellipse 50% 40% at 90% 10%, rgba(196, 92, 38, 0.08), transparent),
+        var(--paper);
+    }
+
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    .summary {
+      background: var(--ink);
+      color: var(--paper);
+      border-radius: var(--radius);
+      padding: 1.6rem;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 1.5rem;
+    }
+
+    .summary h3 {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .summary-list {
+      list-style: none;
+      display: grid;
+      gap: 0.45rem;
+      margin-bottom: 1.25rem;
+      color: rgba(243, 238, 230, 0.8);
+      font-size: 0.95rem;
+      min-height: 3rem;
+    }
+
+    .summary-list li {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+
+    .summary-list i {
+      margin-top: 0.2rem;
+      color: var(--copper);
+    }
+
+    .summary-empty { opacity: 0.55; font-style: italic; }
+
+    .form-message {
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 12px;
+      font-weight: 500;
+      display: none;
+    }
+
+    .form-message.show { display: block; }
+    .form-message.success {
+      background: rgba(63, 107, 87, 0.12);
+      color: var(--sage);
+      border: 1px solid rgba(63, 107, 87, 0.25);
+    }
+    .form-message.error {
+      background: rgba(180, 50, 40, 0.1);
+      color: #9a2f24;
+      border: 1px solid rgba(180, 50, 40, 0.2);
+    }
+
+    .site-footer {
+      padding: 2rem 6vw 2.5rem;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      color: var(--steel);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 860px) {
+      .contact-layout { grid-template-columns: 1fr; }
+      .summary { position: static; }
+      .form-grid { grid-template-columns: 1fr; }
+      .hero { min-height: 88vh; padding-bottom: 3.5rem; }
+      .header-actions { gap: 0.55rem; }
+      .lang-toggle { padding: 0.5rem 0.75rem; font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <span class="brand-mark"><i class="fas fa-hammer"></i></span>
+      <span id="brand-name" data-i18n="brandName">Προγραμματισμός Εργασιών</span>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="lang-toggle" id="lang-toggle" aria-label="Αλλαγή γλώσσας">
+        <i class="fas fa-globe"></i>
+        <span id="lang-toggle-label">EN</span>
+      </button>
+      <a class="header-link" id="staff-login-link" href="http://localhost:3000/" data-i18n="staffLogin">Σύνδεση προσωπικού</a>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="hero-content">
+      <h1 data-i18n="heroTitle">Ζητήστε την εργασία που χρειάζεστε</h1>
+      <p data-i18n="heroSubtitle">Πείτε μας τι χρειάζεστε — καθαρισμός, κατασκευές ή ειδική εργασία — και η ομάδα μας θα προγραμματίσει τους κατάλληλους ανθρώπους.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#services"><i class="fas fa-list-check"></i> <span data-i18n="chooseServices">Επιλογή υπηρεσιών</span></a>
+        <a class="btn btn-ghost" href="#custom"><i class="fas fa-pen"></i> <span data-i18n="describeJob">Περιγραφή εργασίας</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="cleaning" id="services">
+    <div class="section-head">
+      <h2 data-i18n="cleaningTitle">Καθαρισμός</h2>
+      <p data-i18n="cleaningSubtitle">Επιλέξτε μία ή περισσότερες υπηρεσίες καθαρισμού για τον χώρο σας.</p>
+    </div>
+    <div class="service-grid" id="cleaning-grid"></div>
+  </section>
+
+  <section class="construction">
+    <div class="section-head">
+      <h2 data-i18n="constructionTitle">Κατασκευές &amp; επισκευές</h2>
+      <p data-i18n="constructionSubtitle">Επιλέξτε τις εργασίες που χρειάζεστε. Μπορείτε να συνδυάσετε καθαρισμό και κατασκευές σε ένα αίτημα.</p>
+    </div>
+    <div class="service-grid" id="construction-grid"></div>
+  </section>
+
+  <section class="custom-job" id="custom">
+    <div class="section-head">
+      <h2 data-i18n="customTitle">Περιγράψτε μια συγκεκριμένη εργασία</h2>
+      <p data-i18n="customSubtitle">Δεν είστε σίγουροι ποια επιλογή ταιριάζει; Γράψτε με δικά σας λόγια τι χρειάζεστε.</p>
+    </div>
+    <div class="custom-panel">
+      <div>
+        <label for="custom-description" data-i18n="jobDetails">Λεπτομέρειες εργασίας</label>
+        <textarea id="custom-description" data-i18n-placeholder="customPlaceholder" placeholder="Παράδειγμα: Καθαρισμός αυλής, επισκευή περίφραξης και βαθύς καθαρισμός κουζίνας μετά από ανακαίνιση."></textarea>
+        <p class="hint" data-i18n="customHint">Αναφέρετε δωμάτια, υλικά, πρόσβαση ή οτιδήποτε άλλο πρέπει να γνωρίζουμε.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="section-head">
+      <h2 data-i18n="detailsTitle">Τα στοιχεία σας</h2>
+      <p data-i18n="detailsSubtitle">Υποβάλετε το αίτημά σας και θα επικοινωνήσουμε για επιβεβαίωση χρόνου και εύρους εργασιών.</p>
+    </div>
+    <div class="contact-layout">
+      <form id="request-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="customer-name" data-i18n="fullName">Ονοματεπώνυμο *</label>
+            <input id="customer-name" name="customerName" required autocomplete="name" data-i18n-placeholder="namePlaceholder" placeholder="Το όνομά σας">
+          </div>
+          <div class="form-group">
+            <label for="priority" data-i18n="urgency">Επείγον</label>
+            <select id="priority" name="priority">
+              <option value="low" data-i18n="priorityLow">Ευέλικτο</option>
+              <option value="medium" selected="selected" data-i18n="priorityMedium">Κανονικό</option>
+              <option value="high" data-i18n="priorityHigh">Σύντομα</option>
+              <option value="critical" data-i18n="priorityCritical">Επείγον</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="email" data-i18n="email">Ηλ. ταχυδρομείο</label>
+            <input id="email" name="email" type="email" autocomplete="email" data-i18n-placeholder="emailPlaceholder" placeholder="onoma@email.com">
+          </div>
+          <div class="form-group">
+            <label for="phone" data-i18n="phone">Τηλέφωνο</label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel" data-i18n-placeholder="phonePlaceholder" placeholder="+357 99 000000">
+          </div>
+          <div class="form-group full">
+            <label for="address" data-i18n="location">Τοποθεσία εργασίας</label>
+            <input id="address" name="address" autocomplete="street-address" data-i18n-placeholder="locationPlaceholder" placeholder="Οδός, πόλη, σημειώσεις πρόσβασης">
+          </div>
+          <div class="form-group">
+            <label for="preferred-date" data-i18n="preferredDate">Προτιμώμενη ημερομηνία</label>
+            <input id="preferred-date" name="preferredDate" type="date">
+          </div>
+          <div class="form-group">
+            <label for="notes" data-i18n="extraNotes">Επιπλέον σημειώσεις</label>
+            <input id="notes" name="notes" data-i18n-placeholder="notesPlaceholder" placeholder="Κωδικός πόρτας, πάρκινγκ, καλύτερη ώρα κλήσης…">
+          </div>
+        </div>
+        <button class="btn btn-submit" type="submit" id="submit-btn">
+          <i class="fas fa-paper-plane"></i>
+          <span data-i18n="submit">Υποβολή αιτήματος</span>
+        </button>
+        <div class="form-message" id="form-message" role="status"></div>
+      </form>
+
+      <aside class="summary" aria-live="polite">
+        <h3 data-i18n="yourRequest">Το αίτημά σας</h3>
+        <ul class="summary-list" id="summary-list">
+          <li class="summary-empty" data-i18n="noServices">Δεν έχουν επιλεγεί υπηρεσίες ακόμη</li>
+        </ul>
+        <p class="hint" style="color: rgba(243,238,230,0.55);" data-i18n="contactRequired">Απαιτείται ηλ. ταχυδρομείο ή τηλέφωνο για να επικοινωνήσουμε μαζί σας.</p>
+      </aside>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <span id="footer-text" data-i18n="footerText">© Προγραμματισμός Εργασιών. Με επιφύλαξη παντός δικαιώματος.</span>
+    <a id="footer-staff-link" href="http://localhost:3000/" data-i18n="staffLogin">Σύνδεση προσωπικού</a>
+  </footer>
+
+  <script>
+    const I18N = {
+      el: {
+        pageTitle: 'Αίτημα Εργασίας',
+        brandName: 'Προγραμματισμός Εργασιών',
+        staffLogin: 'Σύνδεση προσωπικού',
+        langButton: 'EN',
+        heroTitle: 'Ζητήστε την εργασία που χρειάζεστε',
+        heroSubtitle: 'Πείτε μας τι χρειάζεστε — καθαρισμός, κατασκευές ή ειδική εργασία — και η ομάδα μας θα προγραμματίσει τους κατάλληλους ανθρώπους.',
+        chooseServices: 'Επιλογή υπηρεσιών',
+        describeJob: 'Περιγραφή εργασίας',
+        cleaningTitle: 'Καθαρισμός',
+        cleaningSubtitle: 'Επιλέξτε μία ή περισσότερες υπηρεσίες καθαρισμού για τον χώρο σας.',
+        constructionTitle: 'Κατασκευές & επισκευές',
+        constructionSubtitle: 'Επιλέξτε τις εργασίες που χρειάζεστε. Μπορείτε να συνδυάσετε καθαρισμό και κατασκευές σε ένα αίτημα.',
+        customTitle: 'Περιγράψτε μια συγκεκριμένη εργασία',
+        customSubtitle: 'Δεν είστε σίγουροι ποια επιλογή ταιριάζει; Γράψτε με δικά σας λόγια τι χρειάζεστε.',
+        jobDetails: 'Λεπτομέρειες εργασίας',
+        customPlaceholder: 'Παράδειγμα: Καθαρισμός αυλής, επισκευή περίφραξης και βαθύς καθαρισμός κουζίνας μετά από ανακαίνιση.',
+        customHint: 'Αναφέρετε δωμάτια, υλικά, πρόσβαση ή οτιδήποτε άλλο πρέπει να γνωρίζουμε.',
+        detailsTitle: 'Τα στοιχεία σας',
+        detailsSubtitle: 'Υποβάλετε το αίτημά σας και θα επικοινωνήσουμε για επιβεβαίωση χρόνου και εύρους εργασιών.',
+        fullName: 'Ονοματεπώνυμο *',
+        namePlaceholder: 'Το όνομά σας',
+        urgency: 'Επείγον',
+        priorityLow: 'Ευέλικτο',
+        priorityMedium: 'Κανονικό',
+        priorityHigh: 'Σύντομα',
+        priorityCritical: 'Επείγον',
+        email: 'Ηλ. ταχυδρομείο',
+        emailPlaceholder: 'onoma@email.com',
+        phone: 'Τηλέφωνο',
+        phonePlaceholder: '+357 99 000000',
+        location: 'Τοποθεσία εργασίας',
+        locationPlaceholder: 'Οδός, πόλη, σημειώσεις πρόσβασης',
+        preferredDate: 'Προτιμώμενη ημερομηνία',
+        extraNotes: 'Επιπλέον σημειώσεις',
+        notesPlaceholder: 'Κωδικός πόρτας, πάρκινγκ, καλύτερη ώρα κλήσης…',
+        submit: 'Υποβολή αιτήματος',
+        sending: 'Αποστολή…',
+        yourRequest: 'Το αίτημά σας',
+        noServices: 'Δεν έχουν επιλεγεί υπηρεσίες ακόμη',
+        contactRequired: 'Απαιτείται ηλ. ταχυδρομείο ή τηλέφωνο για να επικοινωνήσουμε μαζί σας.',
+        customPrefix: 'Ειδική:',
+        footerText: '© Προγραμματισμός Εργασιών. Με επιφύλαξη παντός δικαιώματος.',
+        errContact: 'Παρακαλώ συμπληρώστε ηλ. ταχυδρομείο ή τηλέφωνο.',
+        errServices: 'Επιλέξτε τουλάχιστον μία υπηρεσία ή περιγράψτε την εργασία.',
+        errSubmit: 'Αποτυχία υποβολής αιτήματος',
+        errGeneric: 'Κάτι πήγε στραβά. Δοκιμάστε ξανά.',
+        success: 'Το αίτημά σας υποβλήθηκε με επιτυχία. Θα επικοινωνήσουμε σύντομα.',
+        reference: 'Αναφορά'
+      },
+      en: {
+        pageTitle: 'Request a Job',
+        brandName: 'Job Scheduler',
+        staffLogin: 'Staff login',
+        langButton: 'ΕΛ',
+        heroTitle: 'Request the job you need',
+        heroSubtitle: 'Tell us what you need — cleaning, construction, or a custom job — and our team will schedule the right people for you.',
+        chooseServices: 'Choose services',
+        describeJob: 'Describe a job',
+        cleaningTitle: 'Cleaning',
+        cleaningSubtitle: 'Select one or more cleaning services you need at your location.',
+        constructionTitle: 'Construction & repairs',
+        constructionSubtitle: 'Choose the trade work you need. You can combine cleaning and construction in one request.',
+        customTitle: 'Describe a specific job',
+        customSubtitle: 'Not sure which option fits? Write what you need in your own words.',
+        jobDetails: 'Job details',
+        customPlaceholder: 'Example: Clear debris from backyard, repair fence panels, and deep-clean the kitchen after renovations.',
+        customHint: 'Include rooms, materials, access notes, or anything else we should know.',
+        detailsTitle: 'Your details',
+        detailsSubtitle: 'Submit your request and we will follow up to confirm timing and scope.',
+        fullName: 'Full name *',
+        namePlaceholder: 'Your name',
+        urgency: 'Urgency',
+        priorityLow: 'Flexible',
+        priorityMedium: 'Normal',
+        priorityHigh: 'Soon',
+        priorityCritical: 'Urgent',
+        email: 'Email',
+        emailPlaceholder: 'you@email.com',
+        phone: 'Phone',
+        phonePlaceholder: '+357 99 000000',
+        location: 'Job location',
+        locationPlaceholder: 'Street, city, access notes',
+        preferredDate: 'Preferred date',
+        extraNotes: 'Extra notes',
+        notesPlaceholder: 'Gate code, parking, best call time…',
+        submit: 'Submit request',
+        sending: 'Sending…',
+        yourRequest: 'Your request',
+        noServices: 'No services selected yet',
+        contactRequired: 'Email or phone is required so we can reach you.',
+        customPrefix: 'Custom:',
+        footerText: '© Job Scheduler. All rights reserved.',
+        errContact: 'Please provide an email or phone number.',
+        errServices: 'Select at least one service, or describe the job you need.',
+        errSubmit: 'Failed to submit request',
+        errGeneric: 'Something went wrong. Please try again.',
+        success: 'Your request was submitted successfully. Our team will contact you soon.',
+        reference: 'Reference'
+      }
+    };
+
+    const SERVICE_LABELS = {
+      'House cleaning': { el: 'Καθαρισμός σπιτιού', en: 'House cleaning' },
+      'Office cleaning': { el: 'Καθαρισμός γραφείου', en: 'Office cleaning' },
+      'Deep cleaning': { el: 'Βαθύς καθαρισμός', en: 'Deep cleaning' },
+      'Window cleaning': { el: 'Καθαρισμός τζαμιών', en: 'Window cleaning' },
+      'Post-construction cleaning': { el: 'Καθαρισμός μετά από κατασκευές', en: 'Post-construction cleaning' },
+      'Carpet cleaning': { el: 'Καθαρισμός χαλιών', en: 'Carpet cleaning' },
+      'Renovation': { el: 'Ανακαίνιση', en: 'Renovation' },
+      'Painting': { el: 'Βάψιμο', en: 'Painting' },
+      'Plumbing': { el: 'Υδραυλικά', en: 'Plumbing' },
+      'Electrical work': { el: 'Ηλεκτρολογικά', en: 'Electrical work' },
+      'Flooring': { el: 'Δάπεδα', en: 'Flooring' },
+      'General repairs': { el: 'Γενικές επισκευές', en: 'General repairs' },
+      'Demolition': { el: 'Κατεδάφιση', en: 'Demolition' }
+    };
+
+    const FALLBACK = {
+      cleaning: [
+        'House cleaning', 'Office cleaning', 'Deep cleaning',
+        'Window cleaning', 'Post-construction cleaning', 'Carpet cleaning'
+      ],
+      construction: [
+        'Renovation', 'Painting', 'Plumbing', 'Electrical work',
+        'Flooring', 'General repairs', 'Demolition'
+      ]
+    };
+
+    // Force Greek as default unless user explicitly chose English
+    let lang = localStorage.getItem('public_lang');
+    if (lang !== 'en' && lang !== 'el') lang = 'el';
+    if (!localStorage.getItem('public_lang')) localStorage.setItem('public_lang', 'el');
+    let catalog = FALLBACK;
+    const selected = new Set();
+
+    const cleaningGrid = document.getElementById('cleaning-grid');
+    const constructionGrid = document.getElementById('construction-grid');
+    const summaryList = document.getElementById('summary-list');
+    const customDescription = document.getElementById('custom-description');
+    const form = document.getElementById('request-form');
+    const formMessage = document.getElementById('form-message');
+    const submitBtn = document.getElementById('submit-btn');
+    const langToggle = document.getElementById('lang-toggle');
+
+    function t(key) {
+      return (I18N[lang] && I18N[lang][key]) || I18N.el[key] || key;
+    }
+
+    function serviceLabel(key) {
+      return (SERVICE_LABELS[key] && SERVICE_LABELS[key][lang]) || key;
+    }
+
+    function applyTranslations() {
+      document.documentElement.lang = lang;
+      document.title = t('pageTitle');
+      document.getElementById('lang-toggle-label').textContent = t('langButton');
+      langToggle.setAttribute('aria-label', lang === 'el' ? 'Αλλαγή σε Αγγλικά' : 'Switch to Greek');
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (key) el.textContent = t(key);
+      });
+
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (key) el.setAttribute('placeholder', t(key));
+      });
+
+      renderOptions(cleaningGrid, catalog.cleaning || FALLBACK.cleaning, 'cleaning');
+      renderOptions(constructionGrid, catalog.construction || FALLBACK.construction, 'construction');
+      updateSummary();
+    }
+
+    function renderOptions(container, items, category) {
+      container.innerHTML = items.map(key => {
+        const selectedClass = selected.has(key) ? ' selected' : '';
+        return `<button type="button" class="service-option ${category}${selectedClass}" data-service="${key.replace(/"/g, '&quot;')}">${serviceLabel(key)}</button>`;
+      }).join('');
+    }
+
+    function updateSummary() {
+      const items = [...selected];
+      const custom = customDescription.value.trim();
+      if (!items.length && !custom) {
+        summaryList.innerHTML = `<li class="summary-empty">${t('noServices')}</li>`;
+        return;
+      }
+      summaryList.innerHTML = [
+        ...items.map(s => `<li><i class="fas fa-check"></i><span>${serviceLabel(s)}</span></li>`),
+        custom ? `<li><i class="fas fa-pen"></i><span>${t('customPrefix')} ${custom.slice(0, 120)}${custom.length > 120 ? '…' : ''}</span></li>` : ''
+      ].join('');
+    }
+
+    function bindOptionClicks(container) {
+      container.addEventListener('click', (e) => {
+        const btn = e.target.closest('.service-option');
+        if (!btn) return;
+        const value = btn.dataset.service;
+        if (selected.has(value)) {
+          selected.delete(value);
+          btn.classList.remove('selected');
+        } else {
+          selected.add(value);
+          btn.classList.add('selected');
+        }
+        updateSummary();
+      });
+    }
+
+    function setLanguage(nextLang) {
+      lang = nextLang === 'en' ? 'en' : 'el';
+      localStorage.setItem('public_lang', lang);
+      applyTranslations();
+    }
+
+    langToggle.addEventListener('click', () => {
+      setLanguage(lang === 'el' ? 'en' : 'el');
+    });
+
+    async function loadBranding() {
+      try {
+        const res = await fetch('/api/settings/public');
+        if (!res.ok) return;
+        const data = await res.json();
+        // Keep public site text in the selected language; only adopt brand color from settings
+        if (data.primary_color) {
+          document.documentElement.style.setProperty('--copper', data.primary_color);
+        }
+      } catch (_) {}
+    }
+
+    async function loadCatalog() {
+      try {
+        const res = await fetch('/api/public/requests/catalog');
+        if (res.ok) catalog = await res.json();
+      } catch (_) {}
+      renderOptions(cleaningGrid, catalog.cleaning || FALLBACK.cleaning, 'cleaning');
+      renderOptions(constructionGrid, catalog.construction || FALLBACK.construction, 'construction');
+    }
+
+    function showMessage(type, text) {
+      formMessage.className = `form-message show ${type}`;
+      formMessage.textContent = text;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formMessage.className = 'form-message';
+
+      const payload = {
+        customerName: document.getElementById('customer-name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        preferredDate: document.getElementById('preferred-date').value,
+        priority: document.getElementById('priority').value,
+        notes: document.getElementById('notes').value.trim(),
+        services: [...selected],
+        customDescription: customDescription.value.trim(),
+        language: lang
+      };
+
+      if (!payload.email && !payload.phone) {
+        showMessage('error', t('errContact'));
+        return;
+      }
+      if (payload.services.length === 0 && !payload.customDescription) {
+        showMessage('error', t('errServices'));
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.querySelector('span').textContent = t('sending');
+
+      try {
+        const res = await fetch('/api/public/requests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || t('errSubmit'));
+
+        showMessage('success', `${t('success')} ${t('reference')}: ${data.code || ''}`);
+        form.reset();
+        selected.clear();
+        applyTranslations();
+      } catch (err) {
+        showMessage('error', err.message || t('errGeneric'));
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.querySelector('span').textContent = t('submit');
+      }
+    });
+
+    customDescription.addEventListener('input', updateSummary);
+    bindOptionClicks(cleaningGrid);
+    bindOptionClicks(constructionGrid);
+    applyTranslations();
+    loadBranding();
+    loadCatalog();
+  </script>
+</body>
+</html>
