@@ -28,7 +28,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; scroll-padding-top: 0; }
 
     body {
       font-family: var(--font-body);
@@ -37,6 +37,7 @@
       line-height: 1.55;
       min-height: 100vh;
       overflow-x: hidden;
+      overflow-anchor: none;
     }
 
     a { color: inherit; }
@@ -166,7 +167,7 @@
       height: auto;
       margin: 0 auto;
       object-fit: contain;
-      object-position: center top;
+      object-position: center center;
       background: #fff;
       user-select: none;
       pointer-events: none;
@@ -519,7 +520,7 @@
 
     @media (min-width: 900px) {
       .site-header {
-        padding: 1rem 6vw;
+        padding: 0.85rem 6vw;
       }
 
       .brand {
@@ -533,11 +534,29 @@
       }
 
       .hero {
-        padding-top: 0.25rem;
+        padding-top: 0.35rem;
+      }
+
+      /* Keep banner compact so headline + CTAs fit in the first viewport */
+      .hero-media {
+        width: auto;
+        max-width: min(100% - 10vw, 720px);
+        max-height: min(36vh, 320px);
+        object-fit: contain;
       }
 
       .hero-content {
-        padding: 1.75rem 6vw 2.25rem;
+        padding: 0.85rem 6vw 1.25rem;
+        border-top: none;
+      }
+
+      .hero h1 {
+        font-size: clamp(1.55rem, 2.4vw, 2rem);
+        margin-bottom: 0.35rem;
+      }
+
+      .hero p {
+        margin-bottom: 0.85rem;
       }
 
       .contact-layout {
@@ -617,8 +636,8 @@
       id="hero-media"
       src="/assets/hero-el.jpg"
       alt="Κουτσοδούλια"
-      width="1600"
-      height="900"
+      width="1024"
+      height="576"
       decoding="async"
       fetchpriority="high"
     >
@@ -727,6 +746,26 @@
   </footer>
 
   <script>
+    // Always open at the top (mobile browsers often restore mid-page scroll)
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    const resetScrollTop = () => {
+      const hash = (location.hash || '').toLowerCase();
+      if (!hash || hash === '#top' || hash === '#') {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }
+    };
+    resetScrollTop();
+    window.addEventListener('load', resetScrollTop, { once: true });
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) resetScrollTop();
+    });
+    document.getElementById('hero-media')?.addEventListener('load', () => {
+      // Image decode can shift layout; only snap back if still near the top
+      if (window.scrollY < 80) resetScrollTop();
+    }, { once: true });
+
     const I18N = {
       el: {
         pageTitle: 'Αίτημα Εργασίας',
