@@ -216,6 +216,7 @@
     "serviceCategory": "Κατηγορία υπηρεσίας",
     "acceptRequest": "Αποδοχή σε σχεδιασμό",
     "prepareQuotation": "Προετοιμασία Προσφοράς",
+    "findCandidates": "Εύρεση Υποψηφίων",
     "quotation": "Προσφορά",
     "quotationPrototype": "Πρωτότυπο προσφοράς",
     "quotationPrototypeDesc": "Ελέγξτε τα στοιχεία του αιτήματος, ορίστε την τιμή και εξάγετε ένα προσεγμένο PDF για τον πελάτη.",

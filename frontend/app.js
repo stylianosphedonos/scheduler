@@ -2586,9 +2586,9 @@ async function showProjectDetails(id) {
     showModal(project.name, `
       <div class="project-details">
         ${project.source === 'web' || project.status === 'requested' ? `
-          <div class="detail-row" style="margin-bottom: 12px;">
+          <div class="detail-row detail-row-tags" style="margin-bottom: 12px;">
             <span class="web-request-pill"><i class="fas fa-globe"></i> ${t('projects.webRequest') || 'From web customer'}</span>
-            ${project.code ? `<span class="tag" style="margin-left: 8px;">${project.code}</span>` : ''}
+            ${project.code ? `<span class="tag">${project.code}</span>` : ''}
           </div>
         ` : ''}
         <div class="detail-row">
@@ -2666,22 +2666,24 @@ async function showProjectDetails(id) {
             `).join('')}
           </div>
         `}
-        <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="closeModal()">Close</button>
-          ${canEdit() ? `
-            ${(project.status === 'requested' || project.source === 'web') ? `
-              <button class="btn btn-secondary" onclick="prepareQuotation(${id})"><i class="fas fa-file-invoice-dollar"></i> ${t('projects.prepareQuotation') || 'Prepare Quotation'}</button>
+        <div class="modal-footer project-details-footer">
+          <div class="project-details-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">${t('common.close') || 'Close'}</button>
+            ${canEdit() ? `
+              ${(project.status === 'requested' || project.source === 'web') ? `
+                <button class="btn btn-secondary" onclick="prepareQuotation(${id})"><i class="fas fa-file-invoice-dollar"></i> ${t('projects.prepareQuotation') || 'Prepare Quotation'}</button>
+              ` : ''}
+              ${project.status === 'requested' ? `
+                <button class="btn btn-primary" onclick="acceptWebRequest(${id})"><i class="fas fa-check"></i> ${t('projects.acceptRequest') || 'Accept into planning'}</button>
+              ` : ''}
+              <button class="btn btn-secondary" onclick="editProject(${id})"><i class="fas fa-edit"></i> ${t('common.edit') || 'Edit'}</button>
+              <button class="btn btn-danger" onclick="deleteProject(${id})"><i class="fas fa-trash"></i> ${t('common.delete') || 'Delete'}</button>
             ` : ''}
-            ${project.status === 'requested' ? `
-              <button class="btn btn-primary" onclick="acceptWebRequest(${id})"><i class="fas fa-check"></i> ${t('projects.acceptRequest') || 'Accept into planning'}</button>
-            ` : ''}
-            <button class="btn btn-danger" onclick="deleteProject(${id})"><i class="fas fa-trash"></i> Delete</button>
-            <button class="btn btn-secondary" onclick="editProject(${id})"><i class="fas fa-edit"></i> Edit</button>
-          ` : ''}
-          <button class="btn btn-primary" onclick="findCandidates(${id})">Find Candidates</button>
+            <button class="btn btn-primary" onclick="findCandidates(${id})">${t('projects.findCandidates') || 'Find Candidates'}</button>
+          </div>
         </div>
       </div>
-    `);
+    `, (project.status === 'requested' || project.source === 'web') ? 'project-details-modal' : '');
   } catch (error) {
     showToast('Failed to load project details', 'error');
   }
@@ -3475,16 +3477,18 @@ async function editProject(id) {
         </div>
         
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-          ${(project.status === 'requested' || project.source === 'web') ? `
-            <button type="button" class="btn btn-secondary" onclick="prepareQuotation(${id})">
-              <i class="fas fa-file-invoice-dollar"></i> ${t('projects.prepareQuotation') || 'Prepare Quotation'}
-            </button>
-          ` : ''}
-          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <div class="project-details-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">${t('common.cancel') || 'Cancel'}</button>
+            ${(project.status === 'requested' || project.source === 'web') ? `
+              <button type="button" class="btn btn-secondary" onclick="prepareQuotation(${id})">
+                <i class="fas fa-file-invoice-dollar"></i> ${t('projects.prepareQuotation') || 'Prepare Quotation'}
+              </button>
+            ` : ''}
+            <button type="submit" class="btn btn-primary">${t('common.saveChanges') || 'Save Changes'}</button>
+          </div>
         </div>
       </form>
-    `);
+    `, (project.status === 'requested' || project.source === 'web') ? 'project-details-modal' : '');
     
     // Add skill toggle listeners
     document.querySelectorAll('.project-skill-row').forEach(row => {

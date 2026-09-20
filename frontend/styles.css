@@ -824,6 +824,40 @@ body {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.web-request-item {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.web-request-item .list-item-left {
+  min-width: 0;
+  flex: 1;
+}
+
+.web-request-item .list-item-name,
+.web-request-item .list-item-sub {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  color: var(--text-primary);
+}
+
+.web-request-item .list-item-sub {
+  color: var(--text-secondary);
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.web-request-item .web-request-pill {
+  margin-left: 0;
+  margin-right: 4px;
+  vertical-align: middle;
 }
 
 .clickable-stat {
@@ -1957,9 +1991,111 @@ body {
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
   padding: 16px 24px;
   border-top: 1px solid var(--border-color);
+  margin-top: 8px;
+}
+
+.modal-footer .btn {
+  flex: 0 1 auto;
+  white-space: nowrap;
+  overflow: visible;
+  min-height: 42px;
+  padding: 10px 16px;
+}
+
+.modal-footer .btn::before {
+  display: none;
+}
+
+.project-details-footer,
+.quotation-footer {
+  justify-content: flex-end;
+}
+
+.project-details-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.project-details-actions .btn {
+  flex: 0 1 auto;
+}
+
+.modal.project-details-modal {
+  max-width: 720px;
+  width: min(720px, 96vw);
+}
+
+.project-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.project-details .detail-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.45);
+}
+
+.project-details .detail-row:last-of-type {
+  border-bottom: none;
+}
+
+.project-details .detail-label {
+  flex: 0 0 38%;
+  max-width: 180px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.project-details .detail-value {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: right;
+  word-break: break-word;
+}
+
+.project-details .detail-value a {
+  color: var(--primary-light);
+  text-decoration: none;
+}
+
+.project-details .detail-value a:hover {
+  text-decoration: underline;
+}
+
+.project-details .detail-row-tags {
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: none;
+  padding-top: 0;
+}
+
+.project-details .detail-row-tags .web-request-pill {
+  margin-left: 0;
+}
+
+.project-details h4 {
+  color: var(--text-primary);
 }
 
 /* ===== Toast ===== */
@@ -5041,13 +5177,28 @@ body {
     backdrop-filter: blur(20px);
     border-top: 1px solid var(--border-color);
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     z-index: 100;
   }
   
   .modal-footer .btn {
-    flex: 1;
+    flex: 1 1 calc(50% - 10px);
+    min-width: 140px;
     min-height: 44px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    overflow: visible;
+  }
+
+  .project-details-actions {
+    width: 100%;
+  }
+
+  .project-details-actions .btn {
+    flex: 1 1 calc(50% - 10px);
+    min-width: 140px;
   }
   
   /* AI Scheduler mobile */
@@ -6309,13 +6460,19 @@ body {
     z-index: 10;
     border-top: 1px solid var(--border-color);
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
   }
   
   .modal-footer .btn {
-    flex: 1;
+    flex: 1 1 calc(50% - 10px);
+    min-width: 140px;
     justify-content: center;
     min-height: 44px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    overflow: visible;
   }
   
   /* Form fixes */
@@ -6345,19 +6502,31 @@ body {
   }
   
   /* Detail rows - prevent overlap */
-  .detail-row {
+  .detail-row,
+  .project-details .detail-row {
     flex-direction: column;
     gap: 4px;
     padding: 10px 0;
+    align-items: stretch;
   }
   
-  .detail-label {
+  .detail-label,
+  .project-details .detail-label {
     font-size: 12px;
+    max-width: none;
+    flex: none;
   }
   
-  .detail-value {
+  .detail-value,
+  .project-details .detail-value {
     font-size: 14px;
     word-break: break-word;
+    text-align: left;
+  }
+
+  .project-details .detail-row-tags {
+    flex-direction: row;
+    align-items: center;
   }
   
   /* Dashboard cards */

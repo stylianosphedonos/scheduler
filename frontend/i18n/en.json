@@ -216,6 +216,7 @@
     "serviceCategory": "Service category",
     "acceptRequest": "Accept into planning",
     "prepareQuotation": "Prepare Quotation",
+    "findCandidates": "Find Candidates",
     "quotation": "Quotation",
     "quotationPrototype": "Quotation prototype",
     "quotationPrototypeDesc": "Review the request details, set your price, then export a polished PDF for the customer.",
