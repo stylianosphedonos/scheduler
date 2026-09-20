@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Αίτημα Εργασίας</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,11 +24,6 @@
       --radius: 18px;
       --font-display: "Syne", sans-serif;
       --font-body: "Figtree", sans-serif;
-      --hero-image: url('/assets/hero-el.jpg');
-    }
-
-    html[lang="en"] {
-      --hero-image: url('/assets/hero-en.jpg');
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,27 +36,33 @@
       background: var(--paper);
       line-height: 1.55;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     a { color: inherit; }
 
     .site-header {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      position: relative;
       z-index: 20;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.1rem 6vw;
+      gap: 0.75rem;
+      padding:
+        calc(0.85rem + env(safe-area-inset-top, 0px))
+        max(1rem, env(safe-area-inset-right, 0px), 4vw)
+        0.85rem
+        max(1rem, env(safe-area-inset-left, 0px), 4vw);
       color: var(--ink);
+      background: #fff;
+      border-bottom: 1px solid rgba(20, 18, 16, 0.06);
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
+      gap: 0.55rem;
+      flex-shrink: 0;
     }
 
     .brand {
@@ -72,9 +73,10 @@
       display: flex;
       align-items: center;
       gap: 0.65rem;
+      min-width: 0;
       padding: 0.45rem 0.75rem 0.45rem 0.45rem;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.82);
+      background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(10px);
       box-shadow: 0 8px 24px rgba(20, 18, 16, 0.08);
     }
@@ -87,34 +89,38 @@
       display: grid;
       place-items: center;
       color: #fff;
+      flex-shrink: 0;
       box-shadow: 0 8px 20px rgba(230, 184, 0, 0.35);
     }
 
     .header-link {
       color: var(--ink);
       text-decoration: none;
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       font-weight: 600;
-      padding: 0.55rem 0.95rem;
+      padding: 0.65rem 0.9rem;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.82);
+      background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(10px);
       box-shadow: 0 8px 24px rgba(20, 18, 16, 0.08);
+      white-space: nowrap;
       transition: transform 0.2s ease, background 0.2s ease;
     }
 
-    .header-link:hover {
-      background: #fff;
-      transform: translateY(-1px);
-    }
+    .header-link:hover { background: #fff; transform: translateY(-1px); }
 
     .lang-toggle {
       appearance: none;
       border: none;
-      background: rgba(255, 255, 255, 0.82);
+      background: rgba(255, 255, 255, 0.92);
       color: var(--ink);
       border-radius: 999px;
-      padding: 0.55rem 0.95rem;
+      padding: 0.65rem 0.9rem;
+      min-height: 44px;
       font-family: var(--font-body);
       font-size: 0.88rem;
       font-weight: 700;
@@ -127,82 +133,72 @@
       transition: background 0.2s ease, transform 0.2s ease;
     }
 
-    .lang-toggle:hover {
-      background: #fff;
-      transform: translateY(-1px);
-    }
+    .lang-toggle:hover { background: #fff; transform: translateY(-1px); }
 
+    /* Mobile-first hero: full branding visible, CTAs below */
     .hero {
       position: relative;
-      min-height: 100vh;
-      min-height: 100dvh;
       display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      padding: 7rem 6vw 3.5rem;
+      flex-direction: column;
+      min-height: auto;
+      padding: 0;
       color: var(--ink);
       overflow: hidden;
-      background-color: #f4f4f2;
-      background-image: var(--hero-image);
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
+      background: #fff;
     }
 
-    /* Soft bottom scrim so CTA buttons stay readable without blocking clicks */
-    .hero::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 42%;
-      background: linear-gradient(
-        to top,
-        rgba(255, 255, 255, 0.96) 0%,
-        rgba(255, 255, 255, 0.72) 45%,
-        rgba(255, 255, 255, 0) 100%
-      );
+    .hero-media {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      object-position: center top;
+      background: #fff;
+      user-select: none;
       pointer-events: none;
-      z-index: 1;
     }
 
     .hero-content {
       position: relative;
       z-index: 2;
-      width: min(100%, 42rem);
+      width: 100%;
+      padding:
+        1.15rem
+        max(1rem, env(safe-area-inset-right, 0px), 5vw)
+        calc(1.35rem + env(safe-area-inset-bottom, 0px))
+        max(1rem, env(safe-area-inset-left, 0px), 5vw);
       text-align: center;
+      background: #fff;
+      border-top: 1px solid rgba(20,18,16,0.06);
       animation: riseIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     @keyframes riseIn {
-      from { opacity: 0; transform: translateY(28px); }
+      from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Branding already lives in the background art — keep copy light */
     .hero h1 {
       font-family: var(--font-display);
       font-weight: 800;
-      font-size: clamp(1.55rem, 3.4vw, 2.2rem);
-      line-height: 1.15;
+      font-size: clamp(1.3rem, 4.8vw, 2.05rem);
+      line-height: 1.2;
       letter-spacing: -0.02em;
-      margin-bottom: 0.55rem;
+      margin-bottom: 0.45rem;
       color: var(--ink);
-      text-shadow: 0 1px 0 rgba(255,255,255,0.7);
     }
 
     .hero p {
-      font-size: clamp(0.98rem, 2vw, 1.1rem);
+      font-size: clamp(0.94rem, 2.6vw, 1.06rem);
       color: var(--steel);
       max-width: 34rem;
-      margin: 0 auto 1.35rem;
+      margin: 0 auto 1.1rem;
     }
 
     .hero-actions {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.85rem;
+      flex-direction: column;
+      gap: 0.7rem;
       justify-content: center;
       position: relative;
       z-index: 3;
@@ -216,14 +212,18 @@
       font-weight: 700;
       font-size: 0.98rem;
       border-radius: 999px;
-      padding: 0.95rem 1.5rem;
+      padding: 0.95rem 1.35rem;
+      min-height: 48px;
+      width: 100%;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.55rem;
       text-decoration: none;
-      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
       position: relative;
       z-index: 3;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .btn:hover { transform: translateY(-2px); }
@@ -253,6 +253,7 @@
       width: 100%;
       justify-content: center;
       margin-top: 0.5rem;
+      min-height: 52px;
     }
 
     .btn-submit:hover { background: #000; }
@@ -262,48 +263,49 @@
       transform: none;
     }
 
-    section { padding: 4.5rem 6vw; }
+    section {
+      padding:
+        2.75rem
+        max(1rem, env(safe-area-inset-right, 0px), 5vw)
+        2.75rem
+        max(1rem, env(safe-area-inset-left, 0px), 5vw);
+    }
 
     .section-head {
       max-width: 40rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.35rem;
       animation: riseIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     .section-head h2 {
       font-family: var(--font-display);
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
       letter-spacing: -0.02em;
-      margin-bottom: 0.55rem;
+      margin-bottom: 0.45rem;
     }
 
     .section-head p {
       color: var(--steel);
-      font-size: 1.05rem;
+      font-size: 1rem;
     }
 
-    .cleaning {
-      background: linear-gradient(180deg, #eef4f0 0%, var(--paper) 100%);
-    }
-
-    .construction {
-      background: linear-gradient(180deg, #f5ebe3 0%, var(--paper) 100%);
-    }
-
+    .cleaning { background: linear-gradient(180deg, #eef4f0 0%, var(--paper) 100%); }
+    .construction { background: linear-gradient(180deg, #f5ebe3 0%, var(--paper) 100%); }
     .custom-job { background: var(--paper-deep); }
 
     .service-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 0.85rem;
+      grid-template-columns: 1fr;
+      gap: 0.7rem;
     }
 
     .service-option {
       position: relative;
       border: 1.5px solid var(--line);
-      background: rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.85);
       border-radius: 14px;
-      padding: 1.05rem 1rem 1.05rem 2.7rem;
+      padding: 1rem 1rem 1rem 2.7rem;
+      min-height: 52px;
       text-align: left;
       font-family: var(--font-body);
       font-size: 0.98rem;
@@ -311,6 +313,7 @@
       color: var(--ink);
       cursor: pointer;
       transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .service-option::before {
@@ -355,23 +358,22 @@
     textarea, input, select {
       width: 100%;
       font: inherit;
+      font-size: 16px;
       color: var(--ink);
       background: #fff;
       border: 1.5px solid var(--line);
       border-radius: 12px;
-      padding: 0.9rem 1rem;
+      padding: 0.95rem 1rem;
+      min-height: 48px;
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
-    textarea {
-      min-height: 140px;
-      resize: vertical;
-    }
+    textarea { min-height: 140px; resize: vertical; }
 
     textarea:focus, input:focus, select:focus {
       border-color: var(--copper);
-      box-shadow: 0 0 0 4px rgba(196, 92, 38, 0.15);
+      box-shadow: 0 0 0 4px rgba(230, 184, 0, 0.22);
     }
 
     label {
@@ -389,20 +391,20 @@
 
     .contact {
       background:
-        radial-gradient(ellipse 50% 40% at 90% 10%, rgba(196, 92, 38, 0.08), transparent),
+        radial-gradient(ellipse 50% 40% at 90% 10%, rgba(230, 184, 0, 0.1), transparent),
         var(--paper);
     }
 
     .contact-layout {
       display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 2.5rem;
+      grid-template-columns: 1fr;
+      gap: 1.35rem;
       align-items: start;
     }
 
     .form-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 1rem;
     }
 
@@ -410,28 +412,27 @@
 
     .summary {
       background: var(--ink);
-      color: var(--paper);
+      color: #f7f7f5;
       border-radius: var(--radius);
-      padding: 1.6rem;
+      padding: 1.25rem;
       box-shadow: var(--shadow);
-      position: sticky;
-      top: 1.5rem;
+      position: static;
     }
 
     .summary h3 {
       font-family: var(--font-display);
-      font-size: 1.35rem;
-      margin-bottom: 0.85rem;
+      font-size: 1.2rem;
+      margin-bottom: 0.75rem;
     }
 
     .summary-list {
       list-style: none;
       display: grid;
       gap: 0.45rem;
-      margin-bottom: 1.25rem;
-      color: rgba(243, 238, 230, 0.8);
+      margin-bottom: 1rem;
+      color: rgba(243, 238, 230, 0.85);
       font-size: 0.95rem;
-      min-height: 3rem;
+      min-height: 2.5rem;
     }
 
     .summary-list li {
@@ -443,6 +444,7 @@
     .summary-list i {
       margin-top: 0.2rem;
       color: var(--copper);
+      flex-shrink: 0;
     }
 
     .summary-empty { opacity: 0.55; font-style: italic; }
@@ -468,7 +470,11 @@
     }
 
     .site-footer {
-      padding: 2rem 6vw 2.5rem;
+      padding:
+        1.5rem
+        max(1rem, env(safe-area-inset-right, 0px), 5vw)
+        calc(1.5rem + env(safe-area-inset-bottom, 0px))
+        max(1rem, env(safe-area-inset-left, 0px), 5vw);
       border-top: 1px solid var(--line);
       display: flex;
       justify-content: space-between;
@@ -478,19 +484,105 @@
       font-size: 0.9rem;
     }
 
-    @media (max-width: 860px) {
-      .contact-layout { grid-template-columns: 1fr; }
-      .summary { position: static; }
-      .form-grid { grid-template-columns: 1fr; }
-      .hero {
-        min-height: 92vh;
-        padding-bottom: 2.5rem;
-        background-position: center top;
+    @media (min-width: 640px) {
+      .hero-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
       }
-      .hero h1 { font-size: 1.35rem; }
-      .header-actions { gap: 0.45rem; }
-      .lang-toggle { padding: 0.5rem 0.75rem; font-size: 0.8rem; }
-      .brand span:last-child { display: none; }
+      .hero-actions .btn {
+        width: auto;
+        min-width: 210px;
+      }
+      .service-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (min-width: 900px) {
+      .site-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 1.15rem 6vw;
+        background: transparent;
+        border-bottom: none;
+      }
+
+      .hero {
+        min-height: 100vh;
+        min-height: 100svh;
+        justify-content: flex-end;
+      }
+
+      .hero-media {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center center;
+      }
+
+      .hero-content {
+        z-index: 2;
+        width: min(100%, 44rem);
+        margin: 0 auto;
+        padding: 2.5rem 6vw 3rem;
+        border-top: none;
+        background: linear-gradient(
+          to top,
+          rgba(255, 255, 255, 0.97) 0%,
+          rgba(255, 255, 255, 0.86) 55%,
+          rgba(255, 255, 255, 0) 100%
+        );
+      }
+
+      .contact-layout {
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 2.5rem;
+      }
+
+      .summary {
+        position: sticky;
+        top: 1.5rem;
+        padding: 1.6rem;
+      }
+
+      .service-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      }
+
+      section { padding: 4.5rem 6vw; }
+    }
+
+    @media (max-width: 420px) {
+      .brand {
+        font-size: 0.92rem;
+        padding: 0.4rem 0.65rem 0.4rem 0.4rem;
+        gap: 0.45rem;
+      }
+      .brand-mark {
+        width: 1.85rem;
+        height: 1.85rem;
+      }
+      .header-actions {
+        gap: 0.4rem;
+      }
+      .header-link {
+        padding: 0.65rem 0.75rem;
+        font-size: 0.78rem;
+      }
+      .header-link span {
+        display: none;
+      }
+      .lang-toggle {
+        padding: 0.65rem 0.75rem;
+        font-size: 0.82rem;
+      }
     }
   </style>
 </head>
@@ -505,11 +597,24 @@
         <i class="fas fa-globe"></i>
         <span id="lang-toggle-label">EN</span>
       </button>
-      <a class="header-link" id="staff-login-link" href="/admin" data-i18n="staffLogin">Σύνδεση προσωπικού</a>
+      <a class="header-link" id="staff-login-link" href="/admin" data-i18n-aria="staffLogin" aria-label="Σύνδεση προσωπικού">
+        <i class="fas fa-user-shield" aria-hidden="true"></i>
+        <span data-i18n="staffLogin">Σύνδεση προσωπικού</span>
+      </a>
     </div>
   </header>
 
   <section class="hero" id="top">
+    <img
+      class="hero-media"
+      id="hero-media"
+      src="/assets/hero-el.jpg"
+      alt="Κουτσοδούλια"
+      width="1600"
+      height="900"
+      decoding="async"
+      fetchpriority="high"
+    >
     <div class="hero-content">
       <h1 data-i18n="heroTitle">Ζητήστε την εργασία που χρειάζεστε</h1>
       <p data-i18n="heroSubtitle">Πείτε μας τι χρειάζεστε — καθαρισμός, κατασκευές ή ειδική εργασία — και η ομάδα μας θα προγραμματίσει τους κατάλληλους ανθρώπους.</p>
@@ -775,6 +880,13 @@
       document.getElementById('lang-toggle-label').textContent = t('langButton');
       langToggle.setAttribute('aria-label', lang === 'el' ? 'Αλλαγή σε Αγγλικά' : 'Switch to Greek');
 
+      const heroMedia = document.getElementById('hero-media');
+      if (heroMedia) {
+        const nextSrc = lang === 'en' ? '/assets/hero-en.jpg' : '/assets/hero-el.jpg';
+        if (!heroMedia.src.endsWith(nextSrc)) heroMedia.src = nextSrc;
+        heroMedia.alt = t('brandName');
+      }
+
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (key) el.textContent = t(key);
@@ -783,6 +895,11 @@
       document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder');
         if (key) el.setAttribute('placeholder', t(key));
+      });
+
+      document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+        const key = el.getAttribute('data-i18n-aria');
+        if (key) el.setAttribute('aria-label', t(key));
       });
 
       renderOptions(cleaningGrid, catalog.cleaning || FALLBACK.cleaning, 'cleaning');
