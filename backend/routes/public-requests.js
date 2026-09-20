@@ -17,7 +17,8 @@ const CONSTRUCTION_SERVICES = [
   'Electrical work',
   'Flooring',
   'General repairs',
-  'Demolition'
+  'Demolition',
+  'Pelecanics'
 ];
 
 const ALLOWED_SERVICES = new Set([...CLEANING_SERVICES, ...CONSTRUCTION_SERVICES]);
